@@ -7,4 +7,5 @@
    1. master: código mais recente em funcionamento, importante validar todas as funcionalidades
 
 ## Features planejadas
-  1. NE/C: restrições de igualdade usando lagrangeano
+  1. NE/C: restrições de igualdade usando lagrangeano -> branch lagrangeIgualdades
+  2. Simulações de MonteCarlo em Python -> branch pythonMC
