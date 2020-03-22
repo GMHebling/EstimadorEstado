@@ -216,7 +216,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     //strcat(folder,"/");  
     //strcpy(aux,folder);
     //strcpy(aux2,folder);
-    char aux[200] = "/Applications/Matlab/IEEE342SIM/";
+    char aux[200] = "IEEE123DV/";
     strcpy(aux2,aux);
     // Leitura dos dados de barras
     
@@ -892,6 +892,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
     // Leitura dos dados de medidores
     strcpy(text_aux,folder);
     arquivo = fopen(strcat(text_aux,file),"r");
+    
     
     //arquivo = fopen(folder,"r");
     if(arquivo == NULL)

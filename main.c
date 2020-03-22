@@ -47,7 +47,8 @@ int main(int argc, char **argv)
     //printf("atualizaTaps ok \n");
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
-    //    numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+    numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+    
     //Função Atualiza Status Lógicos - chaves e taps no arquivo DSTATUS.csv
     //printf("leituraMedidas ok\n");
     // Observabilidade e Seleção de Pseudo-Medidas - Fatoração da matriz H -  Tratamento das referências
