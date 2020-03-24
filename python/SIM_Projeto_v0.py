@@ -114,8 +114,7 @@ def LeituraDados(foldername):
     
     return network_model
 
-    
-    return df_DBAR, df_DLIN, df_DREG, df_DSHNT, df_DTRF
+
 
 def ExportMeasurementSet(md, sd, filename, df_DREF, locMed):
     #----------------------------------------------------------------
@@ -129,13 +128,6 @@ def ExportMeasurementSet(md, sd, filename, df_DREF, locMed):
     
     df_DMED.to_csv(md + sd + filename, sep = ',', index=False, header=False, float_format='%.15f')
 
-def SampleMeasurementsMC():
-    #----------------------------------------------------------------
-    #Função que exporta em arquvio DMED.csv o plano de medição e respecitvos valores medidos
-    
-    
-    
-    return 0
 
 def PowerFlow(md, sd, network_model, loading, method):
     #----------------------------------------------------------------
@@ -180,6 +172,14 @@ def PowerFlow(md, sd, network_model, loading, method):
     
     return sim_simul   
 
+
+def SampleMeasurementsMC():
+    #----------------------------------------------------------------
+    #Função que exporta em arquvio DMED.csv o plano de medição e respecitvos valores medidos
+    
+    
+    
+    return 0
 
 def StateEstimation(md, sd, network_model, measurement_set, method):
     #----------------------------------------------------------------
@@ -252,10 +252,25 @@ PrintConfig(md,sd)
 #
 #----------------------------------------------------------------------------- 
 
-# Define o cenário de carregamento
+# Define o cenário base de carregamento
+try:
+    filename = '/DMED_fp.csv'
+    base_loading =  pd.read_csv(md + sd + filename, sep = ',',header=None)
+    base_loading.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
+except: 
+    # Não encontrou arquivo com carregamento base para o fluxo de potência
+    # Varre o DBAR para preencher o carregamento base - Por enquanto limitado ao modelo PQ constante
+    base_loading = pd.DataFrame(columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma'])
 
+# Preenche a estrutrua de carregamento
+loading = []
+for t in range(1,Dt+1):
+    print(t)
+    loading.append(base_loading)
 
-
+# Possibilita inserir contingências, transições, variação de carga e geração, etc.
+    
+    
 
 #-----------------------------------------------------------------------------
 # CASO DE REFERÊNCIA
@@ -264,7 +279,7 @@ PrintConfig(md,sd)
 sim_ref = []
 for t in range(1,Dt+1):
     print(t)
-    sim_ref.append(PowerFlow(md, sd, network_model, loading = 1, method = 1))
+    sim_ref.append(PowerFlow(md, sd, network_model, loading[t-1], method = 1))
 
 #-----------------------------------------------------------------------------
 # SIMULAÇÃO DE MONTE CARLO
@@ -307,7 +322,7 @@ sim_MC = []
 for amostra in range(1,Namostras+1):
     
     # Amostragem de ruído aleatório
-    
+    SampleMeasurementsMC()
     
     
     
