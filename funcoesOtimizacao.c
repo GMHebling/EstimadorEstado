@@ -14,8 +14,8 @@
 #include "funcoesBadData.h"
 
 //#include "mmio.h"
-#include <cholmod.h>
-#include "SuiteSparseQR_C.h"
+#include "/home/julio/SuiteSparse-5.6.0/include/cholmod.h"
+#include "/home/julio/SuiteSparse-5.6.0/include/SuiteSparseQR_C.h"
 
 
 int chamaFuncao;

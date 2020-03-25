@@ -181,7 +181,7 @@ char* charMedidor(long int num){
 char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *numeroRamos, long int *numeroAlimentadores)
 {
     FILE *arquivo = NULL;
-    char linha[1000],*pasta,*folder,aux2[1000];
+    char linha[1000],*pasta,*folder,aux2[1000],aux[1000];
 //    folder = (char *)malloc(600*sizeof(char));
     pasta = (char *)malloc(200);
     folder = (char *)malloc(200);
@@ -212,12 +212,12 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
 //    //strcpy(folder,"C:/Users/Julio Massignan/Dropbox/Doutorado/Codigos/Simulador_SD/IEEE34");
     //printf("TESTE\n");
     //strcat(folder,"/");
-    //strcat(folder,pasta);
-    //strcat(folder,"/");  
-    //strcpy(aux,folder);
-    //strcpy(aux2,folder);
-    char aux[200] = "/Applications/Matlab/IEEE342SIM/";
-    strcpy(aux2,aux);
+    strcat(folder,pasta);
+    strcat(folder,"/");  
+    strcpy(aux,folder);
+    strcpy(aux2,folder);
+    // char aux[200] = "/Applications/Matlab/IEEE342SIM/";
+    // strcpy(aux2,aux);
     // Leitura dos dados de barras
     
     arquivo = fopen(strcat(aux,"DBAR.csv"),"r");
