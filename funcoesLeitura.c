@@ -216,7 +216,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     //strcat(folder,"/");  
     //strcpy(aux,folder);
     //strcpy(aux2,folder);
-    char aux[200] = "IEEE906/";
+    char aux[200] = "IEEE123/";
     strcpy(aux2,aux);
     // Leitura dos dados de barras
     
@@ -1719,4 +1719,20 @@ void salvaMedidasRedeEletrica(DMED *medidas, long int **numeroMedidas)
     }   */ 
     
     fclose(arquivo);
+}
+
+int verificaDVMED(char *folder){
+    char text_aux[500];
+    char file[50] = "DVMED.csv";
+    FILE *arquivo;
+
+
+    strcpy(text_aux,folder);
+    arquivo = fopen(strcat(text_aux,file),"r");
+
+    if (arquivo == NULL){
+        return 0;
+    } else {
+        return 1;
+    }
 }

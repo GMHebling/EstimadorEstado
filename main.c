@@ -46,8 +46,14 @@ int main(int argc, char **argv)
     atualizaTaps(ramo, numeroRamos); //terminar o tap de trafos
     //printf("atualizaTaps ok \n");
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
-    numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
-    //numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+    if (verificaDVMED(folder) == 1) {
+        numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
+        numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+    } else {
+        numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
+    }
+    
+    
     
     //Função Atualiza Status Lógicos - chaves e taps no arquivo DSTATUS.csv
     //printf("leituraMedidas ok\n");

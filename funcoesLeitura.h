@@ -37,5 +37,7 @@ void geraGrafo(GRAFO ** grafo, DBAR *barras, long int numeroBarras,DRAM *ramos,l
 void salvaDadosRedeEletrica(DBAR *barras, long int numeroBarras, DRAM *ramos, long int numeroRamos, DMED *medidas, long int **numeroMedidas);
 void salvaMedidasRedeEletrica(DMED *medidas, long int **numeroMedidas);
 
+//verifica se existe o arquivo DVMED
+int verificaDVMED(char *folder);
 #endif	/* funcoesLeitura_H */
 
