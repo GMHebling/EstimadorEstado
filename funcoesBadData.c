@@ -13,6 +13,9 @@
 #include "funcoesMatematicas.h"
 #include "funcoesBadData.h"
 
+#include "/home/julio/SuiteSparse-5.6.0/include/cholmod.h"
+#include "/home/julio/SuiteSparse-5.6.0/include/SuiteSparseQR_C.h"
+
 //Calcula o resíduo normalizao para todas as medidas
 void residuosNormalizados(double *rN, double *bHat, long int m, long int n, double *Dz, double **H, double **W, double *z){
     int i,j;
@@ -159,7 +162,88 @@ void residuosNormalizadosQR(double *rN, double *bHat, long int m, long int n, do
     
 }
 
+//Análise residual do Estimador de Estado - Rotina com o suitesparse
+// Calcula resíduos, resíduos normalizados, b-chapéu (distância do Cook), e inidce UI
+//
+// recebe:
+// 
+// A_SS: Jacobiana calculada no vetor x estimado
 
+void residuosNormalizadosQR_ss(double *rN, double *bHat, long int m, long int n, double *Dz, double ***H, DMED *medidas, cholmod_sparse *A_SS){
+    int i,j;
+    double *UI, *CovR;
+    
+
+    //Arquivo de saída de resultados
+    FILE *arquivo;
+    arquivo = fopen("residuoNormalizado.txt","w+");
+    
+    //Alocação
+    UI = aloca_vetor(m);
+    CovR = aloca_vetor(m);
+    
+    // Alocação suitesparse
+    cholmod_dense *Ht_SS = NULL;
+    cholmod_dense *X_SS= NULL;
+    SuiteSparseQR_C_factorization *QR;
+    cholmod_common Common, *c;
+
+    c = &Common;
+    cholmod_l_start(c);
+
+    
+
+    Ht_SS = cholmod_l_allocate_dense(n, m, m*n, CHOLMOD_REAL, c);
+    X_SS = cholmod_l_allocate_dense(n, m, m*n, CHOLMOD_REAL, c);
+
+    //Retorna a matriz H original sem ponderação
+    for (i=0;i<m;i++){
+        for(j=0;j<n;j++){
+            if (*H[i][j] != 0) ((double*)Ht_SS->x)[i*n + j] = *H[i][j] * medidas[i].sigma;
+        }
+        Dz[i] = Dz[i]*medidas[i].sigma;
+    }
+    
+    //Fatora a Matriz Jacobiana (recebida na entrada no formato esparso) para obter Q e R
+    QR = SuiteSparseQR_C_factorize(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_SS,c); 
+    
+    //Soluciona X = R\B (para cálculo somente da diagonal da matriz de covariância dos resíduos)
+    X_SS = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_B,QR, Ht_SS, c);
+    
+    //Cálculo da diagonal de matriz de covariância do resíduos
+    double aux_K;
+    for (i=0;i<m;i++){
+        aux_K = 0;
+        for (j=0;j<n;j++){
+            aux_K += pow(((double*)X_SS->x)[i*n + j],2);
+        }
+        printf("\n %.15lf ", aux_K);
+        CovR[i] = pow(medidas[i].sigma,2) - aux_K;        
+    }
+    
+    cholmod_l_finish(c);
+
+    //Cálculo dos resíduos normalizados, b-chapeu e indice UI
+    for (i=0;i<m;i++){
+        rN[i] = Dz[i]/pow(CovR[i],0.5);
+        bHat[i] = (rN[i]*medidas[i].sigma)/pow(CovR[i],0.5);
+        UI[i] = pow((1-CovR[i]/pow(medidas[i].sigma,2))/(CovR[i]/pow(medidas[i].sigma,2)),0.5);
+//        if (z[i] == 0){ //medida virtual
+//            rN[i] = 0;
+//            UI[i] = 0;
+//            bHat[i] = 0;
+//        }
+    }
+    
+    //Imprime arquivo de saída
+    fprintf(arquivo,"index\tDz\trN\tbHat\tUI\n");
+    for (i=0;i<m;i++){
+        fprintf(arquivo,"%d\t%.10lf\t%.10lf\t%.10lf\t%.10lf\n",i,Dz[i],rN[i],bHat[i],UI[i]);
+    }
+        
+    fclose(arquivo);
+    
+}
 
 /*
 

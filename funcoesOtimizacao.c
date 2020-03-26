@@ -691,32 +691,6 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         free(Dx);
                 
         //=========================================================================
-        //Convergência do algoritimo - exporta resultados finais e processa erros grosseiros
-        if (conv == 1){
-            clock_t tFim = clock();
-            double tempoIt = (double)(tFim-tIni)/CLOCKS_PER_SEC;
-            printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t |Grad|_inf =  %.17lf \n",it,nFx,nGx);
-            printf("\n\n Convergência em %d iteracoes e tempo: %.4lf",it,tempoIt);
-            
-            printf("\n\n Nmed: %d e Nvar: %d \n\n", nmed, nvar);
-            //Processamento de Erros Grosseiros via Análise dos Resíduos
-//            residuosNormalizadosQR(rN, bHat, nmed, nvar, Dz, H_rf, NULL,z);
-//            clock_t tFim3 = clock();
-//            double tempoResiduos2 = (double)(tFim3-tFim)/CLOCKS_PER_SEC;
-//            printf("\n\n Tempo calculo residuos normalizados: %.4lf",tempoResiduos2);
-            
-            fprintf(arquivo,"\n\n Convergência em %d iteracoes e tempo: %.4lf",it,tempoIt);
-            fprintf(arquivo,"\n\nVetor z \t\tVetor h(x) \t\t\tVetor Dz\n");
-            for(i=0;i<nmed;i++) {
-                fprintf(arquivo,"%.7lf\t%.7lf\t%.7f\n",z[i],*h[i],z[i] - *h[i]);
-            }
-            saidaEstado(grafo, numeroBarras, it, tempoIt, nFx, nGx);
-            free(Dz);free(b);//free(regua);
-            //for (i=0;i<nmed;i++) free(H_rf[i]);
-            //free(H_rf);
-            fclose(arquivo);
-            return conv;}
-        //=========================================================================
         //Impressão das Matrizes esparsas para o Suite SParse - GUSTAVO MIRANDA
         
         //Entender esta parte do código que é onde eu exporto a cada iteração as matrizes e vetores a serem utilizados na solução iterativa do estimador 
@@ -821,6 +795,33 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         clock_t WriteMatrix = clock();
        // //Solucao via SuiteSparse
        int mtype = 0;
+
+       //=========================================================================
+        //Convergência do algoritimo - exporta resultados finais e processa erros grosseiros
+        if (conv == 1){
+            clock_t tFim = clock();
+            double tempoIt = (double)(tFim-tIni)/CLOCKS_PER_SEC;
+            printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t |Grad|_inf =  %.17lf \n",it,nFx,nGx);
+            printf("\n\n Convergência em %d iteracoes e tempo: %.4lf",it,tempoIt);
+            
+            printf("\n\n Nmed: %d e Nvar: %d \n\n", nmed, nvar);
+            //Processamento de Erros Grosseiros via Análise dos Resíduos
+            residuosNormalizadosQR_ss(rN, bHat, nmed, nvar, Dz, H, medidas, A_SS);
+            // residuosNormalizadosQR(rN, bHat, nmed, nvar, Dz, H_rf, NULL,z);
+            clock_t tFim3 = clock();
+            double tempoResiduos2 = (double)(tFim3-tFim)/CLOCKS_PER_SEC;
+            printf("\n\n Tempo calculo residuos normalizados: %.4lf",tempoResiduos2);
+            
+            fprintf(arquivo,"\n\n Convergência em %d iteracoes e tempo: %.4lf",it,tempoIt);
+            fprintf(arquivo,"\n\nVetor z \t\tVetor h(x) \t\t\tVetor Dz\n");
+            for(i=0;i<nmed;i++) {
+                fprintf(arquivo,"%.7lf\t%.7lf\t%.7f\n",z[i],*h[i],z[i] - *h[i]);
+            }
+            saidaEstado(grafo, numeroBarras, it, tempoIt, nFx, nGx);
+            free(Dz);free(b);
+            fclose(arquivo);
+            return conv;
+        }
 
        // //************************************************************************
         //SOLUCAO DO SISTEMA LINEAR

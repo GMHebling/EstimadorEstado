@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "cholmod.h": "c"
+        "cholmod.h": "c",
+        "suitesparseqr.hpp": "c"
     }
 }
