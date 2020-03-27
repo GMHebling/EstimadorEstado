@@ -189,50 +189,56 @@ void residuosNormalizadosQR_ss(double *rN, double *bHat, long int m, long int n,
     cholmod_common Common, *c;
 
     c = &Common;
-    cholmod_l_start(c);
+    cholmod_l_start(c);    
 
-    
-
-    Ht_SS = cholmod_l_allocate_dense(n, m, m*n, CHOLMOD_REAL, c);
-    X_SS = cholmod_l_allocate_dense(n, m, m*n, CHOLMOD_REAL, c);
+    Ht_SS = cholmod_l_allocate_dense(n, m, n, CHOLMOD_REAL, c);
+    X_SS = cholmod_l_allocate_dense(n, m, n, CHOLMOD_REAL, c);
 
     //Retorna a matriz H original sem ponderação
     for (i=0;i<m;i++){
         for(j=0;j<n;j++){
-            if (*H[i][j] != 0) ((double*)Ht_SS->x)[i*n + j] = *H[i][j] * medidas[i].sigma;
+            ((double*)Ht_SS->x)[j + i*n] = *H[i][j] * pow(medidas[i].sigma,2);
         }
-        Dz[i] = Dz[i]*medidas[i].sigma;
+        Dz[i] = Dz[i] * medidas[i].sigma;
     }
-    
+
     //Fatora a Matriz Jacobiana (recebida na entrada no formato esparso) para obter Q e R
     QR = SuiteSparseQR_C_factorize(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_SS,c); 
     
-    //Soluciona X = R\B (para cálculo somente da diagonal da matriz de covariância dos resíduos)
-    X_SS = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_B,QR, Ht_SS, c);
+    //Soluciona X = Rt\(Et*B) (para cálculo somente da diagonal da matriz de covariância dos resíduos e matriz de permutação)
+    X_SS = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB,QR, Ht_SS, c);
     
     //Cálculo da diagonal de matriz de covariância do resíduos
     double aux_K;
     for (i=0;i<m;i++){
         aux_K = 0;
         for (j=0;j<n;j++){
-            aux_K += pow(((double*)X_SS->x)[i*n + j],2);
+            aux_K += pow(((double*)X_SS->x)[j + i*n],2);
         }
-        printf("\n %.15lf ", aux_K);
-        CovR[i] = pow(medidas[i].sigma,2) - aux_K;        
+        // printf("\n %d\t%.15lf\t%.15lf ", i , medidas[i].sigma ,aux_K);
+        CovR[i] = pow(medidas[i].sigma,2) - aux_K;  
     }
     
     cholmod_l_finish(c);
 
     //Cálculo dos resíduos normalizados, b-chapeu e indice UI
     for (i=0;i<m;i++){
-        rN[i] = Dz[i]/pow(CovR[i],0.5);
-        bHat[i] = (rN[i]*medidas[i].sigma)/pow(CovR[i],0.5);
-        UI[i] = pow((1-CovR[i]/pow(medidas[i].sigma,2))/(CovR[i]/pow(medidas[i].sigma,2)),0.5);
-//        if (z[i] == 0){ //medida virtual
-//            rN[i] = 0;
-//            UI[i] = 0;
-//            bHat[i] = 0;
-//        }
+        if (fabs(Dz[i]) > 0.00000001 ){
+            rN[i] = fabs(Dz[i])/pow(CovR[i],0.5);
+            bHat[i] = (rN[i]*medidas[i].sigma)/pow(CovR[i],0.5);
+            UI[i] = pow((1-CovR[i]/pow(medidas[i].sigma,2))/(CovR[i]/pow(medidas[i].sigma,2)),0.5);
+        }
+        else if (medidas[i].zmed == 0){ //medida virtual
+           rN[i] = 0;
+           UI[i] = 0;
+           bHat[i] = 0;
+       }
+       else{ //medida crítica
+           rN[i] = 0;
+           UI[i] = 0;
+           bHat[i] = 0;
+
+       }
     }
     
     //Imprime arquivo de saída
