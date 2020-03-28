@@ -885,11 +885,11 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         fprintf(arquivo, "\n\nIteracao:  %d \t|Dx|_inf =  %.7lf \t |Grad|_inf =  %.7lf \n",it,nFx,nGx);
         printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t |Grad|_inf =  %.17lf \n",it,nFx,nGx);
         double tempoHouseholder = (double)(t1-tHouse)/CLOCKS_PER_SEC;
-        //printf("\nSolve QR: %lf",tempoHouseholder);
+        printf("\nSolve QR: %lf",tempoHouseholder);
         double tempoTrataMat = (double)(tHouse-tMontaH)/CLOCKS_PER_SEC;
-        //printf("\nOperacoes Matrizes: %lf",tempoTrataMat);
+        printf("\nOperacoes Matrizes: %lf",tempoTrataMat);
         double tempoMontaH = (double)(tMontaH-t0)/CLOCKS_PER_SEC;
-        //printf("\nMonta H: %lf",tempoMontaH);
+        printf("\nMonta H: %lf",tempoMontaH);
         
         
         //************************************************************************

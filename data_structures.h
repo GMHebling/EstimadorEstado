@@ -215,6 +215,7 @@ typedef struct {
     double h;
     long int nvar;
     double *reguaH;
+    double *reguaH_loc;
     double *H; //salva o gradiente da respectiva medida
     
 } DMED;

@@ -516,12 +516,10 @@ plt.show()
 
 
 # -----------------------------------------------------------------------------
-# Análise Residual Erros Grosseiros
-
+# Análise Residual - Erros Grosseiros
 fig = plt.figure()
 axes(frameon=0)
 grid()
-
 
 
 plot(sim_simul[0].residuo.rN.values,sim_simul[0].residuo['b-hat'].values, marker='*', color='#B22400',linewidth=0)

@@ -1012,6 +1012,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1047,6 +1048,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1077,6 +1079,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 6+6*grafo[k].numeroAdjacentes;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1109,6 +1112,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 6+6*grafo[k].numeroAdjacentes;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1153,6 +1157,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 6;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1181,6 +1186,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 3;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1209,6 +1215,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1244,6 +1251,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1286,6 +1294,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 3;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1320,6 +1329,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 3;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1343,6 +1353,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 6+6*grafo[k].numeroAdjacentes;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1376,6 +1387,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 6+6*grafo[k].numeroAdjacentes;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1415,6 +1427,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;
@@ -1451,6 +1464,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
                 
                 (*medidas)[i].nvar = 12;
                 (*medidas)[i].reguaH = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
+                (*medidas)[i].reguaH_loc = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 (*medidas)[i].H = (double*) malloc ((*medidas)[i].nvar * sizeof(double));
                 for(j=0;j<(*medidas)[i].nvar;j++){
                     (*medidas)[i].H[j] = 0;

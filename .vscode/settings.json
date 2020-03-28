@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cholmod.h": "c",
-        "suitesparseqr.hpp": "c"
+        "suitesparseqr.hpp": "c",
+        "funcoesbayesfusion.h": "c"
     }
 }

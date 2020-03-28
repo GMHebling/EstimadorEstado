@@ -10,6 +10,7 @@
 #include "funcoesTopologia.h"
 #include "funcoesMatematicas.h"
 #include "funcoesWLS.h"
+#include "funcoesBayesFusion.h"
 
 /*
  * 
@@ -58,7 +59,8 @@ int main(int argc, char **argv)
 
     // Estimador WLS Convencional
      
-    estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    // estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    estimadorBayesFusion_MAP(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
 
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);
