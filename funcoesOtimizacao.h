@@ -15,7 +15,7 @@ void salva_sol(FILE *arqout, GRAFO *grafo, long int numeroBarras, double **h, do
 int otimiza_Gauss_Newton(double *z, double **h, double ***H, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas, long int nvar, long int nmed, double *regua_comp, double *ponto, double tol, long int ref1, long int ref2, int **Gsimb);
 int otimiza_Gauss_Newton_Hachtel(double *z, double **h, double ***H, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas, long int nvar, long int nmed, double *regua, double *ponto, double tol, long int ref1, long int ref2);
 int otimiza_Gauss_Newton_sparseHachtel_Virtuais(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2);
-int otimiza_NEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2);
+int otimizaNEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2);
 
 #endif	/* FUNCOESOTIMIZACAO_H */
 

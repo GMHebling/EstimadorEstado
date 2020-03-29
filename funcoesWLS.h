@@ -26,6 +26,7 @@ void atualiza_estado(GRAFO *grafo, double *x, double *regua, long int nVariaveis
 void tratamento_referencia(long int *ref_1, long int *ref_2, ALIMENTADOR *alimentador, double *regua, long int nVariaveis);
 
 void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase);
+void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virtuais, long int **numeroMedidas, long int **numeroVirtuais, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase);
 //void estimadorWLShachtel(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int **numeroMedidas,DMED *virtuais, long int **numeroVirtuais, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos);
 
 #endif	/* funcoesWLS_H */

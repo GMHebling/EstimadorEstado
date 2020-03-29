@@ -1976,3 +1976,85 @@ void fluxoPotencia_NRQR(GRAFO *grafo, long int numeroBarras, DMED *medidas, long
     for (i=0;i<nmed;i++ )free(H[i]);
     free(H);
 }
+void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virtuais, long int **numeroMedidas, long int **numeroVirtuais, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase){
+   long int nmed,nvar, nvir;
+    int i,j,k, r;
+    double *z = NULL,**h = NULL,***H = NULL, ***C = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
+    
+    printf("Estimador de Estado NEC Trifásico...\n");
+    //--------------------------------------------------------------------------
+    //Alocação de memória das variáveis do estimador de estado
+    nmed = 0;
+    for (i = 0; i < 9; i++){ 
+        for (j = 0; j < 8; j++){
+            nmed = nmed + numeroMedidas[i][j];
+        }
+    }
+
+    nvir = 0;
+    for (i = 0; i < 9; i++){
+        for (j = 0; j < 8; j++){
+            nvir = nvir + numeroVirtuais[i][j];
+        }
+    }
+    nvar = 0;
+    //printf("numero barras: %d\n", numeroBarras);
+    for (i = 0; i < numeroBarras; i++){
+        switch (grafo[i].fases){
+            case 1:
+                nvar +=2;
+                break;
+            case 2:
+                nvar +=2;
+                break;
+            case 3:
+                nvar +=2;
+                break;
+            case 4:
+                nvar +=4;
+                break;    
+            case 5:
+                nvar +=4;
+                break;    
+            case 6:
+                nvar +=4;
+                break;    
+            case 7:
+                nvar +=6;
+                break;    
+        }
+    }    
+    //printf("nmed: %d\n", nmed);
+    //printf("nvar: %d\n", nvar);
+    if ((z = (double *)malloc( (nmed+nvir) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor z!!!!");
+        exit(1); 
+    }
+    if ((h = malloc( (nmed+nvir) * sizeof(double*)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor h!!!!");
+        exit(1); 
+    }
+    if ((x = (double *)malloc( (nvar+nvir) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor x!!!!");
+        exit(1); 
+    }
+    if ((regua = (double *)malloc( (nvar) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor regua!!!!");
+        exit(1); 
+    }
+    
+    H = (double***)malloc(nmed * sizeof(double**)); 
+    for (i = 0; i < nmed; i++){ 
+         H[i] = (double**) malloc(nvar * sizeof(double*));
+         for (j = 0; j < nvar; j++){
+              H[i][j] = &aux;
+         }
+    }
+    C = (double***)malloc(nvir * sizeof(double**));
+    for (i = 0; i < nvir; i ++){
+        C[i] = (double**)malloc(nvar * sizeof(double*));
+        for (j = 0; j < nvar; j++){
+            C[i][j] = &aux;
+        }
+    }    
+}

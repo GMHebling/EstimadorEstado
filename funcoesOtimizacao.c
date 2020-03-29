@@ -2351,23 +2351,25 @@ int otimiza_Gauss_Newton_sparseHachtel_Virtuais(double *z, double **h, double **
     return (conv);
 }
 
-otimiza_NEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2){
-    //matrix jacobiana das medidas pseudo + scada
-    double **H_rf;
-    double **H_aum;
-    //matrix jacobiana das medidas virtuais
+otimizaNEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2){    
     double **C;
+    double **Haum;
     double *Dz;
     double *Dx;
+    double nGx,nFx;
+    double **H_rf;
 
     H_rf = aloca_matriz(nmed, nvar);
-    C = aloca_matrix(nvir, nvar);
-    Dz = aloca_vetor(nmed+nvir);
-    Dx = aloca_vetor(nvar+nvir);
-    H_aum = aloca_matrix(nmed+nvir, nvar+nvir);
+    C = aloca_matriz(nvir, nvar);
+    Dz = aloca_vetor(nmed + nvir);
+    Dx = aloca_vetor(nvar + nvir);
+    Haum = aloca_matriz(nmed + nvir, nvar + nvir);
 
     atualiza_Rede(grafo, numeroBarras); //atualiza a condição da rede conforme o estado atual
     atualiza_Modelo(grafo, numeroBarras, nmed, medidas); // atualiza modelo de medição conforme a condição atual da rede
+
+    int it = 0;
+    int conv = 0; 
 }
 
 
