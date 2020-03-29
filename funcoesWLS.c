@@ -2056,5 +2056,87 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
         for (j = 0; j < nvar; j++){
             C[i][j] = &aux;
         }
+    }
+    j=0;
+    for(i=0;i<numeroBarras;i++){
+        aux = (double) grafo[i].idNo;
+        aux += 0.01;
+        switch (grafo[i].fases){
+            case 1:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 2:
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 3:
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 4:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 5:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 6:
+                regua[j] = aux+0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 7:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;    
+        }
+    }
+    aux = 0;
+    //printf("nmed: %d\n", nmed);
+    //printf("nvar: %d\n", nvar);
+    //Tratamento da referência
+    long int ref_1, ref_2;
+    tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
+    
+    tira_refs_regua(nvar, ref_1, ref_2, regua); 
+    nvar = nvar - (ref_2 - ref_1 +1);  
+    //printf("tira refs\n");
+    //vetor h aponta para a estrutura de dados das medidas
+    for(i=0;i<nmed;i++){
+        h[i] = &medidas[i].h;
+    }
+    //Matriz H aponta para a estrutura de dados das medidas
+    for(i=0;i<nmed;i++){
+        for(j=0;j<medidas[i].nvar;j++){
+            for(r = 0;r<nvar;r++){
+                if (cabs(medidas[i].reguaH[j]-regua[r]) < EPS){
+                    H[i][r] = &medidas[i].H[j];
+                    break;
+                }
+            }
+        }
     }    
 }
