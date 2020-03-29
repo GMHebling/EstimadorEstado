@@ -49,8 +49,10 @@ int main(int argc, char **argv)
     if (verificaDVMED(folder) == 1) {
         numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
         numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+        estimadorNEC(grafo, numeroBarras, medida, virtuais, numeroMedidas, numeroVirtuais, alimentador, numeroAlimentadores, ramo, Sbase/1000);
     } else {
         numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
+        estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
     }
     
     
@@ -65,7 +67,7 @@ int main(int argc, char **argv)
 
     // Estimador WLS Convencional
      
-    estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    
 
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);

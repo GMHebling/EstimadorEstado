@@ -2351,8 +2351,8 @@ int otimiza_Gauss_Newton_sparseHachtel_Virtuais(double *z, double **h, double **
     return (conv);
 }
 
-int otimizaNEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas,DMED *virtuais, long int nvar, long int nmed,long int nvir, double *regua, double *ponto, double tol, long int ref1, long int ref2){    
-    double **C;
+int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas, DMED *virtuais, long int nvir, long int nvar, long int nmed, double *regua_comp, double *ponto, double tol, long int ref1, long int ref2){    
+    double **C_rf;
     double **Haum;
     double *Dz;
     double *Dx;
@@ -2360,7 +2360,7 @@ int otimizaNEC(double *z, double **h, double **c, double **W, GRAFO *grafo, long
     double **H_rf;
 
     H_rf = aloca_matriz(nmed, nvar);
-    C = aloca_matriz(nvir, nvar);
+    C_rf = aloca_matriz(nvir, nvar);
     Dz = aloca_vetor(nmed + nvir);
     Dx = aloca_vetor(nvar + nvir);
     Haum = aloca_matriz(nmed + nvir, nvar + nvir);
