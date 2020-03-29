@@ -450,6 +450,16 @@ void monta_z(double *z, long int nmed, DMED *medidas){
     }    
 }
 
+void monta_z_comVirtuais(double *z, long int nmed, long int nvir, DMED *medidas, DMED *virtuais){
+    int i;
+    for (i=0; i<nmed; i++){
+        z[i] = medidas[i].zmed;
+    }
+    for (i=0; i<nvir; i++){
+        z[i+nmed] = virtuais[i].zmed;
+    }
+}
+
 //Função monta matriz W
 void monta_W(double **W, long int nmed, DMED *medidas){
     int i,j;
@@ -2138,5 +2148,23 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
                 }
             }
         }
-    }    
+    }
+
+    for(i=0;i<nmed;i++){
+        for(j=0;j<virtuais[i].nvar;j++){
+            for(r = 0;r<nvar;r++){
+                if (cabs(virtuais[i].reguaH[j]-regua[r]) < EPS){
+                    C[i][r] = &virtuais[i].H[j];
+                    break;
+                }
+            }
+        }
+    }
+    monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
+    //monta W
+
+    //inicializa primeiros nvar valores do vetor x
+    incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
+    double tol = 0.000001;
+    
 }
