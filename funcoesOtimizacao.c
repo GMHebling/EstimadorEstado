@@ -2358,7 +2358,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     double *Dx;
     double nGx,nFx;
     double **H_rf;
-
+    int i,j,k;
     H_rf = aloca_matriz(nmed, nvar);
     C_rf = aloca_matriz(nvir, nvar);
     Dz = aloca_vetor(nmed + nvir);
@@ -2370,6 +2370,25 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
     int it = 0;
     int conv = 0; 
+
+
+    while (it < 30){
+        atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
+        atualiza_H(grafo, numeroBarras, ramos, virtuais, nvir);
+
+        for (i=0;i<nmed;i++){
+            for(j=0;j<medidas[i].nvar;j++){
+                //H.T * H / (sigma^2)
+                medidas[i].H[j] = (medidas[i].H[j] * medidas[j].H[i])/(medidas[i].sigma * medidas[i].sigma);
+            }
+            //H.T*deltaZ/(sigma^2)
+            Dz[i] = (medidas[j].H[i])*(medidas[i].zmed - medidas[i].h)/(medidas[i].sigma * medidas[i].sigma);
+        }
+    cholmod_triplet *T_nec = NULL;
+    cholmod_dense *b_nec = NULL;
+    cholmod_sparse *A_nec = NULL;
+     
+    }
 }
 
 

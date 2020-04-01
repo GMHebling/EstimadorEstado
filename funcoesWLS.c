@@ -2036,11 +2036,11 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     }    
     //printf("nmed: %d\n", nmed);
     //printf("nvar: %d\n", nvar);
-    if ((z = (double *)malloc( (nmed+nvir) * sizeof(double)))==NULL){
+    if ((z = (double *)malloc( (nmed) * sizeof(double)))==NULL){
         printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor z!!!!");
         exit(1); 
     }
-    if ((h = malloc( (nmed+nvir) * sizeof(double*)))==NULL){
+    if ((h = malloc( (nmed) * sizeof(double*)))==NULL){
         printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor h!!!!");
         exit(1); 
     }
@@ -2161,12 +2161,12 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
         }
     }
     monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
-    //monta W
-
+    //monta W -> H'WH
+    monta_W(W, nmed, medidas);
     //inicializa primeiros nvar valores do vetor x
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     double tol = 0.000001;
 
-    otimizaNEC(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    int conv = otimizaNEC(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
     
 }
