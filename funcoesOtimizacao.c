@@ -2386,10 +2386,69 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         }
     cholmod_triplet *T_nec = NULL;
     cholmod_dense *b_nec = NULL;
+    cholmod_dense *X_nec = NULL;
     cholmod_sparse *A_nec = NULL;
-     
+    cholmod_common Common, *c;
+        
+    c = &Common;
+    cholmod_l_start(c);
+
+
+    T_nec = cholmod_l_allocate_triplet(nmed + nvir, nvar + nvir, (nmed+nvir) * (nvar+nvir), 0, CHOLMOD_REAL, c);
+    A_nec = cholmod_l_allocate_sparse(nmed + nvir, nvar + nvir, (nmed+nvir) * (nvar+nvir), 0, 0, 0, CHOLMOD_REAL, c);
+    b_nec = cholmod_l_allocate_dense(nvar+nvir, 1, nmed+nvir, CHOLMOD_REAL, c);
+    X_nec = cholmod_l_allocate_dense(nvar+nvir, 1, nmed+nvir, CHOLMOD_REAL, c);
+
+    int index = 0;
+       for(int i=0;i<nmed;i++){
+           for(int r = 0;r<nvar;r++){
+               if ((*H[i][r]) != 0){
+                   ((long int*)T_nec->i)[index] = i;
+                    ((long int*)T_nec->j)[index] = r;
+                    ((double*)T_nec->x)[index] = *H[i][r];
+                    T_nec->nnz += 1;
+                    index += 1;
+                }
+            }
+       }
+       for (i=0; i<nvir; i++){
+           for (int r=0; r<nvar; r++){
+               if ((*C[i][r]) != 0){
+                   ((long int*)T_nec->i)[index] = i + nmed;
+                    ((long int*)T_nec->j)[index] = r;
+                    ((double*)T_nec->x)[index] = *C[i][r];
+                    T_nec->nnz += 1;
+                    index += 1;
+               }
+           }
+       }
+
+
+       for (i=0; i<nvar; i++){
+           for (int r=0; r<nvir; r++){
+               if ((*C[i][r]) != 0){
+                   ((long int*)T_nec->i)[index] = i;
+                    ((long int*)T_nec->j)[index] = r + nvar;
+                    ((double*)T_nec->x)[index] = *C[r][i];
+                    T_nec->nnz += 1;
+                    index += 1;
+               }
+           }
+       }
+    
+    for(int i=0;i<nmed;i++){
+            ((double*)b_nec->x)[i] = Dz[i];
+            
+    }
+    for (int i=0; i<nvir; i++){
+        ((double*)b_nec->x)[i+nmed] = virtuais[i].h;
+    }
+    A_nec = cholmod_l_triplet_to_sparse(T_nec, (nmed+nvir)*(nvar+nvir), c);
+    X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_nec, b_nec, c);
+    
     }
 }
+
 
 
 
