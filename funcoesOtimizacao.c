@@ -2399,9 +2399,11 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
     T_nec = cholmod_l_allocate_triplet(nmed + nvir, nvar + nvir, (nmed+nvir) * (nvar+nvir), 0, CHOLMOD_REAL, c);
     A_nec = cholmod_l_allocate_sparse(nmed + nvir, nvar + nvir, (nmed+nvir) * (nvar+nvir), 0, 0, 0, CHOLMOD_REAL, c);
-    b_nec = cholmod_l_allocate_dense(nvar+nvir, 1, nmed+nvir, CHOLMOD_REAL, c);
-    X_nec = cholmod_l_allocate_dense(nvar+nvir, 1, nmed+nvir, CHOLMOD_REAL, c);
+    b_nec = cholmod_l_allocate_dense(nmed+nvir, 1,(nmed+nvir), CHOLMOD_REAL, c);
+    X_nec = cholmod_l_allocate_dense(nvar+nvir, 1, (nvar+nvir), CHOLMOD_REAL, c);
 
+
+    
     int index = 0;
        for(int i=0;i<nmed;i++){
            for(int r = 0;r<nvar;r++){
@@ -2414,6 +2416,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 }
             }
        }
+       
        for (i=0; i<nvir; i++){
            for (int r=0; r<nvar; r++){
                if ((*C[i][r]) != 0){
@@ -2425,11 +2428,11 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                }
            }
        }
-
+        
 
        for (i=0; i<nvar; i++){
            for (int r=0; r<nvir; r++){
-               if ((*C[i][r]) != 0){
+               if ((*C[r][i]) != 0){
                    ((long int*)T_nec->i)[index] = i;
                     ((long int*)T_nec->j)[index] = r + nvar;
                     ((double*)T_nec->x)[index] = *C[r][i];
@@ -2438,7 +2441,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                }
            }
        }
-    
+        
     for(int i=0;i<nmed;i++){
             ((double*)b_nec->x)[i] = Dz[i];
             
@@ -2447,6 +2450,9 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         ((double*)b_nec->x)[i+nmed] = virtuais[i].h;
     }
     A_nec = cholmod_l_triplet_to_sparse(T_nec, (nmed+nvir)*(nvar+nvir), c);
+    //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
+    //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
+    //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
     X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_nec, b_nec, c);
 
     Dx = (double*)X_nec->x;
@@ -2466,7 +2472,9 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         atualiza_estado(grafo, ponto, regua_comp, nvar); //atualiza o estado atual do grafo conforme o vetor x calculado        
         atualiza_Rede(grafo, numeroBarras);
         atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
-        
+        nFx = norma_inf(Dx,nvar);
+        printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t\n",it,nFx);
+
         it++;
         printf(".");
         

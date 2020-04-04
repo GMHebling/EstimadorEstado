@@ -2000,13 +2000,14 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
             nmed = nmed + numeroMedidas[i][j];
         }
     }
-
+    
     nvir = 0;
     for (i = 0; i < 9; i++){
         for (j = 0; j < 8; j++){
             nvir = nvir + numeroVirtuais[i][j];
         }
     }
+    
     nvar = 0;
     //printf("numero barras: %d\n", numeroBarras);
     for (i = 0; i < numeroBarras; i++){
@@ -2033,7 +2034,8 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
                 nvar +=6;
                 break;    
         }
-    }    
+    } 
+     
     //printf("nmed: %d\n", nmed);
     //printf("nvar: %d\n", nvar);
     if ((z = (double *)malloc( (nmed) * sizeof(double)))==NULL){
@@ -2060,6 +2062,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
               H[i][j] = &aux;
          }
     }
+    
     C = (double***)malloc(nvir * sizeof(double**));
     for (i = 0; i < nvir; i ++){
         C[i] = (double**)malloc(nvar * sizeof(double*));
@@ -2067,6 +2070,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
             C[i][j] = &aux;
         }
     }
+    
     j=0;
     for(i=0;i<numeroBarras;i++){
         aux = (double) grafo[i].idNo;
@@ -2125,19 +2129,23 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
         }
     }
     aux = 0;
+    
     //printf("nmed: %d\n", nmed);
     //printf("nvar: %d\n", nvar);
     //Tratamento da referência
     long int ref_1, ref_2;
     tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
+   
     
     tira_refs_regua(nvar, ref_1, ref_2, regua); 
+   
     nvar = nvar - (ref_2 - ref_1 +1);  
     //printf("tira refs\n");
     //vetor h aponta para a estrutura de dados das medidas
     for(i=0;i<nmed;i++){
         h[i] = &medidas[i].h;
     }
+    
     //Matriz H aponta para a estrutura de dados das medidas
     for(i=0;i<nmed;i++){
         for(j=0;j<medidas[i].nvar;j++){
@@ -2149,8 +2157,9 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
             }
         }
     }
+    
 
-    for(i=0;i<nmed;i++){
+    for(i=0;i<nvir;i++){
         for(j=0;j<virtuais[i].nvar;j++){
             for(r = 0;r<nvar;r++){
                 if (cabs(virtuais[i].reguaH[j]-regua[r]) < EPS){
@@ -2160,13 +2169,45 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
             }
         }
     }
+    
     monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
     //monta W -> H'WH
     monta_W(W, nmed, medidas);
     //inicializa primeiros nvar valores do vetor x
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     double tol = 0.000001;
-
+    printf("Alocacao ok\n");
     int conv = otimizaNEC(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    printf("\nTensoes Nodais (p.u.):\n");
+    for(i=0; i<numeroBarras; i++){ 
+        //Retangulares
+        //printf("%d\tVa: %.5lf + j%.5lf\tVb: %.5lf + j%.5lf\tVc: %.5lf + j%.5lf\n",grafo[i].barra->ID,__real__ grafo[i].V[0],__imag__ grafo[i].V[0],__real__ grafo[i].V[1],__imag__ grafo[i].V[1],__real__ grafo[i].V[2],__imag__ grafo[i].V[2]);
+        //Polares
+        switch (grafo[i].fases){
+            case 1:
+                printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI);
+                break;
+            case 2:
+                printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
+                break;
+            case 3:
+                printf("%d\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+                break;
+            case 4:
+                printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
+                break;
+            case 5:
+                printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+                break;
+            case 6:
+                printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+                break;
+            case 7:
+                printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+                break;    
+        }
+    }
+    atualiza_H_ret(grafo, numeroBarras, ramos, medidas, nmed);
+    atualiza_H_ret(grafo, numeroBarras, ramos, virtuais, nvir);
     
 }

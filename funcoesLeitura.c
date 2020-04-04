@@ -216,7 +216,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     //strcat(folder,"/");  
     //strcpy(aux,folder);
     //strcpy(aux2,folder);
-    char aux[200] = "IEEE123/";
+    char aux[200] = "IEEE123DV/";
     strcpy(aux2,aux);
     // Leitura dos dados de barras
     
