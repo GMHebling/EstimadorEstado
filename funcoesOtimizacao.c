@@ -2373,6 +2373,9 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
 
     while (it < 30){
+        if (conv == 1){
+            return conv;
+        }
         atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
         atualiza_H(grafo, numeroBarras, ramos, virtuais, nvir);
 
@@ -2445,8 +2448,34 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     }
     A_nec = cholmod_l_triplet_to_sparse(T_nec, (nmed+nvir)*(nvar+nvir), c);
     X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_nec, b_nec, c);
+
+    Dx = (double*)X_nec->x;
+    for (i=0;i<nvar;i++){
+        ponto[i] = ponto[i] + Dx[i];
+    }
+    for (i=0;i<nvar;i++){
+            if (cabs(Dx[i]) >= tol)
+            {
+                conv = 0;
+                break;
+            }
+            else
+                conv = 1;
+        }
+        
+        atualiza_estado(grafo, ponto, regua_comp, nvar); //atualiza o estado atual do grafo conforme o vetor x calculado        
+        atualiza_Rede(grafo, numeroBarras);
+        atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
+        
+        it++;
+        printf(".");
+        
     
     }
+    atualiza_estado(grafo, ponto, regua_comp, nvar); //atualiza o estado atual do grafo conforme o vetor x calculado        
+    atualiza_Rede(grafo, numeroBarras);
+    atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
+    return conv;
 }
 
 
