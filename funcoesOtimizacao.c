@@ -2385,7 +2385,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         }
     atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
     atualiza_H(grafo, numeroBarras, ramos, virtuais, nvir);
-    
+
     for (i=0;i<nmed;i++){
         for(j=0;j<medidas[i].nvar;j++){
             //H.T * H / (sigma^2)
@@ -2464,7 +2464,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
        for (i=0; i<nvir; i++){
            for (int r=0; r<nvar; r++){
                if ((*C[i][r]) != 0){
-                   ((long int*)T_nec->i)[index] = i + nmed;
+                   ((long int*)T_nec->i)[index] = i + nvar;
                     ((long int*)T_nec->j)[index] = r;
                     ((double*)T_nec->x)[index] = *C[i][r];
                     T_nec->nnz += 1;
