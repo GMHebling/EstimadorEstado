@@ -2395,7 +2395,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         Dz[i] = (medidas[i].zmed - medidas[i].h)/(medidas[i].sigma);
     }
     for (i=0;i<nvir;i++){
-        Dv[i] = virtuais[i].h;
+        Dv[i] = -1*virtuais[i].h;
     }
     float soma;
     float somaDz;
