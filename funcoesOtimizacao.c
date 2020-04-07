@@ -2355,15 +2355,17 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     double **C_rf;
     double **Haum;
     double *Dz;
+    double *Dv;
     double *Dx;
     double nGx,nFx;
     double **H_rf;
     int i,j,k;
     H_rf = aloca_matriz(nmed, nvar);
     C_rf = aloca_matriz(nvir, nvar);
-    Dz = aloca_vetor(nmed + nvir);
+    Dz = aloca_vetor(nmed);
+    Dv = aloca_vetor(nvir);
     Dx = aloca_vetor(nvar + nvir);
-    Haum = aloca_matriz(nmed + nvir, nvar + nvir);
+    Haum = aloca_matriz(nvar, nvar);
 
     atualiza_Rede(grafo, numeroBarras); //atualiza a condição da rede conforme o estado atual
     atualiza_Modelo(grafo, numeroBarras, nmed, medidas); // atualiza modelo de medição conforme a condição atual da rede
@@ -2382,15 +2384,45 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         for (i=0;i<nmed;i++){
             for(j=0;j<medidas[i].nvar;j++){
                 //H.T * H / (sigma^2)
-                medidas[i].H[j] = (medidas[i].H[j] * medidas[j].H[i])/(medidas[i].sigma * medidas[i].sigma);
+                medidas[i].H[j] = (medidas[i].H[j])/(medidas[i].sigma);
             }
             //H.T*deltaZ/(sigma^2)
-            Dz[i] = (medidas[j].H[i])*(medidas[i].zmed - medidas[i].h)/(medidas[i].sigma * medidas[i].sigma);
+            Dz[i] = (medidas[i].zmed - medidas[i].h)/(medidas[i].sigma);
         }
+
+        for (i=0;i<nvir;i++){
+            Dv[i] = virtuais[i].h;
+        }
+    float soma;
+    int _i,_j;
+    for (i=0;i<nmed;i++){
+        for (j=0;j<nvar;j++){
+            H_rf[i][j] = *H[i][j];
+        }
+    }
+    
+    _i = 0;
+    _j = 0;
+    for (i=0;i<nmed;i++){
+        soma = 0;
+        for (j=0;j<nvar;j++){
+            soma += H_rf[i][j]*H_rf[j][i]
+        }
+        Haum[_i][_j] = soma;
+        _j += 1;
+        if (_j == nvar-1){
+            _i += 1;
+        }
+    }
+
+    
+
+        
     cholmod_triplet *T_nec = NULL;
     cholmod_dense *b_nec = NULL;
     cholmod_dense *X_nec = NULL;
     cholmod_sparse *A_nec = NULL;
+    cholmod_factor *L = NULL;
     cholmod_common Common, *c;
         
     c = &Common;
@@ -2441,15 +2473,20 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                }
            }
        }
-        
+    
+    
     for(int i=0;i<nmed;i++){
             ((double*)b_nec->x)[i] = Dz[i];
+            printf("DZ: %f\n", Dz[i]);
             
     }
     for (int i=0; i<nvir; i++){
-        ((double*)b_nec->x)[i+nmed] = virtuais[i].h;
+        ((double*)b_nec->x)[i+nmed] = Dv[i];
     }
     A_nec = cholmod_l_triplet_to_sparse(T_nec, (nmed+nvir)*(nvar+nvir), c);
+    //L = cholmod_l_analyze(A_nec, c);
+    //cholmod_l_factorize(A, L, c);  
+    //X_nec = cholmod_l_solve(CHOLMOD_A, L, b_nec, c); 
     //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
     //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
     //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);

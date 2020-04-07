@@ -2179,34 +2179,34 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     printf("Alocacao ok\n");
     int conv = otimizaNEC(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
     printf("\nTensoes Nodais (p.u.):\n");
-    for(i=0; i<numeroBarras; i++){ 
-        //Retangulares
-        //printf("%d\tVa: %.5lf + j%.5lf\tVb: %.5lf + j%.5lf\tVc: %.5lf + j%.5lf\n",grafo[i].barra->ID,__real__ grafo[i].V[0],__imag__ grafo[i].V[0],__real__ grafo[i].V[1],__imag__ grafo[i].V[1],__real__ grafo[i].V[2],__imag__ grafo[i].V[2]);
-        //Polares
-        switch (grafo[i].fases){
-            case 1:
-                printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI);
-                break;
-            case 2:
-                printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
-                break;
-            case 3:
-                printf("%d\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
-                break;
-            case 4:
-                printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
-                break;
-            case 5:
-                printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
-                break;
-            case 6:
-                printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
-                break;
-            case 7:
-                printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
-                break;    
-        }
-    }
+    //for(i=0; i<numeroBarras; i++){ 
+    //    //Retangulares
+    //    //printf("%d\tVa: %.5lf + j%.5lf\tVb: %.5lf + j%.5lf\tVc: %.5lf + j%.5lf\n",grafo[i].barra->ID,__real__ grafo[i].V[0],__imag__ grafo[i].V[0],__real__ grafo[i].V[1],__imag__ grafo[i].V[1],__real__ grafo[i].V[2],__imag__ grafo[i].V[2]);
+    //    //Polares
+    //    switch (grafo[i].fases){
+    //        case 1:
+    //            printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI);
+    //            break;
+    //        case 2:
+    //            printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
+    //            break;
+    //        case 3:
+    //            printf("%d\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+    //            break;
+    //        case 4:
+    //            printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI);
+    //            break;
+    //        case 5:
+    //            printf("%d\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+    //            break;
+    //        case 6:
+    //            printf("%d\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+    //            break;
+    //        case 7:
+    //            printf("%d\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n",grafo[i].barra->ID,cabs(grafo[i].V[0]),carg(grafo[i].V[0])*180/PI,cabs(grafo[i].V[1]),carg(grafo[i].V[1])*180/PI,cabs(grafo[i].V[2]),carg(grafo[i].V[2])*180/PI);
+    //            break;    
+    //    }
+    //}
     atualiza_H_ret(grafo, numeroBarras, ramos, medidas, nmed);
     atualiza_H_ret(grafo, numeroBarras, ramos, virtuais, nvir);
     
