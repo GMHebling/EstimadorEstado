@@ -1509,9 +1509,9 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
     //--------------------------------------------------------------------------
     //Estimação de Estado    
     monta_z(z,nmed,medidas);
-    //monta_W(NULL,nmed,medidas);
+    monta_W(NULL,nmed,medidas);
     //monta_W_cte(W,nmed,medidas);
-    monta_W_Ident(NULL,nmed,medidas);
+    //monta_W_Ident(NULL,nmed,medidas);
     
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
 //    incializa_vetor_x_leitura(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar); //Função que le de arquivo externo a condição inicial
@@ -1948,7 +1948,8 @@ void fluxoPotencia_NRQR(GRAFO *grafo, long int numeroBarras, DMED *medidas, long
     //--------------------------------------------------------------------------
     //Estimação de Estado - Método de Newton Raphson  
     monta_z(z,nmed,medidas); // para o fluxo somente valores das barras PQ, PV e VTeta devem compor o vetor de medidas
-    monta_W_Ident(NULL,nmed,medidas);
+    monta_W(NULL, nmed, medidas);
+    //monta_W_Ident(NULL,nmed,medidas);
     
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     //incializa_vetor_x_leitura(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar); //Função que le de arquivo externo a condição inicial

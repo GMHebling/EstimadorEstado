@@ -606,6 +606,8 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
     double *b = NULL;
     double *Dx = NULL;
     double **H_rf = NULL;
+    double **H_T = NULL;
+    double **Gain = NULL;
     double *regua = NULL;
     int i,j, conv = 0;
     double nGx,nFx;
@@ -623,7 +625,9 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
     //ALOCAÇÃO
     //
     //----------------------------------------------------------------------------
-    //H_rf = aloca_matriz(nmed,nvar);
+    H_rf = aloca_matriz(nmed,nvar);
+    H_T = aloca_matriz(nvar,nmed);
+    Gain = aloca_matriz(nvar, nvar);
     Dz = aloca_vetor(nmed);
     b = aloca_vetor(nvar);
     rN = aloca_vetor(nmed);
@@ -755,28 +759,44 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         L = cholmod_l_allocate_factor(nmed, c);
         
 
-
+    
+       //for (int i=0;i<nvar;i++){
+       //    for (int j=0; j<nmed; j++){
+       //        H_T[i][j] = *H[j][i];
+       //    }
+       //}
        
+      //  float auxsoma = 0;
+      // for (int k=0;k<nvar;k++){
+      //     for (int i=0;i<nvar;i++){
+      //         auxsoma = 0;
+      //          for (int j=0; j<nmed; j++){
+      //              auxsoma += H_T[k][j]*(*H[j][i]);
+      //          }
+      //          Gain[k][i] = auxsoma;
+      //      }
+      // }
+       //FILE *mat;
+       //mat = fopen("wmat.txt", "w+");
        int index = 0;
        for(int i=0;i<nmed;i++){
            for(int r = 0;r<nvar;r++){
-               if ((*H[i][r]) != 0){
+               if (*H[i][r] != 0){
                    ((long int*)T_SS->i)[index] = i;
                     ((long int*)T_SS->j)[index] = r;
                     ((double*)T_SS->x)[index] = *H[i][r];
-                    //if (escrito == 0){
-                    //    fprintf(f_saida, "%ld %ld %f\n", i, r, *H[i][r]);
-                    //}
-                    //fprintf(f_saida, "%ld %ld %f\n", i, r, *H[i][r]);
-                    //fflush(f_saida);
-                    //
+                    //fprintf(mat,"%ld,%ld,%f\n",i,r,*H[i][r]);
+                    
+                    
                     T_SS->nnz += 1;
                     index += 1;
            }
        }
+       
        //escrito = 1;
        //fclose(f_saida);
        }
+       
        
         
        //escreve o vetor Dz no formato Dense
@@ -785,37 +805,29 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
             
         }
         
-        for  (int i=0;i<nvar;i++){
-            for (int j=0;j<nmed;j++){
-                float aux = 0;
-                aux += (*H[j][i]) * ((double*)b_SS->x)[j];
-                ((double*)b_WLS->x)[i] = aux;
-            }
-            
-        }
+        //for  (int i=0;i<nvar;i++){
+        //    float aux = 0;
+        //    for (int j=0;j<nmed;j++){
+        //        aux += (*H[j][i]) * Dz[j];
+        //        
+        //    }
+        //    ((double*)b_WLS->x)[i] = aux;
+        //    
+        //}
         
         //converte a matrix triplet para sparse
         
-        A_SS = cholmod_l_triplet_to_sparse(T_SS, nmed*nvar, c);
-        A_T = cholmod_l_transpose(A_SS, 2, c);
+        A_SS = cholmod_l_triplet_to_sparse(T_SS, nvar*nvar, c);
+        //A_T = cholmod_l_transpose(A_SS, 2, c);
         
         
-        G_S = cholmod_l_ssmult(A_T, A_SS, 1, true, false, c);
-        L = cholmod_l_analyze(G_S, c);
-        cholmod_l_factorize(G_S, L, c);
+        //G_S = cholmod_l_ssmult(A_T, A_SS, 1, true, false, c);
+        //L = cholmod_l_analyze(A_SS, c);
+        //cholmod_l_factorize(A_SS, L, c);
         
         int m1 [2] = {0,1};
         int m2 [2] = {0,1};
-        //cholmod_l_sdmult(A_T, 0, m1, m2, b_SS, b_WLS, c);
-        //for (int i=0; i<nvar; i++){
-        //    printf("b_WLS %f\n", ((double*)b_WLS->x)[i]);
-        //    
-        //}
-        //b_WLS->xtype = A_SS->xtype;
-
-        //long int supernodes;
-        //supernodes = L->nsuper;
-        //printf("Supernodes: %d\n", supernodes);
+        
 
         cholmod_l_free_triplet(&T_SS, c);
         clock_t WriteMatrix = clock();
