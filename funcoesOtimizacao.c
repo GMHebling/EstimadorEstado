@@ -2423,8 +2423,17 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 soma += H_T[k][i]*H_rf[i][j];
                 somaDz += H_T[k][i]*Dz[i];
             }
-            Haum[k][j] = soma;
-            Dz_aux[k] = somaDz;
+            if (fabs(soma) < 1e-7){
+                Haum[k][j] = 0;
+            } else {
+                Haum[k][j] = 0.0001*soma;
+            }
+            if (fabs(somaDz) < 1e-7){
+                Dz_aux[k] = 0;
+            } else {
+                Dz_aux[k] = 0.0001*somaDz;
+            }
+            
         }
     }  
      
@@ -2486,7 +2495,17 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
            }
        }
     
-    
+    FILE *matNEC;
+    matNEC = fopen("matnec.txt", "w+");
+    for (i=0;i<index;i++){
+        int _i,_j;
+        double v;
+        _i = ((long int*)T_nec->i)[i];
+        _j = ((long int*)T_nec->j)[i];
+        v = ((double*)T_nec->x)[i];
+        fprintf(matNEC, "%d,%d,%f\n", _i,_j,v);
+    }
+
     for(int i=0;i<nvar;i++){
             ((double*)b_nec->x)[i] = Dz_aux[i];
             
@@ -2496,13 +2515,13 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         ((double*)b_nec->x)[i+nvar] = Dv[i];
     }
     A_nec = cholmod_l_triplet_to_sparse(T_nec, (nvar+nvir)*(nvar+nvir), c);
-    //L = cholmod_l_analyze(A_nec, c);
-    //cholmod_l_factorize(A, L, c);  
-    //X_nec = cholmod_l_solve(CHOLMOD_A, L, b_nec, c); 
+    L = cholmod_l_analyze(A_nec, c);
+    cholmod_l_factorize(A_nec, L, c);  
+    X_nec = cholmod_l_solve(CHOLMOD_A, L, b_nec, c); 
     //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
     //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
     //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
-    X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_nec, b_nec, c);
+    //X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_nec, b_nec, c);
 
     Dx = (double*)X_nec->x;
     for (i=0;i<nvar;i++){
