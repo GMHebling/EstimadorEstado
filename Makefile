@@ -4,7 +4,7 @@ LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++
 OBJFILES = main.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
 TARGET = ss
 
-all: build clean
+all: build clean 
 	
 
 build: $(TARGET)
@@ -13,4 +13,4 @@ $(TARGET): $(OBJFILES)
 		$(CC) $(CFLAGS) -o $(TARGET) $(OBJFILES) $(LDFLAGS)
 
 clean:
-	rm -f $(OBJFILES) *~ 
+	clear && rm -f $(OBJFILES) *~ 
