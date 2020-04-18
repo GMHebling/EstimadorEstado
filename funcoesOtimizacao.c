@@ -2508,6 +2508,20 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     {
         if (conv == 1)
         {
+            FILE *res = NULL;
+            res = fopen("residuo.txt", "w+");
+            int ct = 0;
+            for (int i = 0; i<nmed+nvir;i++){
+                if (ct<nmed){
+                    float resid = medidas[ct].zmed - medidas[ct].h;
+                    fprintf(res, "%f\n", resid);
+                } else {
+                    float resid = virtuais[ct].zmed - virtuais[ct].h;
+                    fprintf(res, "%f\n", resid);
+                }
+                ct += 1;
+            }
+            fclose(res);
             return conv;
         }
         atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
@@ -2697,17 +2711,17 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
         horzC = cholmod_l_horzcat(Gaux, sC_T, 1, c);
         A_nec = cholmod_l_vertcat(horzC, sCn, 1, c);
+        T_nec = cholmod_l_sparse_to_triplet(A_nec, c);
 
 
 
+        BOOL write = true;
 
-        BOOL write = false;
-
-        if (write)
+        if (write && it == 0)
         {
             FILE *matNEC;
-            matNEC = fopen("matnec3.txt", "w+");
-            for (i = 0; i < index; i++)
+            matNEC = fopen("matnec_w_cte.txt", "w+");
+            for (i = 0; i < T_nec->nnz; i++)
             {
                 long int _i, _j;
                 double v;
