@@ -2177,9 +2177,18 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     monta_W(NULL, nmed, medidas);
     //monta_W_cte(NULL, nmed, medidas);
     //inicializa primeiros nvar valores do vetor x
+
+    
+//    int conv = otimiza_Gauss_Newton_sparsePCGLS(z, h, H, W, grafo, numeroBarras, ramos, medidas, nvar - 3, nmed, regua, x, tol, ref_1, ref_2)
+    
+
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     double tol = 0.000001;
+    clock_t tIni = clock();
     int conv = otimizaNEC(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    clock_t t1 = clock();
+    double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
+    printf("\nEstimação NEC: %lf",tempoWLS);
     printf("\nTensoes Nodais (p.u.):\n");
     for(i=0; i<numeroBarras; i++){ 
         //Retangulares

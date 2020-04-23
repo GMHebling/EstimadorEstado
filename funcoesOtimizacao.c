@@ -2713,14 +2713,14 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         A_nec = cholmod_l_vertcat(horzC, sCn, 1, c);
         T_nec = cholmod_l_sparse_to_triplet(A_nec, c);
 
-
+        printf("nmed: %d, nvir: %d\n", nmed, nvir);
 
         BOOL write = true;
 
         if (write && it == 0)
         {
             FILE *matNEC;
-            matNEC = fopen("matnec_w_cte.txt", "w+");
+            matNEC = fopen("matnec_w_atual.txt", "w+");
             for (i = 0; i < T_nec->nnz; i++)
             {
                 long int _i, _j;
