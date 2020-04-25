@@ -2526,7 +2526,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         }
         atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
         atualiza_H(grafo, numeroBarras, ramos, virtuais, nvir);
-
+        double max_sigma=0;
         for (i = 0; i < nmed; i++)
         {
             for (j = 0; j < medidas[i].nvar; j++)
@@ -2535,6 +2535,9 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 medidas[i].H[j] = (medidas[i].H[j]) / (medidas[i].sigma);
             }
             //H.T*deltaZ/(sigma^2)
+            if (medidas[i].sigma > max_sigma){
+                max_sigma = medidas[i].sigma;
+            }
             Dz[i] = (medidas[i].zmed - medidas[i].h) / (medidas[i].sigma);
         }
         for (i = 0; i < nvir; i++)
@@ -2544,13 +2547,17 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         double soma;
         float somaDz;
         int _i, _j;
+        //printf("max sigma: %f\n", (max_sigma));
+        double vl = 1;//(max_sigma);//sqrt(1/max_sigma);
+        //printf("vl: %f\n", vl);
         for (i = 0; i < nmed; i++)
         {
             for (j = 0; j < nvar; j++)
             {
-                H_rf[i][j] = *H[i][j];
+                H_rf[i][j] = *H[i][j] * vl;
             }
         }
+        //printf("vl: %f\n", vl);
 
         //transposta da matriz w1/2H
         for (i = 0; i < nvar; i++)
@@ -2560,7 +2567,8 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 H_T[i][j] = H_rf[j][i];
             }
         }
-//
+       //printf("vl: %f\n", vl);
+
         ////multiplica H.T por H
         for (int k = 0; k < nvar; k++)
         {
@@ -2570,7 +2578,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
             {
                 somaDz += H_T[k][i] * Dz[i];
             }
-            Dz_aux[k] = somaDz;
+            Dz_aux[k] =  vl * somaDz;
         }
 //
         cholmod_triplet *T_nec = NULL;
@@ -2720,7 +2728,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         if (write && it == 0)
         {
             FILE *matNEC;
-            matNEC = fopen("matnec_w_atual.txt", "w+");
+            matNEC = fopen("matnec_123_comAlfa_new.txt", "w+");
             for (i = 0; i < T_nec->nnz; i++)
             {
                 long int _i, _j;
@@ -2748,7 +2756,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
         //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
         //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
-        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_METIS, SPQR_NO_TOL, A_nec, b_nec, c);
+        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
 
         Dx = (double *)X_nec->x;
         for (i = 0; i < nvar; i++)

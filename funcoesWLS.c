@@ -2175,7 +2175,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     //monta W -> H'WH
     //monta_W_Ident(NULL, nmed, medidas);
     monta_W(NULL, nmed, medidas);
-    //monta_W_cte(NULL, nmed, medidas);
+    //onta_W_cte(NULL, nmed, medidas);
     //inicializa primeiros nvar valores do vetor x
 
     
@@ -2189,7 +2189,10 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     clock_t t1 = clock();
     double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
     printf("\nEstimação NEC: %lf",tempoWLS);
-    printf("\nTensoes Nodais (p.u.):\n");
+    
+    BOOL printV = false;
+    if (printV){
+        printf("\nTensoes Nodais (p.u.):\n");
     for(i=0; i<numeroBarras; i++){ 
         //Retangulares
         //printf("%d\tVa: %.5lf + j%.5lf\tVb: %.5lf + j%.5lf\tVc: %.5lf + j%.5lf\n",grafo[i].barra->ID,__real__ grafo[i].V[0],__imag__ grafo[i].V[0],__real__ grafo[i].V[1],__imag__ grafo[i].V[1],__real__ grafo[i].V[2],__imag__ grafo[i].V[2]);
@@ -2218,6 +2221,8 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
                 break;    
         }
     }
+    }
+    
     atualiza_H_ret(grafo, numeroBarras, ramos, medidas, nmed);
     atualiza_H_ret(grafo, numeroBarras, ramos, virtuais, nvir);
     
