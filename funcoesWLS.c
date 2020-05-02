@@ -571,12 +571,12 @@ void monta_W_cte(double **W, long int nmed, DMED *medidas){
         }
         //W[i][i] = 1/(pow(medidas[i].sigma,2));
     }
-//    for(i=0;i<nmed;i++){ //Tratamento da medida virtual e medidas proximo de zero
-//        if (cabs(medidas[i].zmed) < 0.00001){
-//            medidas[i].sigma = menorSigma; 
-//            W[i][i] = 1/(pow(medidas[i].sigma,2));
-//        }
-//    }
+    for(i=0;i<nmed;i++){ //Tratamento da medida virtual e medidas proximo de zero
+        if (cabs(medidas[i].zmed) < 0.00001){
+            medidas[i].sigma = menorSigma; 
+            //W[i][i] = 1/(pow(medidas[i].sigma,2));
+        }
+    }
     
 }
 
@@ -1521,8 +1521,8 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
     //Estimação de Estado    
     monta_z(z,nmed,medidas);
     //monta_W(NULL,nmed,medidas);
-    //monta_W_cte(W,nmed,medidas);
-    monta_W_Ident(NULL,nmed,medidas);
+    monta_W_cte(W,nmed,medidas);
+    //monta_W_Ident(NULL,nmed,medidas);
     
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
 //    incializa_vetor_x_leitura(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar); //Função que le de arquivo externo a condição inicial
@@ -1964,7 +1964,7 @@ void fluxoPotencia_NRQR(GRAFO *grafo, long int numeroBarras, DMED *medidas, long
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     //incializa_vetor_x_leitura(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar); //Função que le de arquivo externo a condição inicial
     
-    double tol = 0.0000001;
+    double tol = 0.000001;
     clock_t tIni = clock();
     int conv = otimiza_Gauss_NewtonQR(z, h, H, grafo, numeroBarras, ramos, medidas, nvar-3, nmed, regua, x, tol,ref_1,ref_2);
    
@@ -2175,7 +2175,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     //monta W -> H'WH
     //monta_W_Ident(NULL, nmed, medidas);
     monta_W(NULL, nmed, medidas);
-    //onta_W_cte(NULL, nmed, medidas);
+    //monta_W_cte(NULL, nmed, medidas);
     //inicializa primeiros nvar valores do vetor x
 
     
@@ -2190,7 +2190,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
     printf("\nEstimação NEC: %lf",tempoWLS);
     
-    BOOL printV = false;
+    BOOL printV = true;
     if (printV){
         printf("\nTensoes Nodais (p.u.):\n");
     for(i=0; i<numeroBarras; i++){ 
