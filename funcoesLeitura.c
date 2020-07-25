@@ -29,16 +29,60 @@ char* replace(char *st) {
 char* getfield(char* lin, int num){
     char* tok;
     char *line;
+    char *field;
     line = strdup(lin);
+    // line = strcpy(line,lin);
     //printf("\nteste -  %s",line);
-    tok = strtok(line, ",\t\n\r");
+    tok = strtok(line, " ,\t\n\r");
     while (tok != NULL){
         if (!--num){
             return tok;
         }
-        tok = strtok (NULL, ",\t\n\r");
+        tok = strtok (NULL, " ,\t\n\r");
     }
     return NULL;
+}
+
+// Lê cada campo de uma string separada por vírgula - para inteiro
+int getfield_int(char* lin, int num){
+    char* tok;
+    char *line;
+    int field;
+    line = strdup(lin);
+    // line = strcpy(line,lin);
+    //printf("\nteste -  %s",line);
+    tok = strtok(line, " ,\t\n\r");
+    while (tok != NULL){
+        if (!--num){
+            field = atoi(tok);
+            free(line);
+            return field;
+        }
+        tok = strtok (NULL, " ,\t\n\r");
+    }
+    free(line);
+    return NAN;
+}
+
+// Lê cada campo de uma string separada por vírgula - para inteiro
+double getfield_double(char* lin, int num){
+    char* tok;
+    char *line;
+    double field;
+    line = strdup(lin);
+    // line = strcpy(line,lin);
+    //printf("\nteste -  %s",line);
+    tok = strtok(line, " ,\t\n\r");
+    while (tok != NULL){
+        if (!--num){
+            field = atof(tok);
+            free(line);
+            return field;
+        }
+        tok = strtok (NULL, " ,\t\n\r");
+    }
+    free(line);
+    return NAN;
 }
 
 char* charLigacao(LIGACAO num){
@@ -183,8 +227,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     FILE *arquivo = NULL;
     char linha[1000],*pasta,*folder,aux2[1000],aux[1000];
 //    folder = (char *)malloc(600*sizeof(char));
-    pasta = (char *)malloc(200);
-    folder = (char *)malloc(200);
+    // pasta = (char *)malloc(200*sizeof(char));
+    // folder = (char *)malloc(200*sizeof(char));
     printf("Leitura de dados da rede elétrica...\n");
     
        
@@ -196,8 +240,10 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
             exit(1);
     }
     fgets(linha, 1000, config);
+    sscanf(linha,"%s",folder);
     folder = getfield(linha,1);
     fgets(linha, 1000, config);
+    // sscanf(linha,"%s",pasta);
     pasta = getfield(linha,1);
     printf("Main directory: \n %s \n", folder);
     printf("Data sub-folder: \n %s \n", pasta);
@@ -210,18 +256,20 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
 //    strcpy(folder,"C:/Users/Julio/Dropbox/Doutorado/Codigos/Estimador_Trifasico/");
 //    strcpy(pasta,"IEEE4");
 //    //strcpy(folder,"C:/Users/Julio Massignan/Dropbox/Doutorado/Codigos/Simulador_SD/IEEE34");
-    //printf("TESTE\n");
+    // printf("TESTE\n");
     //strcat(folder,"/");
     strcat(folder,pasta);
     strcat(folder,"/");  
     strcpy(aux,folder);
     strcpy(aux2,folder);
+    // printf("TESTE\n");
     // char aux[200] = "/Applications/Matlab/IEEE342SIM/";
     // strcpy(aux2,aux);
     // Leitura dos dados de barras
-    
+    // printf("teste\n");
+    printf("\nteste\n");
+    // arquivo = fopen(strcat(aux,"DBAR.csv"),"r");
     arquivo = fopen(strcat(aux,"DBAR.csv"),"r");
-
     if(arquivo != NULL)
     {
         leituraDBAR(arquivo,barra, numeroBarras, numeroAlimentadores);
@@ -238,7 +286,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraDSHNT(arquivo,barra, numeroBarras);
-            //printf("DSHNT ok\n");
+            printf("DSHNT ok\n");
             fclose(arquivo);
     }
     
@@ -248,7 +296,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraDGD(arquivo,barra, numeroBarras);
-            //printf("DGD ok\n");
+            printf("DGD ok\n");
             fclose(arquivo);
     }
     
@@ -260,7 +308,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraDLIN(arquivo,ramo, numeroRamos,barra,numeroBarras);
-            //printf("DLIN ok\n");
+            printf("DLIN ok\n");
             fclose(arquivo);
     }
     
@@ -270,7 +318,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraDTRF(arquivo,ramo, numeroRamos,barra,numeroBarras);
-            //printf("DTRF ok\n");
+            printf("DTRF ok\n");
             fclose(arquivo);
     }
     
@@ -280,17 +328,16 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraDREG(arquivo,ramo, numeroRamos,barra,numeroBarras);
-            //printf("DREG ok\n");
+            printf("DREG ok\n");
             fclose(arquivo);
     }
-    
     
     strcpy(aux,aux2);
     arquivo = fopen(strcat(aux,"DSWTC.csv"),"r"); //Le somente se existir o arquivo
     if(arquivo != NULL)
     {
             leituraDSWTC(arquivo,ramo, numeroRamos,barra,numeroBarras);
-            //printf("DSWTC ok\n");
+            printf("DSWTC ok\n");
             fclose(arquivo);
     }
     
@@ -300,10 +347,9 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     if(arquivo != NULL)
     {
             leituraVinicial(arquivo,barra, numeroBarras);
-            //printf("Vinicial ok\n");
+            printf("Vinicial ok\n");
             fclose(arquivo);
     }
-    
     
     folder = getfield(aux2,1);
     return(folder);
@@ -312,26 +358,29 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
 
 //------------------------------------------------------------------------------
 // Leitura de dados de BARRA
-void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int *numeroAlimentadores)
-{
+void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int *numeroAlimentadores){
     char blocoLeitura[2000]; /* Variável para realizar a leitura do bloco de caracteres do arquivo. */
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int contador =0, i, aux, k; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     int carac,numLinhas = 0; /* Variável com o número de linhas do arquivo a serem lidas. */
     double PA,PB,PC,QA,QB,QC;
-    dados = (char *)malloc(100);
+    
+    // dados = (char *)malloc(100);
     //Aloca na memória espaço para as barras
     while ((carac = fgetc(arquivo)) != EOF) {
       if (carac == '\n')
         numLinhas++;
     }
     rewind(arquivo);
-    if (((*barras) = (DBAR *)malloc( (numLinhas+1) * sizeof(DBAR)))==NULL)
+    printf("teste %d\n",numLinhas);
+        
+    
+    if (((*barras) = (DBAR *)malloc( (numLinhas + 1) * sizeof(DBAR)))==NULL)
     {
         printf("Erro -- Nao foi possivel alocar espaco de memoria para as barras !!!!");
         exit(1); 
     }
-    //printf("numero linhas: %d\n", numLinhas);
+    // printf("teste %d\n",numLinhas);
     // Le o arquivo de curva de cargas até o fim
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         
@@ -341,17 +390,17 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
         //Verifica se a barra já foi criada
         aux = -1;
         for (i=0;i<contador;i++){
-            if ((*barras)[i].ID == atoi(getfield(dados,1))){
+            if ((*barras)[i].ID == (getfield_int(dados,1))){
                 aux = i;
             }
         }
         
         if (aux == -1){ //Criando novo DBAR
-            (*barras)[contador].ID = atoi(getfield(dados,1));
+            (*barras)[contador].ID = (getfield_int(dados,1));
             (*barras)[contador].i = contador;
-            (*barras)[contador].ligacao = atoi(getfield(dados,2));
-            (*barras)[contador].fases = atoi(getfield(dados,3));
-            (*barras)[contador].Vbase = atof(getfield(dados,4))/pow(3,0.5);
+            (*barras)[contador].ligacao = (getfield_int(dados,2));
+            (*barras)[contador].fases = (getfield_int(dados,3));
+            (*barras)[contador].Vbase = (getfield_double(dados,4))/pow(3,0.5);
             (*barras)[contador].tipo = 0;
             
             //(*barras)[contador].loads = (DLOAD *)malloc( 1 * sizeof(DLOAD));
@@ -367,12 +416,12 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
             
             
             //Leitura das Cargas
-            PA = atof(getfield(dados,5));
-            PB = atof(getfield(dados,6));
-            PC = atof(getfield(dados,7));
-            QA = atof(getfield(dados,8));
-            QB = atof(getfield(dados,9));
-            QC = atof(getfield(dados,10));
+            PA = (getfield_double(dados,5));
+            PB = (getfield_double(dados,6));
+            PC = (getfield_double(dados,7));
+            QA = (getfield_double(dados,8));
+            QB = (getfield_double(dados,9));
+            QC = (getfield_double(dados,10));
             
             if ((PA != 0) || (PB != 0) || (PC != 0) || (QA != 0) || (QB != 0) || (QC != 0)){
                 //Inseri um valor de load
@@ -388,7 +437,7 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
                 (*barras)[contador].loads[k].Vbase = (*barras)[contador].Vbase;
                 (*barras)[contador].loads[k].fases = (*barras)[contador].fases;
                 (*barras)[contador].loads[k].lig = (*barras)[contador].ligacao;
-                (*barras)[contador].loads[k].ZIP = atof(getfield(dados,11));
+                (*barras)[contador].loads[k].ZIP = (getfield_double(dados,11));
                 
                 (*barras)[contador].loads[k].Pnom[0] = PA;
                 (*barras)[contador].loads[k].Pnom[1] = PB;
@@ -400,16 +449,16 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
             }
             
             //Leitura da Barra de Referência
-            if (getfield(dados,13) != NULL){
+            if (!isnan(getfield_double(dados,13))){
                 (*barras)[contador].tipo = 2;
                 numeroAlimentadores[0]++;
                 
-                double VA = atof(getfield(dados,12));
-                double VB = atof(getfield(dados,13));
-                double VC = atof(getfield(dados,14));
-                double TA = atof(getfield(dados,15));
-                double TB = atof(getfield(dados,16));
-                double TC = atof(getfield(dados,17));
+                double VA = (getfield_double(dados,12));
+                double VB = (getfield_double(dados,13));
+                double VC = (getfield_double(dados,14));
+                double TA = (getfield_double(dados,15));
+                double TB = (getfield_double(dados,16));
+                double TC = (getfield_double(dados,17));
                 
                 __real__ (*barras)[contador].Vref[0] = VA*cos(TA*M_PI/180);
                 __imag__ (*barras)[contador].Vref[0] = VA*sin(TA*M_PI/180);
@@ -428,12 +477,12 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
         }
         else{ // Inserindo nova carga em DBAR já existente
             //Leitura das Cargas
-            PA = atof(getfield(dados,5));
-            PB = atof(getfield(dados,6));
-            PC = atof(getfield(dados,7));
-            QA = atof(getfield(dados,8));
-            QB = atof(getfield(dados,9));
-            QC = atof(getfield(dados,10));
+            PA = (getfield_double(dados,5));
+            PB = (getfield_double(dados,6));
+            PC = (getfield_double(dados,7));
+            QA = (getfield_double(dados,8));
+            QB = (getfield_double(dados,9));
+            QC = (getfield_double(dados,10));
                       
             if ((PA != 0) || (PB != 0) || (PC != 0) || (QA != 0) || (QB != 0) || (QC != 0)){
                 //Inseri um valor de load
@@ -445,10 +494,10 @@ void leituraDBAR(FILE *arquivo, DBAR **barras, long int *numeroBarras, long int 
                 }*/
                 k = (*barras)[aux].nloads - 1;
                 (*barras)[aux].loads[k].ID = (*barras)[aux].ID;
-                (*barras)[aux].loads[k].lig = atoi(getfield(dados,2));
-                (*barras)[aux].loads[k].fases = atoi(getfield(dados,3));
-                (*barras)[aux].loads[k].Vbase = atof(getfield(dados,4));
-                (*barras)[aux].loads[k].ZIP = atof(getfield(dados,11));
+                (*barras)[aux].loads[k].lig = (getfield_int(dados,2));
+                (*barras)[aux].loads[k].fases = (getfield_int(dados,3));
+                (*barras)[aux].loads[k].Vbase = (getfield_double(dados,4));
+                (*barras)[aux].loads[k].ZIP = (getfield_double(dados,11));
                 
                 (*barras)[aux].loads[k].Pnom[0] = PA;
                 (*barras)[aux].loads[k].Pnom[1] = PB;
@@ -471,7 +520,7 @@ void leituraDSHNT(FILE *arquivo, DBAR **barras, long int *numeroBarras){
     char blocoLeitura[2000]; /* Variável para realizar a leitura do bloco de caracteres do arquivo. */
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int i, aux, k; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     // Le o arquivo de curva de cargas até o fim
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
@@ -479,7 +528,7 @@ void leituraDSHNT(FILE *arquivo, DBAR **barras, long int *numeroBarras){
         //Verifica se a barra já foi criada
         aux = -1;
         for (i=0;i<numeroBarras[0];i++){
-            if ((*barras)[i].ID == atoi(getfield(dados,1))){
+            if ((*barras)[i].ID == (getfield_int(dados,1))){
                 aux = i;
             }
         }
@@ -493,21 +542,21 @@ void leituraDSHNT(FILE *arquivo, DBAR **barras, long int *numeroBarras){
             k = (*barras)[aux].nshunts - 1;
 
             (*barras)[aux].shunts[k].ID = (*barras)[aux].ID;
-            (*barras)[aux].shunts[k].lig = atoi(getfield(dados,2));
-            (*barras)[aux].shunts[k].fases = atoi(getfield(dados,3));
-            (*barras)[aux].shunts[k].Vbase = atof(getfield(dados,4));
+            (*barras)[aux].shunts[k].lig = (getfield_int(dados,2));
+            (*barras)[aux].shunts[k].fases = (getfield_int(dados,3));
+            (*barras)[aux].shunts[k].Vbase = (getfield_double(dados,4));
 
-            (*barras)[aux].shunts[k].Qnom[0] = atof(getfield(dados,5));
-            (*barras)[aux].shunts[k].Qnom[1] = atof(getfield(dados,6));
-            (*barras)[aux].shunts[k].Qnom[2] = atof(getfield(dados,7));
-            (*barras)[aux].shunts[k].controle = atoi(getfield(dados,8));
+            (*barras)[aux].shunts[k].Qnom[0] = (getfield_double(dados,5));
+            (*barras)[aux].shunts[k].Qnom[1] = (getfield_double(dados,6));
+            (*barras)[aux].shunts[k].Qnom[2] = (getfield_double(dados,7));
+            (*barras)[aux].shunts[k].controle = (getfield_int(dados,8));
 
             if (getfield(dados,10) != NULL){
-                (*barras)[aux].shunts[k].num = atoi(getfield(dados,9));
-                (*barras)[aux].shunts[k].DV = atof(getfield(dados,10));
-                (*barras)[aux].shunts[k].Vset[0] = atof(getfield(dados,11));
-                (*barras)[aux].shunts[k].Vset[1] = atof(getfield(dados,12));
-                (*barras)[aux].shunts[k].Vset[2] = atof(getfield(dados,13));
+                (*barras)[aux].shunts[k].num = (getfield_int(dados,9));
+                (*barras)[aux].shunts[k].DV = (getfield_double(dados,10));
+                (*barras)[aux].shunts[k].Vset[0] = (getfield_double(dados,11));
+                (*barras)[aux].shunts[k].Vset[1] = (getfield_double(dados,12));
+                (*barras)[aux].shunts[k].Vset[2] = (getfield_double(dados,13));
             }
         }
     }
@@ -519,7 +568,7 @@ void leituraDGD(FILE *arquivo, DBAR **barras, long int *numeroBarras){
     char blocoLeitura[2000]; /* Variável para realizar a leitura do bloco de caracteres do arquivo. */
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int i, aux, k; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     // Le o arquivo de curva de cargas até o fim
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
@@ -527,7 +576,7 @@ void leituraDGD(FILE *arquivo, DBAR **barras, long int *numeroBarras){
         //Verifica se a barra já foi criada
         aux = -1;
         for (i=0;i<numeroBarras[0];i++){
-            if ((*barras)[i].ID == atoi(getfield(dados,1))){
+            if ((*barras)[i].ID == (getfield_int(dados,1))){
                 aux = i;
             }
         }
@@ -541,26 +590,26 @@ void leituraDGD(FILE *arquivo, DBAR **barras, long int *numeroBarras){
             k = (*barras)[aux].ngds - 1;
 
             (*barras)[aux].gds[k].ID = (*barras)[aux].ID;
-            (*barras)[aux].gds[k].lig = atoi(getfield(dados,2));
-            (*barras)[aux].gds[k].fases = atoi(getfield(dados,3));
-            (*barras)[aux].gds[k].Vbase = atof(getfield(dados,4));
-            (*barras)[aux].gds[k].Snominal = atof(getfield(dados,5));
+            (*barras)[aux].gds[k].lig = (getfield_int(dados,2));
+            (*barras)[aux].gds[k].fases = (getfield_int(dados,3));
+            (*barras)[aux].gds[k].Vbase = (getfield_double(dados,4));
+            (*barras)[aux].gds[k].Snominal = (getfield_double(dados,5));
 
-            (*barras)[aux].gds[k].Pnom[0] = atof(getfield(dados,6));
-            (*barras)[aux].gds[k].Pnom[1] = atof(getfield(dados,7));
-            (*barras)[aux].gds[k].Pnom[2] = atof(getfield(dados,8));
-            (*barras)[aux].gds[k].Qnom[0] = atof(getfield(dados,9));
-            (*barras)[aux].gds[k].Qnom[1] = atof(getfield(dados,10));
-            (*barras)[aux].gds[k].Qnom[2] = atof(getfield(dados,11));
-            (*barras)[aux].gds[k].controle = atoi(getfield(dados,12));
+            (*barras)[aux].gds[k].Pnom[0] = (getfield_double(dados,6));
+            (*barras)[aux].gds[k].Pnom[1] = (getfield_double(dados,7));
+            (*barras)[aux].gds[k].Pnom[2] = (getfield_double(dados,8));
+            (*barras)[aux].gds[k].Qnom[0] = (getfield_double(dados,9));
+            (*barras)[aux].gds[k].Qnom[1] = (getfield_double(dados,10));
+            (*barras)[aux].gds[k].Qnom[2] = (getfield_double(dados,11));
+            (*barras)[aux].gds[k].controle = (getfield_int(dados,12));
 
             if (getfield(dados,14) != NULL){
-                (*barras)[aux].gds[k].Qmin = atof(getfield(dados,13));
-                (*barras)[aux].gds[k].Qmax = atof(getfield(dados,14));
-                (*barras)[aux].gds[k].Vset[0] = atof(getfield(dados,15));
-                (*barras)[aux].gds[k].Vset[1] = atof(getfield(dados,16));
-                (*barras)[aux].gds[k].Vset[2] = atof(getfield(dados,17));
-                (*barras)[aux].gds[k].controlePV = atoi(getfield(dados,18));
+                (*barras)[aux].gds[k].Qmin = (getfield_double(dados,13));
+                (*barras)[aux].gds[k].Qmax = (getfield_double(dados,14));
+                (*barras)[aux].gds[k].Vset[0] = (getfield_double(dados,15));
+                (*barras)[aux].gds[k].Vset[1] = (getfield_double(dados,16));
+                (*barras)[aux].gds[k].Vset[2] = (getfield_double(dados,17));
+                (*barras)[aux].gds[k].controlePV = (getfield_int(dados,18));
             }
         }
     }
@@ -575,7 +624,7 @@ void leituraDLIN(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     long int contador =0, i, aux; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     int carac,numLinhas = 0; /* Variável com o número de linhas do arquivo a serem lidas. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     
     //Aloca na memória espaço para as linhas
     while ((carac = fgetc(arquivo)) != EOF) {
@@ -593,11 +642,11 @@ void leituraDLIN(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
         
-        (*ramos)[contador].DE = atoi(getfield(dados,1));
-        (*ramos)[contador].PARA = atoi(getfield(dados,2));
+        (*ramos)[contador].DE = (getfield_int(dados,1));
+        (*ramos)[contador].PARA = (getfield_int(dados,2));
         (*ramos)[contador].tipo = 0;
         (*ramos)[contador].estado = 1;
-        (*ramos)[contador].fases = atoi(getfield(dados,3));
+        (*ramos)[contador].fases = (getfield_int(dados,3));
                 
         for(i=0;i<numeroBarras[0];i++){
             if((*ramos)[contador].DE == (*barras)[i].ID ){
@@ -609,27 +658,27 @@ void leituraDLIN(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
         }
         
         //Preenche o (*ramos)[contador].linha
-        (*ramos)[contador].linha.fases = atoi(getfield(dados,3));
-        (*ramos)[contador].linha.comprimento = atof(getfield(dados,4));
-        double comp = atof(getfield(dados,4));
-        __real__ (*ramos)[contador].linha.Zaa = comp*atof(getfield(dados,5));
-        __imag__ (*ramos)[contador].linha.Zaa = comp*atof(getfield(dados,6));
-        __real__ (*ramos)[contador].linha.Zab = comp*atof(getfield(dados,7));
-        __imag__ (*ramos)[contador].linha.Zab = comp*atof(getfield(dados,8));
-        __real__ (*ramos)[contador].linha.Zac = comp*atof(getfield(dados,9));
-        __imag__ (*ramos)[contador].linha.Zac = comp*atof(getfield(dados,10));
-        __real__ (*ramos)[contador].linha.Zbb = comp*atof(getfield(dados,11));
-        __imag__ (*ramos)[contador].linha.Zbb = comp*atof(getfield(dados,12));
-        __real__ (*ramos)[contador].linha.Zbc = comp*atof(getfield(dados,13));
-        __imag__ (*ramos)[contador].linha.Zbc = comp*atof(getfield(dados,14));
-        __real__ (*ramos)[contador].linha.Zcc = comp*atof(getfield(dados,15));
-        __imag__ (*ramos)[contador].linha.Zcc = comp*atof(getfield(dados,16));
-        (*ramos)[contador].linha.Baa = comp*atof(getfield(dados,17))/1000000;
-        (*ramos)[contador].linha.Bab = comp*atof(getfield(dados,18))/1000000;
-        (*ramos)[contador].linha.Bac = comp*atof(getfield(dados,19))/1000000;
-        (*ramos)[contador].linha.Bbb = comp*atof(getfield(dados,20))/1000000;
-        (*ramos)[contador].linha.Bbc = comp*atof(getfield(dados,21))/1000000;
-        (*ramos)[contador].linha.Bcc = comp*atof(getfield(dados,22))/1000000;
+        (*ramos)[contador].linha.fases = (getfield_int(dados,3));
+        (*ramos)[contador].linha.comprimento = (getfield_double(dados,4));
+        double comp = (getfield_double(dados,4));
+        __real__ (*ramos)[contador].linha.Zaa = comp*(getfield_double(dados,5));
+        __imag__ (*ramos)[contador].linha.Zaa = comp*(getfield_double(dados,6));
+        __real__ (*ramos)[contador].linha.Zab = comp*(getfield_double(dados,7));
+        __imag__ (*ramos)[contador].linha.Zab = comp*(getfield_double(dados,8));
+        __real__ (*ramos)[contador].linha.Zac = comp*(getfield_double(dados,9));
+        __imag__ (*ramos)[contador].linha.Zac = comp*(getfield_double(dados,10));
+        __real__ (*ramos)[contador].linha.Zbb = comp*(getfield_double(dados,11));
+        __imag__ (*ramos)[contador].linha.Zbb = comp*(getfield_double(dados,12));
+        __real__ (*ramos)[contador].linha.Zbc = comp*(getfield_double(dados,13));
+        __imag__ (*ramos)[contador].linha.Zbc = comp*(getfield_double(dados,14));
+        __real__ (*ramos)[contador].linha.Zcc = comp*(getfield_double(dados,15));
+        __imag__ (*ramos)[contador].linha.Zcc = comp*(getfield_double(dados,16));
+        (*ramos)[contador].linha.Baa = comp*(getfield_double(dados,17))/1000000;
+        (*ramos)[contador].linha.Bab = comp*(getfield_double(dados,18))/1000000;
+        (*ramos)[contador].linha.Bac = comp*(getfield_double(dados,19))/1000000;
+        (*ramos)[contador].linha.Bbb = comp*(getfield_double(dados,20))/1000000;
+        (*ramos)[contador].linha.Bbc = comp*(getfield_double(dados,21))/1000000;
+        (*ramos)[contador].linha.Bcc = comp*(getfield_double(dados,22))/1000000;
         
         contador++;     
         
@@ -646,7 +695,7 @@ void leituraDTRF(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int contador =0, i, aux; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     int carac,numLinhas = 0; /* Variável com o número de linhas do arquivo a serem lidas. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     
     //Aloca na memória espaço para os trafos
     while ((carac = fgetc(arquivo)) != EOF) {
@@ -666,11 +715,11 @@ void leituraDTRF(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
         
-        (*ramos)[contador].DE = atoi(getfield(dados,1));
-        (*ramos)[contador].PARA = atoi(getfield(dados,2));
+        (*ramos)[contador].DE = (getfield_int(dados,1));
+        (*ramos)[contador].PARA = (getfield_int(dados,2));
         (*ramos)[contador].tipo = 1;
         (*ramos)[contador].estado = 1;
-        (*ramos)[contador].fases = atoi(getfield(dados,3));
+        (*ramos)[contador].fases = (getfield_int(dados,3));
         
         for(i=0;i<numeroBarras[0];i++){
             if((*ramos)[contador].DE == (*barras)[i].ID ){
@@ -682,17 +731,17 @@ void leituraDTRF(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
         }
         
         //Preencher o (*ramos)[contador].trafo
-        (*ramos)[contador].trafo.fases = atoi(getfield(dados,3));
-        (*ramos)[contador].trafo.Vpri = atof(getfield(dados,4));
-        (*ramos)[contador].trafo.Vsec = atof(getfield(dados,5));
-        (*ramos)[contador].trafo.Snominal = atof(getfield(dados,6));
-        (*ramos)[contador].trafo.R = atof(getfield(dados,7)) * pow((*ramos)[contador].trafo.Vsec,2)/((*ramos)[contador].trafo.Snominal*1000)/3; //R*(Vpri^2/(S*1000))
-        (*ramos)[contador].trafo.X = atof(getfield(dados,8)) * pow((*ramos)[contador].trafo.Vsec,2)/((*ramos)[contador].trafo.Snominal*1000)/3;
-        (*ramos)[contador].trafo.lig_pri = atoi(getfield(dados,9));
-        (*ramos)[contador].trafo.lig_sec = atoi(getfield(dados,10));
-        (*ramos)[contador].trafo.defasamento = atoi(getfield(dados,11));
-        (*ramos)[contador].trafo.tap_pri = atof(getfield(dados,12));
-        (*ramos)[contador].trafo.tap_sec = atof(getfield(dados,13));
+        (*ramos)[contador].trafo.fases = (getfield_int(dados,3));
+        (*ramos)[contador].trafo.Vpri = (getfield_double(dados,4));
+        (*ramos)[contador].trafo.Vsec = (getfield_double(dados,5));
+        (*ramos)[contador].trafo.Snominal = (getfield_double(dados,6));
+        (*ramos)[contador].trafo.R = (getfield_double(dados,7)) * pow((*ramos)[contador].trafo.Vsec,2)/((*ramos)[contador].trafo.Snominal*1000)/3; //R*(Vpri^2/(S*1000))
+        (*ramos)[contador].trafo.X = (getfield_double(dados,8)) * pow((*ramos)[contador].trafo.Vsec,2)/((*ramos)[contador].trafo.Snominal*1000)/3;
+        (*ramos)[contador].trafo.lig_pri = (getfield_int(dados,9));
+        (*ramos)[contador].trafo.lig_sec = (getfield_int(dados,10));
+        (*ramos)[contador].trafo.defasamento = (getfield_int(dados,11));
+        (*ramos)[contador].trafo.tap_pri = (getfield_double(dados,12));
+        (*ramos)[contador].trafo.tap_sec = (getfield_double(dados,13));
               
         contador++;
     }
@@ -707,7 +756,7 @@ void leituraDREG(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int contador =0, i, aux; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     int carac,numLinhas = 0; /* Variável com o número de linhas do arquivo a serem lidas. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     
     //Aloca na memória espaço para os reguladores
     while ((carac = fgetc(arquivo)) != EOF) {
@@ -725,11 +774,11 @@ void leituraDREG(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
         
-        (*ramos)[contador].DE = atoi(getfield(dados,1));
-        (*ramos)[contador].PARA = atoi(getfield(dados,2));
+        (*ramos)[contador].DE = (getfield_int(dados,1));
+        (*ramos)[contador].PARA = (getfield_int(dados,2));
         (*ramos)[contador].tipo = 2;
         (*ramos)[contador].estado = 1;
-        (*ramos)[contador].fases = atoi(getfield(dados,3));
+        (*ramos)[contador].fases = (getfield_int(dados,3));
         
         for(i=0;i<numeroBarras[0];i++){
             if((*ramos)[contador].DE == (*barras)[i].ID ){
@@ -741,43 +790,43 @@ void leituraDREG(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
         }
         
         //Preencher o (*ramos)[contador].regulador
-        (*ramos)[contador].regulador.fases = atoi(getfield(dados,3));
-        (*ramos)[contador].regulador.Vnom = atof(getfield(dados,4));
-        (*ramos)[contador].regulador.regulacao = atof(getfield(dados,5));
-        (*ramos)[contador].regulador.ntaps = atoi(getfield(dados,6));
-        (*ramos)[contador].regulador.Snominal = atof(getfield(dados,7));
-        (*ramos)[contador].regulador.R = atof(getfield(dados,8)) * pow((*ramos)[contador].regulador.Vnom,2)/((*ramos)[contador].regulador.Snominal*1000)/3;
-        (*ramos)[contador].regulador.X = atof(getfield(dados,9)) * pow((*ramos)[contador].regulador.Vnom,2)/((*ramos)[contador].regulador.Snominal*1000)/3;
-        (*ramos)[contador].regulador.lig = atoi(getfield(dados,10));
-        (*ramos)[contador].regulador.TP = atof(getfield(dados,11));
-        (*ramos)[contador].regulador.TC = atof(getfield(dados,12));
-        (*ramos)[contador].regulador.deltaV = atof(getfield(dados,13));
-        (*ramos)[contador].regulador.R1 = atof(getfield(dados,14));
-        (*ramos)[contador].regulador.X1 = atof(getfield(dados,15));
-        (*ramos)[contador].regulador.R2 = atof(getfield(dados,16));
-        (*ramos)[contador].regulador.X2 = atof(getfield(dados,17));
-        (*ramos)[contador].regulador.R3 = atof(getfield(dados,18));
-        (*ramos)[contador].regulador.X3 = atof(getfield(dados,19));
-        (*ramos)[contador].regulador.V1 = atof(getfield(dados,20));
-        (*ramos)[contador].regulador.V2 = atof(getfield(dados,21));
-        (*ramos)[contador].regulador.V3 = atof(getfield(dados,22));
-        (*ramos)[contador].regulador.controle = atoi(getfield(dados,23));
-        (*ramos)[contador].regulador.tap[0] = atof(getfield(dados,24));
-        (*ramos)[contador].regulador.tap[1] = atof(getfield(dados,25));
-        (*ramos)[contador].regulador.tap[2] = atof(getfield(dados,26));
+        (*ramos)[contador].regulador.fases = (getfield_int(dados,3));
+        (*ramos)[contador].regulador.Vnom = (getfield_double(dados,4));
+        (*ramos)[contador].regulador.regulacao = (getfield_double(dados,5));
+        (*ramos)[contador].regulador.ntaps = (getfield_int(dados,6));
+        (*ramos)[contador].regulador.Snominal = (getfield_double(dados,7));
+        (*ramos)[contador].regulador.R = (getfield_double(dados,8)) * pow((*ramos)[contador].regulador.Vnom,2)/((*ramos)[contador].regulador.Snominal*1000)/3;
+        (*ramos)[contador].regulador.X = (getfield_double(dados,9)) * pow((*ramos)[contador].regulador.Vnom,2)/((*ramos)[contador].regulador.Snominal*1000)/3;
+        (*ramos)[contador].regulador.lig = (getfield_int(dados,10));
+        (*ramos)[contador].regulador.TP = (getfield_double(dados,11));
+        (*ramos)[contador].regulador.TC = (getfield_double(dados,12));
+        (*ramos)[contador].regulador.deltaV = (getfield_double(dados,13));
+        (*ramos)[contador].regulador.R1 = (getfield_double(dados,14));
+        (*ramos)[contador].regulador.X1 = (getfield_double(dados,15));
+        (*ramos)[contador].regulador.R2 = (getfield_double(dados,16));
+        (*ramos)[contador].regulador.X2 = (getfield_double(dados,17));
+        (*ramos)[contador].regulador.R3 = (getfield_double(dados,18));
+        (*ramos)[contador].regulador.X3 = (getfield_double(dados,19));
+        (*ramos)[contador].regulador.V1 = (getfield_double(dados,20));
+        (*ramos)[contador].regulador.V2 = (getfield_double(dados,21));
+        (*ramos)[contador].regulador.V3 = (getfield_double(dados,22));
+        (*ramos)[contador].regulador.controle = (getfield_int(dados,23));
+        (*ramos)[contador].regulador.tap[0] = (getfield_double(dados,24));
+        (*ramos)[contador].regulador.tap[1] = (getfield_double(dados,25));
+        (*ramos)[contador].regulador.tap[2] = (getfield_double(dados,26));
         
         //Se tiver parametros de controle reverso
         /*
-        (*ramos)[contador].regulador.deltaVr = atof(getfield(dados,27));
-        (*ramos)[contador].regulador.R1r = atof(getfield(dados,28));
-        (*ramos)[contador].regulador.X1r = atof(getfield(dados,29));
-        (*ramos)[contador].regulador.R2r = atof(getfield(dados,30));
-        (*ramos)[contador].regulador.X2r = atof(getfield(dados,31));
-        (*ramos)[contador].regulador.R3r = atof(getfield(dados,32));
-        (*ramos)[contador].regulador.X3r = atof(getfield(dados,33));
-        (*ramos)[contador].regulador.V1r = atof(getfield(dados,34));
-        (*ramos)[contador].regulador.V2r = atof(getfield(dados,35));
-        (*ramos)[contador].regulador.V3r = atof(getfield(dados,36));
+        (*ramos)[contador].regulador.deltaVr = (getfield_double(dados,27));
+        (*ramos)[contador].regulador.R1r = (getfield_double(dados,28));
+        (*ramos)[contador].regulador.X1r = (getfield_double(dados,29));
+        (*ramos)[contador].regulador.R2r = (getfield_double(dados,30));
+        (*ramos)[contador].regulador.X2r = (getfield_double(dados,31));
+        (*ramos)[contador].regulador.R3r = (getfield_double(dados,32));
+        (*ramos)[contador].regulador.X3r = (getfield_double(dados,33));
+        (*ramos)[contador].regulador.V1r = (getfield_double(dados,34));
+        (*ramos)[contador].regulador.V2r = (getfield_double(dados,35));
+        (*ramos)[contador].regulador.V3r = (getfield_double(dados,36));
         */
         contador++;
     }
@@ -792,7 +841,7 @@ void leituraDSWTC(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **bar
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int contador =0, i, aux; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     int carac,numLinhas = 0; /* Variável com o número de linhas do arquivo a serem lidas. */
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     
     //Aloca na memória espaço para os trafos
     while ((carac = fgetc(arquivo)) != EOF) {
@@ -812,8 +861,8 @@ void leituraDSWTC(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **bar
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
         
-        (*ramos)[contador].DE = atoi(getfield(dados,1));
-        (*ramos)[contador].PARA = atoi(getfield(dados,2));
+        (*ramos)[contador].DE = (getfield_int(dados,1));
+        (*ramos)[contador].PARA = (getfield_int(dados,2));
         (*ramos)[contador].tipo = 3;
         
         for(i=0;i<numeroBarras[0];i++){
@@ -824,8 +873,8 @@ void leituraDSWTC(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **bar
                 (*ramos)[contador].m = (*barras)[i].i;
             }
         }
-        (*ramos)[contador].fases = atoi(getfield(dados,3));
-        (*ramos)[contador].estado = atoi(getfield(dados,4));
+        (*ramos)[contador].fases = (getfield_int(dados,3));
+        (*ramos)[contador].estado = (getfield_int(dados,4));
         
         contador++;
     }
@@ -840,7 +889,7 @@ void leituraVinicial(FILE *arquivo, DBAR **barras, long int *numeroBarras){
     char *dados; /* Variável do tipo ponteiro para char, utilizada para alterar o ponteiro da string lida do arquivo de forma a realizar o loop no sscanf. */
     int i, aux, k; /* Variáveis contadores para percorrer o arquivo e a string de leitura. */
     double Va,Vb,Vc,Ta,Tb,Tc;
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     // Le o arquivo de curva de cargas até o fim
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
@@ -848,17 +897,17 @@ void leituraVinicial(FILE *arquivo, DBAR **barras, long int *numeroBarras){
         //Verifica se a barra já foi criada
         aux = -1;
         for (i=0;i<numeroBarras[0];i++){
-            if ((*barras)[i].ID == atoi(getfield(dados,1))){
+            if ((*barras)[i].ID == (getfield_int(dados,1))){
                 aux = i;
             }
         }
         if(aux != -1){
-            Va = atof(getfield(dados,2));
-            Vb = atof(getfield(dados,3));
-            Vc = atof(getfield(dados,4));
-            Ta = atof(getfield(dados,5))*PI/180;
-            Tb = atof(getfield(dados,6))*PI/180;
-            Tc = atof(getfield(dados,7))*PI/180;
+            Va = (getfield_double(dados,2));
+            Vb = (getfield_double(dados,3));
+            Vc = (getfield_double(dados,4));
+            Ta = (getfield_double(dados,5))*PI/180;
+            Tb = (getfield_double(dados,6))*PI/180;
+            Tc = (getfield_double(dados,7))*PI/180;
             
             if (Va != Va) Va = 1;
             if (Vb != Vb) Vb = 1;
@@ -888,7 +937,7 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
     double Vbase = 1;
     double regua;
     char text_aux[500];
-    dados = (char *)malloc(100);
+    // dados = (char *)malloc(100);
     // Leitura dos dados de medidores
     strcpy(text_aux,folder);
     arquivo = fopen(strcat(text_aux,file),"r");
@@ -899,7 +948,8 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
             printf("Erro ao abrir arquivo %s !!!\n",strcat(text_aux,file));
             exit(1);
     }
-    
+
+    //Tabela com número de medias no plano de medição - COlunas representam o tipo e Linhas a Fase conectada do medidor
     numeroMedidas = (long int**)malloc(14 * sizeof(long int*)); 
     for (i = 0; i < 14; i++){ 
          numeroMedidas[i] = (long int*) malloc(8 * sizeof(long int));
@@ -924,18 +974,18 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
     while( (fgets(blocoLeitura, 2000, arquivo))!= NULL ){
         dados = blocoLeitura;
         
-        (*medidas)[contador].ligado = atoi(getfield(dados,1));
-        (*medidas)[contador].tipo = atoi(getfield(dados,2));
-        (*medidas)[contador].DE = atoi(getfield(dados,3));
-        (*medidas)[contador].PARA = atoi(getfield(dados,4));
-        (*medidas)[contador].fases = atoi(getfield(dados,5));
+        (*medidas)[contador].ligado = (getfield_int(dados,1));
+        (*medidas)[contador].tipo = (getfield_int(dados,2));
+        (*medidas)[contador].DE = (getfield_int(dados,3));
+        (*medidas)[contador].PARA = (getfield_int(dados,4));
+        (*medidas)[contador].fases = (getfield_int(dados,5));
         (*medidas)[contador].id = contador;
         (*medidas)[contador].par = -1;
         
         (*medidas)[contador].h = 0;
-        (*medidas)[contador].zmed = atof(getfield(dados,6));
-        (*medidas)[contador].sigma = 1;//atof(getfield(dados,7));
-        (*medidas)[contador].prec = atof(getfield(dados,7));
+        (*medidas)[contador].zmed = (getfield_double(dados,6));
+        (*medidas)[contador].sigma = 1;//(getfield_double(dados,7));
+        (*medidas)[contador].prec = (getfield_double(dados,7));
         
         numeroMedidas[(*medidas)[contador].tipo][(*medidas)[contador].fases-1]++;
         switch((*medidas)[contador].tipo){
@@ -1732,4 +1782,75 @@ void salvaMedidasRedeEletrica(DMED *medidas, long int **numeroMedidas)
     }   */ 
     
     fclose(arquivo);
+}
+//Libera memória alocada na estrutrura DRAM
+void free_DRAM(DRAM *ramos, long int numeroRamos){
+    int i, j;
+
+    for (i=0;i<numeroRamos;i++){
+        for (j=0;j<3;j++){
+            free(ramos[i].Ypp[j]);
+            free(ramos[i].Yps[j]);
+            free(ramos[i].Ysp[j]);
+            free(ramos[i].Yss[j]);
+        }
+        free(ramos[i].Ypp);
+        free(ramos[i].Yps);
+        free(ramos[i].Ysp);
+        free(ramos[i].Yss);
+    }
+    free(ramos);
+}
+//Libera memória alocada na estrutrura GRAFO
+void free_GRAFO(GRAFO *grafo, long int numeroBarras){
+    int i, j;
+
+    for (i=0;i<numeroBarras;i++){
+        
+        free(grafo[i].medidores);
+        for(j=0;j<grafo[i].numeroAdjacentes;j++)
+            free(grafo[i].adjacentes[j].medidores);
+    }
+    free(grafo);
+}
+
+//Libera memória alocada na estrutrura GRAFO
+void free_MEDIDAS(DMED *medidas, long int **numeroMedidas){
+    int i, j, nmed = 0;
+
+    for(i=0;i<14;i++) {
+        for(j=0;j<8;j++){
+            nmed += numeroMedidas[i][j];
+        }
+    }
+
+    for (i=0;i<nmed;i++){
+        free(medidas[i].reguaH);
+        free(medidas[i].reguaH_loc);
+        free(medidas[i].H);
+    }
+    free(medidas);
+
+
+    for(i=0;i<14;i++) free(numeroMedidas[i]);
+    free(numeroMedidas);
+}
+
+//Libera memória alocada na estrutrura ALIMENTADORES e RNPS
+void free_ALIMENTADOR(ALIMENTADOR *alimentadores, long int **numeroAlimentadoress){
+    int i, j, nmed = 0;
+
+    for(i=0;i<numeroAlimentadoress;i++){
+        FILABARRAS *barraAtual = &alimentadores[i].rnp[0];
+        FILABARRAS *barraProx;
+        barraAtual = barraAtual->prox;
+        while(barraAtual != NULL)
+        {
+            barraProx = barraAtual->prox;
+            free(barraAtual);
+            barraAtual = barraProx;
+        } 
+    }   
+
+    free(alimentadores);
 }

@@ -2,6 +2,13 @@
     "files.associations": {
         "cholmod.h": "c",
         "suitesparseqr.hpp": "c",
-        "funcoesbayesfusion.h": "c"
+        "funcoesbayesfusion.h": "c",
+        "*.tcc": "cpp",
+        "spqr.hpp": "c",
+        "type_traits": "c",
+        "cmath": "c",
+        "complex": "c",
+        "math.h": "c",
+        "complex.h": "c"
     }
 }

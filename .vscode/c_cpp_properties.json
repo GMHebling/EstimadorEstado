@@ -3,7 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/home/julio/SuiteSparse-5.6.0/include/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

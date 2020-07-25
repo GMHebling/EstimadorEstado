@@ -206,7 +206,7 @@ void residuosNormalizadosQR_ss(double *rN, double *bHat, long int m, long int n,
     QR = SuiteSparseQR_C_factorize(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_SS,c); 
     
     //Soluciona X = Rt\(Et*B) (para cálculo somente da diagonal da matriz de covariância dos resíduos e matriz de permutação)
-    X_SS = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB,QR, Ht_SS, c);
+    X_SS = SuiteSparseQR_C_solve(SPQR_RTX_EQUALS_ETB, QR, Ht_SS, c);
     
     //Cálculo da diagonal de matriz de covariância do resíduos
     double aux_K;
@@ -218,6 +218,7 @@ void residuosNormalizadosQR_ss(double *rN, double *bHat, long int m, long int n,
         // printf("\n %d\t%.15lf\t%.15lf ", i , medidas[i].sigma ,aux_K);
         CovR[i] = pow(medidas[i].sigma,2) - aux_K;  
     }
+    SuiteSparseQR_C_free(&QR,c);
     
     cholmod_l_finish(c);
 

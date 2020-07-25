@@ -303,7 +303,12 @@ void montaQuadripoloLinha(DRAM *ramo, DLIN *linha){
 //    printf("\n");
 //    c_matImprime(ramo->Yss,3);
 //    printf("\n");
-    
+    for (int i=0;i<3;i++){
+        free(Zl[i]);
+        free(B[i]);
+    }
+    free(Zl);
+    free(B);
 }
 
 //Converte a matriz de impedância em admitância e monta quadripolo dos ramos do grafo
@@ -479,6 +484,14 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo){
 //    printf("\n");
 //    c_matImprime(ramo->Yss,3);
 //    printf("\n");
+    for (int i=0;i<3;i++){
+        free(Yi[i]);
+        free(Yii[i]);
+        free(Yiii[i]);
+    }
+    free(Yi);
+    free(Yii);
+    free(Yiii);
     
 }
 
@@ -613,6 +626,14 @@ void montaQuadripoloRegulador(DRAM *ramo, DREG *reg){
 //    printf("\n");
 //    c_matImprime(ramo->Yss,3);
 //    printf("\n");
+    // for (int i=0;i<3;i++){
+    //     free(Yi[i]);
+    //     free(Yii[i]);
+    //     free(Yii[i]);
+    // }
+    // free(Yi);
+    // free(Yii);
+    // free(Yiii);
 }
 
 //Monta quadripolo dos shunts do grafo
@@ -693,6 +714,14 @@ void montaQuadripoloShunt(GRAFO *no, DSHNT *shunt){
 //    printf("\n");
 //    c_matImprime(ramo->Yss,3);
 //    printf("\n");
+    for (int i=0;i<3;i++){
+        free(Yi[i]);
+        free(Yii[i]);
+        free(Yiii[i]);
+    }
+    free(Yi);
+    free(Yii);
+    free(Yiii);
     
 }
 
@@ -703,7 +732,6 @@ void calculaPU(GRAFO *grafo, long int numeroBarras, DRAM *ramos, long int numero
     FILABARRAS * lista_barras = NULL;
     long int barraAdj = 0;
     double Vbase;
-    
     
     //Transforma em PU informações dos nós do grafo
     for (idNo=0;idNo<numeroBarras;idNo++){
@@ -725,6 +753,7 @@ void calculaPU(GRAFO *grafo, long int numeroBarras, DRAM *ramos, long int numero
 
         }*/
     }
+    
     
     //Transforma em PU informações dos ramos do grafo
     for (idRam=0;idRam<numeroRamos;idRam++){

@@ -837,6 +837,8 @@ void c_matInversaZ(__complex__ double **A, int n){
         }
     }
     c_matIgual(A,Zaux,3);
+    for (i=0;i<3;i++) free(Zaux[i]);
+    free(Zaux);
 }
 
 //Transposta
