@@ -797,6 +797,7 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         //alocacao de memoria das struturas do suitesparse
         //printf("nmed: %d\n", nmed);
         //printf("nvar: %d\n", nvar);
+        //alocacao de memoria das struturas do suitesparse
         T_SS = cholmod_l_allocate_triplet(nmed, nvar, nmed * nvar, 0, CHOLMOD_REAL, c);
         A_SS = cholmod_l_allocate_sparse(nmed, nvar, nmed * nvar, 0, 0, 0, CHOLMOD_REAL, c);
         A_T = cholmod_l_allocate_sparse(nmed, nvar, nmed * nvar, 0, 0, 0, CHOLMOD_REAL, c);
@@ -806,27 +807,22 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         X_SS = cholmod_l_allocate_dense(nvar, 1, nvar, CHOLMOD_REAL, c);
         L = cholmod_l_allocate_factor(nmed, c);
 
-
-        FILE *f_saida = NULL;
-        f_saida = fopen("342_qr_wte_nova.txt", "w+");
         int index = 0;
         for (int i = 0; i < nmed; i++)
         {
             for (int r = 0; r < nvar; r++)
             {
-                if ((*H[i][r]) != 0)
+                if (*H[i][r] != 0)
                 {
                     ((long int *)T_SS->i)[index] = i;
                     ((long int *)T_SS->j)[index] = r;
                     ((double *)T_SS->x)[index] = *H[i][r];
-                    fprintf(f_saida, "%ld %ld %f\n", i, r, *H[i][r]);
-                    //
+                    //fprintf(mat,"%ld,%ld,%f\n",i,r,*H[i][r]);
+
                     T_SS->nnz += 1;
                     index += 1;
                 }
             }
-            //escrito = 1;
-            //fclose(f_saida);
         }
 
         //escreve o vetor Dz no formato Dense
@@ -835,97 +831,41 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
             ((double *)b_SS->x)[i] = Dz[i];
         }
 
-        //for (int i = 0; i < nvar; i++)
-        //{
-        //    for (int j = 0; j < nmed; j++)
-        //    {
-        //        float aux = 0;
-        //        aux += (*H[j][i]) * ((double *)b_SS->x)[j];
-        //        ((double *)b_WLS->x)[i] = aux;
-        //    }
-        //}
-
         //converte a matrix triplet para sparse
 
-        A_SS = cholmod_l_triplet_to_sparse(T_SS, nmed * nvar, c);
+        A_SS = cholmod_l_triplet_to_sparse(T_SS, nvar * nvar, c);
         //A_T = cholmod_l_transpose(A_SS, 2, c);
 
-        //G_S = cholmod_l_ssmult(A_T, A_SS, 1, true, false, c);
-        //L = cholmod_l_analyze(A_SS, c);
-        //cholmod_l_factorize(A_SS, L, c);
-
-        //int m1[2] = {0, 1};
-        //int m2[2] = {0, 1};
-        //cholmod_l_sdmult(A_T, 0, m1, m2, b_SS, b_WLS, c);
-        //for (int i=0; i<nvar; i++){
-        //    printf("b_WLS %f\n", ((double*)b_WLS->x)[i]);
-        //
-        //}
-        //b_WLS->xtype = A_SS->xtype;
-
-        //long int supernodes;
-        //supernodes = L->nsuper;
-        //printf("Supernodes: %d\n", supernodes);
+        int m1[2] = {0, 1};
+        int m2[2] = {0, 1};
 
         cholmod_l_free_triplet(&T_SS, c);
         clock_t WriteMatrix = clock();
         // //Solucao via SuiteSparse
         int mtype = 0;
 
-        // //************************************************************************
-        //SOLUCAO DO SISTEMA LINEAR
-        //Rt*Dx = Qt*(z-h(x))
-        //************************************************************************
-
         clock_t tHouse = clock();
-        //X_SS = cholmod_l_solve(CHOLMOD_A, L, b_SS, c);
-        X_SS = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A_SS, b_SS, c);
-        //X_SS = cholmod_l_solve(CHOLMOD_A, L, b_WLS, c);
+
+        X_SS = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_NO_TOL, A_SS, b_SS, c);
 
         clock_t tSolve = clock();
         Dx = (double *)X_SS->x;
 
         cholmod_l_finish(c);
 
-        //************************************************************************
-        //SOLUCAO DO SISTEMA LINEAR
-        //Rt*Dx = Qt*(z-h(x))
-        //************************************************************************
-        //clock_t tHouse = clock();
-        //Dx = solve_Householder_LS(H_rf,nmed,nvar,Dz);
-
-        //Calculo do vetor gradiente - salvo no vetor b
-        //        double Armijo_c1 = 0.01;
-        //        double passo = NewtonMod_calcPasso(alpha0, b, Dx, ponto, nvar, Armijo_c1, grafo,numeroBarras, medidas, nmed, ponto, nvar, z,h, W, regua);
-        //        double passo =1;
-        //        if (it>=4) passo = 0.8;
-        //        if (it>=8) passo = 0.0000010;
-        //        for(i=0;i<nvar;i++) Dx[i] = passo*Dx[i];
-        //printf("update b\n");
         float passo = 1;
-        //if (it>=4) passo = 4;
-        //if (it>=8) passo = 0.0000010;
+
         for (i = 0; i < nvar; i++)
         {
             b[i] = 0;
-            ponto[i] = ponto[i] + (passo*Dx[i]);
+            ponto[i] = ponto[i] + Dx[i];
             //Dx[i] += passo * Dx[i];
             for (j = 0; j < nmed; j++)
             {
                 b[i] = b[i] + (*H[j][i]) * Dz[j];
             }
         }
-        //double total =0;
-        //float aux = 0;
-        //for (i=0;i<nvar;i++){
-        //    for (j=0;j<nvar;j++){
-        //        aux += (*H[j][i]*b[j]);
-        //    }
-        //    total += b[i]*aux;
-        //    aux = 0;
-        //}
-        //printf("== calculo de verificacao da direcao de descida ==\n");
-        //printf("calculado: %.10lf\n", total);
+
 
         nGx = norma_inf(b, nvar);
         nFx = norma_inf(Dx, nvar);

@@ -181,7 +181,7 @@ char* charMedidor(long int num){
 char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *numeroRamos, long int *numeroAlimentadores)
 {
     FILE *arquivo = NULL;
-    char linha[1000],*pasta,*folder,aux2[1000];
+    char linha[1000],*pasta,*folder,aux2[1000], aux[1000];
 //    folder = (char *)malloc(600*sizeof(char));
     pasta = (char *)malloc(200);
     folder = (char *)malloc(200);
@@ -202,7 +202,10 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     printf("Main directory: \n %s \n", folder);
     printf("Data sub-folder: \n %s \n", pasta);
     fclose(config);
-    
+    strcat(folder,pasta);
+    strcat(folder,"/");  
+    strcpy(aux,folder);
+    strcpy(aux2,folder);
     
 //    //printf("Digite o nome da pasta com os dados da rede elétrica\n");
 //    //scanf("%s",pasta);
@@ -216,8 +219,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     //strcat(folder,"/");  
     //strcpy(aux,folder);
     //strcpy(aux2,folder);
-    char aux[200] = "IEEE342DV/";
-    strcpy(aux2,aux);
+    //char aux[200] = "/Applications/Matlab/IEEE342SIM/";
+    //strcpy(aux2,aux);
     // Leitura dos dados de barras
     
     arquivo = fopen(strcat(aux,"DBAR.csv"),"r");
@@ -892,7 +895,6 @@ long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, 
     // Leitura dos dados de medidores
     strcpy(text_aux,folder);
     arquivo = fopen(strcat(text_aux,file),"r");
-    
     
     //arquivo = fopen(folder,"r");
     if(arquivo == NULL)
@@ -1720,6 +1722,7 @@ void salvaMedidasRedeEletrica(DMED *medidas, long int **numeroMedidas)
     
     fclose(arquivo);
 }
+
 
 int verificaDVMED(char *folder){
     char text_aux[500];
