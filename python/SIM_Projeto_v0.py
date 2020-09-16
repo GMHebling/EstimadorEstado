@@ -302,7 +302,7 @@ tem_pmu = 0
 
 # Leitura de Dados
 network_model = LeituraDados(md + sd)
-
+print("")
 # imprime config.txt
 PrintConfig(md,sd)
 
