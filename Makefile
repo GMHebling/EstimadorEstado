@@ -2,15 +2,15 @@ CC=gcc
 CFLAGS= -o -W 
 LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++
 OBJFILES = main.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
-TARGET = ss
+OBJFILESFP = main_fp.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
+TARGET = estimator powerflow clean
 
-all: build clean 
-	
+all: $(TARGET)
 
-build: $(TARGET)
+estimator: $(OBJFILES)
+		$(CC) $(CFLAGS) -o estimator $(OBJFILES) $(LDFLAGS)
 
-$(TARGET): $(OBJFILES)
-		$(CC) $(CFLAGS) -o $(TARGET) $(OBJFILES) $(LDFLAGS)
-
+powerflow: $(OBJFILESFP)
+		$(CC) $(CFLAGS) -o powerflow $(OBJFILESFP) $(LDFLAGS)
 clean:
-	clear && rm -f $(OBJFILES) *~ 
+	rm -f $(OBJFILES) $(OBJFILESFP) *~ 
