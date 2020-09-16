@@ -252,7 +252,7 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
            
     
     #Roda estimador de estado
-    subprocess.check_call('./ss', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_call('./estimator', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     
     #Leitura do resultado
     filename = '/referencia.txt'
@@ -284,9 +284,9 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
 # LEITURA DE DADOS
 #
 #-----------------------------------------------------------------------------
-md = '/home/julio/projetos/EstimadorEstado'
+md = '..'
 # sd = '/IEEE342SIM' 
-sd = '/IEEE342SIM' 
+sd = '/IEEE123' 
 
 # Valores de Precisão dos tipos de medidores
 precision = {'PSEUDO': 0.30,

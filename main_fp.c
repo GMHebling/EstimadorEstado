@@ -58,8 +58,8 @@ int main(int argc, char **argv)
 
     // Estimador WLS Convencional
      
-    estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
-    
+    //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    fluxoPotencia_NRQR(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
 
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);
