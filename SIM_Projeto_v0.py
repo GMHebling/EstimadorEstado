@@ -203,7 +203,12 @@ def PowerFlow(md, sd, network_model, loading, method):
     filename = '/state.txt'
     x = pd.read_csv(md + filename, sep = '\t',header=None)
     x.columns = ['regua','val']
-    
+
+    #tira referencia do resultado do fluxo de potencia
+    del_list = [-0.01, -0.11, -0.21]
+    x = x[~x['regua'].isin(del_list)]
+
+
     Cov_X = []
     
     residuo = []
@@ -286,7 +291,20 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
 #-----------------------------------------------------------------------------
 md = '.'
 # sd = '/IEEE342SIM' 
-sd = '/IEEE123' 
+sd = '/IEEE123DV' 
+
+with open('config.txt') as config_file:
+    ct_lines = 0
+    for line in config_file:
+        if ct_lines == 0:
+            md = line.strip()
+        else:
+            sd = line.strip()
+        ct_lines += 1
+
+
+
+med_file = '/DMED.csv'
 
 # Valores de Precisão dos tipos de medidores
 precision = {'PSEUDO': 0.30,
@@ -362,73 +380,74 @@ np.random.seed(100)
 
 
 # Montagem do plano de medição 
+if '123' in sd:
+    # Plano de Medição para o IEEE123
+    locMed_SCADA = {'IPQ': [150 ,83 ,88 ,90 ,92],
+                    'FPQ': [(150 , 149) , (149 , 150) , (9 , 9000) , (25 , 2500) , (60 , 6000) , (61 , 610) , 
+                            (18 , 35) , (13 , 52) , (97 , 101)],
+                    'V': [150 ,149 ,6000]}
+    
+    locMed_PMU = {'ICur': [],
+                  'FCur': [(150 , 149) , (60 , 6000) , (18 , 35)],
+                  'Vp': [150 ,149 ,60 ,18 ,83]}
+    locMed_Pseudo = {'IPQ': [1 , 2 , 4 , 5 , 6 , 7 , 9 , 12 , 10 , 11 , 16 , 17 ,
+                             19 , 20 , 22 , 24 , 28 , 29 , 30 , 31 , 32 , 33 , 34 , 
+                             35 , 37 , 38 , 39 , 41 , 42 , 43 , 45 , 46 , 47 , 48 , 
+                             49 , 50 , 51 , 52 , 53 , 55 , 56 , 58 , 59 , 60 , 62 , 
+                             63 , 64 , 65 , 66 , 68 , 69 , 70 , 71 , 73 , 74 , 75 , 
+                             76 , 77 , 79 , 80 , 82 , 84 , 85 , 86 , 87 , 94 , 95 , 
+                             96 , 98 , 99 , 100 , 102 , 103 , 104 , 106 , 107 , 109 ,
+                             111 , 112 , 113 , 114],
+                      'FPQ': [],
+                      'V': []}
+    locMed_SM = {'IPQ': [],
+                 'FPQ': [],
+                 'V': []}
+elif '342' in sd:
+    # Plano de Medição para o IEEE342
+    locMed_SCADA = {'IPQ': [1],
+                    'FPQ': [(1 , 2) , (2 , 1) , (2 , 3) , (2 , 7) , (3 , 5) , (5 , 3) , (7 , 9) , (9 , 7) ,
+                            (5 , 44) , (9 , 116) , (5 , 11) , (5 , 27) , (44 , 45) , (44 , 62) , (9 , 81) , (9 , 97) , 
+                            (116 , 117) , (116 , 134) , (11 , 13) , ( 27 , 29) , (45 , 47) , (62 , 64) , (81 , 83) , 
+                            (97 , 99) , (117 , 119) , ( 134 , 136)],
+                    'V': [1 , 3 , 5 , 7 , 9 , 
+                        11 , 27 , 45 , 62 , 81 , 97 , 117 , 134 ,
+                        1001 , 1196 , 1201 , 1207 , 1214 , 1221 , 1228 , 1234 , 1238]}
 
-# # Plano de Medição para o IEEE123
-# locMed_SCADA = {'IPQ': [150 ,83 ,88 ,90 ,92],
-#                 'FPQ': [(150 , 149) , (149 , 150) , (9 , 9000) , (25 , 2500) , (60 , 6000) , (61 , 610) , 
-#                         (18 , 35) , (13 , 52) , (97 , 101)],
-#                 'V': [150 ,149 ,6000]}
+    locMed_PMU = {'ICur': [],
+                'FCur': [(1 , 2)  , (3 , 5) , (5 , 3) , (7 , 9) , (9 ,7)],
+                'Vp': [1 , 3 , 5 , 7 , 9]}
 
-# locMed_PMU = {'ICur': [],
-#               'FCur': [(150 , 149) , (60 , 6000) , (18 , 35)],
-#               'Vp': [150 ,149 ,60 ,18 ,83]}
+    locMed_Pseudo = {'IPQ': [1193 , 1198 , 1203 , 1210 , 1217 , 1224 , 1231 , 1236,
+                            1001 , 1002 , 1003 , 1005 , 1006 , 1007 , 1008 , 1010 , 1011 , 1012 , 
+                        1013 , 1015 , 1016 , 1017 , 1018 , 1019 , 1020 , 1021 , 1022 , 1023 ,
+                        1024 , 1025 , 1026 , 1031 , 1032 , 1037 , 1038 , 1039 , 1040 , 1041 ,
+                        1042 , 1043 , 1046 , 1047 , 1048 , 1051 , 1052 , 1053 , 1056 , 1057 ,
+                        1058 , 1061 , 1062 , 1063 , 1064 , 1065 , 1066 , 1067 , 1072 , 1073 ,
+                        1078 , 1079 , 1080 , 1081 , 1082 , 1083 , 1084 , 1087 , 1088 , 1089 ,
+                        1092 , 1093 , 1094 , 1097 , 1098 , 1099 , 1102 , 1103 , 1104 , 1105 ,
+                        1106 , 1107 , 1108 , 1113 , 1114 , 1120 , 1121 , 1122 , 1123 , 1124 , 
+                        1125 , 1127 , 1128 , 1129 , 1130 , 1132 , 1133 , 1134 , 1135 , 1137 , 
+                        1138 , 1139 , 1140 , 1142 , 1143 , 1144],
+                    'FPQ': [],
+                    'V': []}
 
-# locMed_Pseudo = {'IPQ': [1 , 2 , 4 , 5 , 6 , 7 , 9 , 12 , 10 , 11 , 16 , 17 ,
-#                          19 , 20 , 22 , 24 , 28 , 29 , 30 , 31 , 32 , 33 , 34 , 
-#                          35 , 37 , 38 , 39 , 41 , 42 , 43 , 45 , 46 , 47 , 48 , 
-#                          49 , 50 , 51 , 52 , 53 , 55 , 56 , 58 , 59 , 60 , 62 , 
-#                          63 , 64 , 65 , 66 , 68 , 69 , 70 , 71 , 73 , 74 , 75 , 
-#                          76 , 77 , 79 , 80 , 82 , 84 , 85 , 86 , 87 , 94 , 95 , 
-#                          96 , 98 , 99 , 100 , 102 , 103 , 104 , 106 , 107 , 109 ,
-#                          111 , 112 , 113 , 114],
-#                   'FPQ': [],
-#                   'V': []}
-
-# locMed_SM = {'IPQ': [],
-#              'FPQ': [],
-#              'V': []}
-
-
-# Plano de Medição para o IEEE342
-locMed_SCADA = {'IPQ': [1],
-                'FPQ': [(1 , 2) , (2 , 1) , (2 , 3) , (2 , 7) , (3 , 5) , (5 , 3) , (7 , 9) , (9 , 7) ,
-                        (5 , 44) , (9 , 116) , (5 , 11) , (5 , 27) , (44 , 45) , (44 , 62) , (9 , 81) , (9 , 97) , 
-                        (116 , 117) , (116 , 134) , (11 , 13) , ( 27 , 29) , (45 , 47) , (62 , 64) , (81 , 83) , 
-                        (97 , 99) , (117 , 119) , ( 134 , 136)],
-                'V': [1 , 3 , 5 , 7 , 9 , 
-                      11 , 27 , 45 , 62 , 81 , 97 , 117 , 134 ,
-                      1001 , 1196 , 1201 , 1207 , 1214 , 1221 , 1228 , 1234 , 1238]}
-
-locMed_PMU = {'ICur': [],
-              'FCur': [(1 , 2)  , (3 , 5) , (5 , 3) , (7 , 9) , (9 ,7)],
-              'Vp': [1 , 3 , 5 , 7 , 9]}
-
-locMed_Pseudo = {'IPQ': [1193 , 1198 , 1203 , 1210 , 1217 , 1224 , 1231 , 1236,
-                         1001 , 1002 , 1003 , 1005 , 1006 , 1007 , 1008 , 1010 , 1011 , 1012 , 
-                      1013 , 1015 , 1016 , 1017 , 1018 , 1019 , 1020 , 1021 , 1022 , 1023 ,
-                      1024 , 1025 , 1026 , 1031 , 1032 , 1037 , 1038 , 1039 , 1040 , 1041 ,
-                      1042 , 1043 , 1046 , 1047 , 1048 , 1051 , 1052 , 1053 , 1056 , 1057 ,
-                      1058 , 1061 , 1062 , 1063 , 1064 , 1065 , 1066 , 1067 , 1072 , 1073 ,
-                      1078 , 1079 , 1080 , 1081 , 1082 , 1083 , 1084 , 1087 , 1088 , 1089 ,
-                      1092 , 1093 , 1094 , 1097 , 1098 , 1099 , 1102 , 1103 , 1104 , 1105 ,
-                      1106 , 1107 , 1108 , 1113 , 1114 , 1120 , 1121 , 1122 , 1123 , 1124 , 
-                      1125 , 1127 , 1128 , 1129 , 1130 , 1132 , 1133 , 1134 , 1135 , 1137 , 
-                      1138 , 1139 , 1140 , 1142 , 1143 , 1144],
-                  'FPQ': [],
-                  'V': []}
-
-locMed_SM = {'IPQ': [],
-              'FPQ': [],
-              'V': []}
+    locMed_SM = {'IPQ': [],
+                'FPQ': [],
+                'V': []}
 
 
 # Injecoes virtuais - barras sem carga que não estao no vetor de medidas SCADA, Pseudo e SMeter
-injecoes = locMed_Pseudo['IPQ'] + locMed_SCADA['IPQ'] + locMed_SM['IPQ']
-aux_inj = network_model.df_DBAR['ID'].values
-locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
+#injecoes = locMed_Pseudo['IPQ'] + locMed_SCADA['IPQ'] + locMed_SM['IPQ']
+#aux_inj = network_model.df_DBAR['ID'].values
+
+
+#locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
+#                  'FPQ': [],
+#                  'V': []}
+locMed_Virtual = {'IPQ': [],
                   'FPQ': [],
                   'V': []}
-
 # --------------------------------------
 # Início da Simulação de Monte Carlo
 
@@ -441,10 +460,10 @@ for amostra in range(1,Namostras+1):
         print('t: [' + str(t) + '] / ['+ str(Dt) + ']')
                 
         # Exporta medidas
-        SampleMeasurementsMC(md, sd, "/DMED.csv", 'w', sim_ref[t-1].df_DREF, locMed_Pseudo, precision['PSEUDO'])
-        SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_SM, precision['SMeter'])
-        SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_Virtual, precision['VIRTUAL'])
-        SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_SCADA, precision['SCADA'])        
+        SampleMeasurementsMC(md, sd, med_file, 'w', sim_ref[t-1].df_DREF, locMed_Pseudo, precision['PSEUDO'])
+        SampleMeasurementsMC(md, sd, med_file, 'a', sim_ref[t-1].df_DREF, locMed_SM, precision['SMeter'])
+        SampleMeasurementsMC(md, sd, med_file, 'a', sim_ref[t-1].df_DREF, locMed_Virtual, precision['VIRTUAL'])
+        SampleMeasurementsMC(md, sd, med_file, 'a', sim_ref[t-1].df_DREF, locMed_SCADA, precision['SCADA'])        
         # SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_PMU, precision['PMU'])
         
         # Executa o Estimador
@@ -500,7 +519,7 @@ fig = plt.figure()
 axes(frameon=0)
 grid()
 
-plot(MAE_t, linewidth=2, linestyle='--', color='#B22400', label = 'MAE performance index')
+plot(MAE_x, linewidth=2, linestyle='-', color='#B22400', label = 'MAE performance index')
 # plot(RMSE_t, linewidth=2, linestyle='--', color='#006BB2', label = 'RMSE performance index')
 # xlim(-5, 400)
 # ylim(-5000, 300)
