@@ -23,6 +23,9 @@ sudo apt install g++
 sudo apt install wget
 sudo apt install m4
 sudo apt install cmake
+sudo apt install libopenblas-dev
+sudo apt install liblapack-dev
+sudo apt install libcholmod3
 
 wget https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.zip
 
@@ -32,7 +35,7 @@ cd SuiteSparse-5.6.0
 
 make
 
-sudo make install INSTALL=“usr/local/lib”
+sudo make install INSTALL=/usr/local
 
 LD_LIBRARY_PATH=“/lib:/usr/lib:/usr/local/lib:/usr/local/lib/lib:/usr/local/lib/include"
 
