@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     if (verificaDVMED(folder) == 1) {
         numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
-        numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras,grafo,Sbase);  //Melhorar o tratamento de chaves
+        numeroVirtuais = leituraMedidas(folder,"DVMED.csv", &virtuais, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase);  //Melhorar o tratamento de chaves
         printf("leitura ok\n");
         estimadorNEC(grafo, numeroBarras, medida, virtuais, numeroMedidas, numeroVirtuais, alimentador, numeroAlimentadores, ramo, Sbase/1000);
     } else {

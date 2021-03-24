@@ -908,6 +908,7 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
         //printf("rede ok\n");
         atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
         //printf("modelo ok\n");
+        atualiza_h(grafo, numeroBarras, nmed, medidas);
 
         it++;
         printf(".");
@@ -2427,6 +2428,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     double **H_T;
     double *Dz_aux;
     int i, j, k;
+    double *b = NULL;
     H_rf = aloca_matriz(nmed, nvar);
     H_T = aloca_matriz(nvar, nmed);
     C_rf = aloca_matriz(nvir, nvar);
@@ -2435,6 +2437,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     Dv = aloca_vetor(nvir);
     Dx = aloca_vetor(nvar + nvir);
     Haum = aloca_matriz(nvar, nvar);
+    b = aloca_vetor(nvar);
 
     atualiza_Rede(grafo, numeroBarras);                  //atualiza a condição da rede conforme o estado atual
     atualiza_Modelo(grafo, numeroBarras, nmed, medidas); // atualiza modelo de medição conforme a condição atual da rede
@@ -2471,7 +2474,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
             for (j = 0; j < medidas[i].nvar; j++)
             {
                 //H.T * H / (sigma^2)
-                medidas[i].H[j] = (medidas[i].H[j]) / (medidas[i].sigma);
+                medidas[i].H[j] = (medidas[i].H[j]) /  medidas[i].sigma;
             }
             //H.T*deltaZ/(sigma^2)
             if (medidas[i].sigma > max_sigma){
@@ -2481,13 +2484,22 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         }
         for (i = 0; i < nvir; i++)
         {
-            Dv[i] = -1*virtuais[i].h;
+            Dv[i] = virtuais[i].h;
         }
         double soma;
         float somaDz;
         int _i, _j;
         //printf("max sigma: %f\n", (max_sigma));
-        double vl = (max_sigma);//sqrt(1/max_sigma);
+
+        float somaVl = 0;
+        for (int i = 0; i< nmed; i++){
+            somaVl += medidas[i].sigma;
+        }
+
+
+        double vl = (max_sigma);
+        //double vl = sqrt(nmed)*somaVl;
+        //double vl = 1;
         //printf("vl: %f\n", vl);
         for (i = 0; i < nmed; i++)
         {
@@ -2506,7 +2518,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 H_T[i][j] = H_rf[j][i];
             }
         }
-       //printf("vl: %f\n", vl);
+       printf("vl: %f\n", vl);
 
         ////multiplica H.T por H
         for (int k = 0; k < nvar; k++)
@@ -2515,11 +2527,13 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
             somaDz = 0;
             for (i = 0; i < nmed; i++)
             {
-                if (H_T[k][i] != 0){
-                    somaDz += H_T[k][i] * Dz[i];
+                if (H_rf[i][k] != 0 && Dz[i] != 0){
+                    somaDz += H_rf[i][k] * Dz[i];
                 }
             }
-            Dz_aux[k] =  pow(vl,2) * somaDz;
+            Dz_aux[k] = pow(vl,2) * somaDz;  
+
+            
         }
 //
         cholmod_triplet *T_nec = NULL;
@@ -2559,7 +2573,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         sC_T = cholmod_l_allocate_sparse(nvar, nvir , nvar*nvir, 0, 0, 0, CHOLMOD_REAL, c);
         
         Cn = cholmod_l_allocate_triplet(nvir, nvar+nvir, nvar*nvir, 0, CHOLMOD_REAL, c);
-        sCn = cholmod_l_allocate_sparse(nvar, nvar+nvir , nvar*nvir, 0, 0, 0, CHOLMOD_REAL, c);
+        sCn = cholmod_l_allocate_sparse(nvir, nvar+nvir , nvar*nvir, 0, 0, 0, CHOLMOD_REAL, c);
         
         T_tr = cholmod_l_allocate_triplet(nvar, nvar, nvar*nvar, 0, CHOLMOD_REAL, c);
         A_aux = cholmod_l_allocate_sparse(nmed, nvar , nmed*nvar, 0, 0, 0, CHOLMOD_REAL, c);
@@ -2634,7 +2648,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 {
                     ((long int *)Cn->i)[index] = i;
                     ((long int *)Cn->j)[index] = r;
-                    ((double *)Cn->x)[index] = *C[i][r];
+                    ((double *)Cn->x)[index] = -1*(*C[i][r]);
                     Cn->nnz += 1;
                     index += 1;
                 }
@@ -2649,7 +2663,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
                 {
                     ((long int *)C_T->i)[index] = i;
                     ((long int *)C_T->j)[index] = r;
-                    ((double *)C_T->x)[index] = *C[r][i];
+                    ((double *)C_T->x)[index] = -1*(*C[r][i]);
                     C_T->nnz += 1;
                     index += 1;
                 }
@@ -2669,7 +2683,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         if (write && it == 0)
         {
             FILE *matNEC;
-            matNEC = fopen("matnec_342_wfull.txt", "w+");
+            matNEC = fopen("matnec_123_alfa0.txt", "w+");
             for (i = 0; i < T_nec->nnz; i++)
             {
                 long int _i, _j;
@@ -2693,18 +2707,25 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
         
         //A_nec = cholmod_l_triplet_to_sparse(T_nec, (nvar + nvir) * (nvar + nvir), c);
-        L = cholmod_l_analyze(A_nec, c);
-        cholmod_l_factorize(A_nec, L, c);
+        //L = cholmod_l_analyze(A_nec, c);
+        //cholmod_l_factorize(A_nec, L, c);
         //X_nec = cholmod_l_solve(CHOLMOD_A, L, b_nec, c);
         //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
         //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
         //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
-        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
+        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
 
         Dx = (double *)X_nec->x;
+
+        
         for (i = 0; i < nvar; i++)
         {
             ponto[i] = ponto[i] + Dx[i];
+
+            for (j = 0; j < nmed; j++)
+            {
+                b[i] = b[i] + (*H[j][i]) * Dz_aux[j];
+            }
         }
         for (i = 0; i < nvar; i++)
         {
@@ -2722,8 +2743,12 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
         atualiza_Modelo(grafo, numeroBarras, nvir, virtuais);
 
+        //atualiza_h(grafo, numeroBarras, nmed, medidas);
+        //atualiza_h(grafo, numeroBarras, nvir, virtuais);
+
         nFx = norma_inf(Dx, nvar);
-        printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t\n", it, nFx);
+        nGx = norma_inf(b, nvar);
+        printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t |Grad|_inf =  %.17lf \n", it, nFx, nGx);
 
         it++;
         printf(".");
@@ -2732,6 +2757,8 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
     atualiza_Rede(grafo, numeroBarras);
     atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
     atualiza_Modelo(grafo, numeroBarras, nvir, virtuais);
+    //atualiza_h(grafo, numeroBarras, nmed, medidas);
+    //atualiza_h(grafo, numeroBarras, nvir, virtuais);
 
     return conv;
 }

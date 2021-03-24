@@ -1498,7 +1498,7 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
     //Tratamento da referência
     long int ref_1, ref_2;
     tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
-    
+    printf("ref 1: %d, ref 2: %d\n", ref_1, ref_2);
     tira_refs_regua(nvar, ref_1, ref_2, regua); 
     nvar = nvar - (ref_2 - ref_1 +1);  
     //printf("tira refs\n");
@@ -1520,8 +1520,8 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
     //--------------------------------------------------------------------------
     //Estimação de Estado    
     monta_z(z,nmed,medidas);
-    //monta_W(NULL,nmed,medidas);
-    monta_W_cte(W,nmed,medidas);
+    monta_W(NULL,nmed,medidas);
+    //monta_W_cte(W,nmed,medidas);
     //monta_W_Ident(NULL,nmed,medidas);
     
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
@@ -2137,7 +2137,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     long int ref_1, ref_2;
     tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
    
-    
+    printf("ref 1: %d, ref 2: %d\n", ref_1, ref_2);
     tira_refs_regua(nvar, ref_1, ref_2, regua); 
    
     nvar = nvar - (ref_2 - ref_1 +1);  
@@ -2151,7 +2151,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     for(i=0;i<nmed;i++){
         for(j=0;j<medidas[i].nvar;j++){
             for(r = 0;r<nvar;r++){
-                if (cabs(medidas[i].reguaH[j]-regua[r]) < EPS){
+                if (cabs(medidas[i].reguaH[j]-regua[r]) <= EPS){
                     H[i][r] = &medidas[i].H[j];
                     break;
                 }
@@ -2163,7 +2163,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     for(i=0;i<nvir;i++){
         for(j=0;j<virtuais[i].nvar;j++){
             for(r = 0;r<nvar;r++){
-                if (cabs(virtuais[i].reguaH[j]-regua[r]) < EPS){
+                if (cabs(virtuais[i].reguaH[j]-regua[r]) <= EPS){
                     C[i][r] = &virtuais[i].H[j];
                     break;
                 }
@@ -2200,8 +2200,13 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     
     FILE *residuo;
     residuo = fopen("residuo.txt","wt");
-    for(i=0;i<nmed;i++){
-        fprintf(residuo,"%.10lf\n",z[i] - medidas[i].h);
+    for(i=0;i<nmed+nvir;i++){
+        if (i < nmed){
+            fprintf(residuo,"%.10lf\n",z[i] - medidas[i].h);
+        } else {
+            fprintf(residuo,"%.10lf\n",z[i] - virtuais[i].h);
+        }
+        
     }
     fclose(residuo);
     

@@ -403,6 +403,28 @@ if '123' in sd:
     locMed_SM = {'IPQ': [],
                  'FPQ': [],
                  'V': []}
+
+
+
+elif '34' in sd and '2' not in sd:
+
+    locMed_SCADA = {'IPQ': [800, 844, 848],
+                    'FPQ': [800, 888, 890 ,802],
+                    'V': [800, 802, 848, 888, 802, 806]}
+
+    locMed_PMU = {'ICur': [],
+                  'FCur': [],
+                  'Vp': []}
+
+    locMed_Pseudo = {'IPQ': network_model.df_DBAR['ID'].values[2:].tolist(),
+                      'FPQ': [],
+                      'V': []}    
+    
+
+    locMed_SM = {'IPQ': [],
+                 'FPQ': [],
+                 'V': []}
+
 elif '342' in sd:
     # Plano de Medição para o IEEE342
     locMed_SCADA = {'IPQ': [1],
@@ -438,16 +460,16 @@ elif '342' in sd:
 
 
 # Injecoes virtuais - barras sem carga que não estao no vetor de medidas SCADA, Pseudo e SMeter
-#injecoes = locMed_Pseudo['IPQ'] + locMed_SCADA['IPQ'] + locMed_SM['IPQ']
-#aux_inj = network_model.df_DBAR['ID'].values
-
-
-#locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
-#                  'FPQ': [],
-#                  'V': []}
-locMed_Virtual = {'IPQ': [],
+injecoes = locMed_Pseudo['IPQ'] + locMed_SCADA['IPQ'] + locMed_SM['IPQ']
+aux_inj = network_model.df_DBAR['ID'].values
+locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
                   'FPQ': [],
                   'V': []}
+
+
+#locMed_Virtual = {'IPQ': [],
+#                  'FPQ': [],
+#                  'V': []}
 # --------------------------------------
 # Início da Simulação de Monte Carlo
 
@@ -531,23 +553,17 @@ frame.set_edgecolor('0.9')
 
 plt.show()
 
+fig = plt.figure()
+axes(frameon=0)
+grid()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plot(MAE_t, linewidth=2, linestyle='-', color='#B22400', label = 'MAE performance index')
+# plot(RMSE_t, linewidth=2, linestyle='--', color='#006BB2', label = 'RMSE performance index')
+# xlim(-5, 400)
+# ylim(-5000, 300)
+plt.legend(frameon=False)
+leg = plt.legend()
+frame = leg.get_frame()
+frame.set_facecolor('0.9')
+frame.set_edgecolor('0.9')
+plt.show()
