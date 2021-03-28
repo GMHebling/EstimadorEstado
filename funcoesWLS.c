@@ -2220,3 +2220,236 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
     atualiza_H_ret(grafo, numeroBarras, ramos, virtuais, nvir);
     
 }
+
+void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virtuais, long int **numeroMedidas, long int **numeroVirtuais, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase){
+   long int nmed,nvar, nvir;
+   int i,j,k, r;
+   double *z = NULL,**h = NULL,***H = NULL, ***C = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
+    
+    printf("Estimador de Estado via Matriz Aumentada de Hatchel...\n");
+    //--------------------------------------------------------------------------
+    //Alocação de memória das variáveis do estimador de estado
+    nmed = 0;
+    for (i = 0; i < 9; i++){ 
+        for (j = 0; j < 8; j++){
+            nmed = nmed + numeroMedidas[i][j];
+        }
+    }
+    
+    nvir = 0;
+    for (i = 0; i < 9; i++){
+        for (j = 0; j < 8; j++){
+            nvir = nvir + numeroVirtuais[i][j];
+        }
+    }
+    
+    nvar = 0;
+    //printf("numero barras: %d\n", numeroBarras);
+    for (i = 0; i < numeroBarras; i++){
+        switch (grafo[i].fases){
+            case 1:
+                nvar +=2;
+                break;
+            case 2:
+                nvar +=2;
+                break;
+            case 3:
+                nvar +=2;
+                break;
+            case 4:
+                nvar +=4;
+                break;    
+            case 5:
+                nvar +=4;
+                break;    
+            case 6:
+                nvar +=4;
+                break;    
+            case 7:
+                nvar +=6;
+                break;    
+        }
+    } 
+     
+    //printf("nmed: %d\n", nmed);
+    //printf("nvar: %d\n", nvar);
+    if ((z = (double *)malloc( (nmed) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor z!!!!");
+        exit(1); 
+    }
+    if ((h = malloc( (nmed) * sizeof(double*)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor h!!!!");
+        exit(1); 
+    }
+    if ((x = (double *)malloc( (nvar+nvir) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor x!!!!");
+        exit(1); 
+    }
+    if ((regua = (double *)malloc( (nvar) * sizeof(double)))==NULL){
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor regua!!!!");
+        exit(1); 
+    }
+    
+    H = (double***)malloc(nmed * sizeof(double**)); 
+    for (i = 0; i < nmed; i++){ 
+         H[i] = (double**) malloc(nvar * sizeof(double*));
+         for (j = 0; j < nvar; j++){
+              H[i][j] = &aux;
+         }
+    }
+    
+    C = (double***)malloc(nvir * sizeof(double**));
+    for (i = 0; i < nvir; i ++){
+        C[i] = (double**)malloc(nvar * sizeof(double*));
+        for (j = 0; j < nvar; j++){
+            C[i][j] = &aux;
+        }
+    }
+    
+    j=0;
+    for(i=0;i<numeroBarras;i++){
+        aux = (double) grafo[i].idNo;
+        aux += 0.01;
+        switch (grafo[i].fases){
+            case 1:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 2:
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 3:
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 4:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 5:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 6:
+                regua[j] = aux+0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;
+            case 7:
+                regua[j] = aux;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.1;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                regua[j] = aux + 0.2;
+                regua[j + (int) nvar/2] = -regua[j];
+                j++;
+                break;    
+        }
+    }
+    aux = 0;
+    
+    //printf("nmed: %d\n", nmed);
+    //printf("nvar: %d\n", nvar);
+    //Tratamento da referência
+    long int ref_1, ref_2;
+    tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
+   
+    printf("ref 1: %d, ref 2: %d\n", ref_1, ref_2);
+    tira_refs_regua(nvar, ref_1, ref_2, regua); 
+   
+    nvar = nvar - (ref_2 - ref_1 +1);  
+    //printf("tira refs\n");
+    //vetor h aponta para a estrutura de dados das medidas
+    for(i=0;i<nmed;i++){
+        h[i] = &medidas[i].h;
+    }
+    
+    //Matriz H aponta para a estrutura de dados das medidas
+    for(i=0;i<nmed;i++){
+        for(j=0;j<medidas[i].nvar;j++){
+            for(r = 0;r<nvar;r++){
+                if (cabs(medidas[i].reguaH[j]-regua[r]) <= EPS){
+                    H[i][r] = &medidas[i].H[j];
+                    break;
+                }
+            }
+        }
+    }
+    
+
+    for(i=0;i<nvir;i++){
+        for(j=0;j<virtuais[i].nvar;j++){
+            for(r = 0;r<nvar;r++){
+                if (cabs(virtuais[i].reguaH[j]-regua[r]) <= EPS){
+                    C[i][r] = &virtuais[i].H[j];
+                    break;
+                }
+            }
+        }
+    }
+    
+    monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
+    //monta W -> H'WH
+    //monta_W_Ident(NULL, nmed, medidas);
+    monta_W(NULL, nmed, medidas);
+    //monta_W_cte(NULL, nmed, medidas);
+    //inicializa primeiros nvar valores do vetor x
+
+    
+//    int conv = otimiza_Gauss_Newton_sparsePCGLS(z, h, H, W, grafo, numeroBarras, ramos, medidas, nvar - 3, nmed, regua, x, tol, ref_1, ref_2)
+    
+
+    incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
+    double tol = 0.000001;
+    clock_t tIni = clock();
+    int conv = otimizaHatchel(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    clock_t t1 = clock();
+    double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
+    printf("\nEstimação Hatchel: %lf",tempoWLS);
+    
+    exportaCasoReferencia(grafo, numeroBarras, Sbase);
+    exportaEstado(grafo,regua,nvar);
+    imprimeEstado(grafo,numeroBarras);
+    
+//    atualiza_H_ret(grafo, numeroBarras, ramos, medidas, nmed);
+//    exportaPrioriSCADA(grafo,regua, H, W, nvar, nmed, 0);
+//    exportaPrioriQR(grafo,regua,medidas, nvar, nmed, 0);
+    
+    FILE *residuo;
+    residuo = fopen("residuo.txt","wt");
+    for(i=0;i<nmed+nvir;i++){
+        if (i < nmed){
+            fprintf(residuo,"%.10lf\n",z[i] - medidas[i].h);
+        } else {
+            fprintf(residuo,"%.10lf\n",z[i] - virtuais[i].h);
+        }
+        
+    }
+    fclose(residuo);
+    
+    free(z);free(h);free(x);free(regua);
+    for (i=0;i<nmed;i++ )free(H[i]);
+    free(H);
+    
+    
+    
+    atualiza_H_ret(grafo, numeroBarras, ramos, medidas, nmed);
+    atualiza_H_ret(grafo, numeroBarras, ramos, virtuais, nvir);
+}

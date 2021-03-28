@@ -2762,3 +2762,282 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
 
     return conv;
 }
+int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo, long int numeroBarras, DRAM *ramos, DMED *medidas, DMED *virtuais, long int nvir, long int nvar, long int nmed, double *regua_comp, double *ponto, double tol, long int ref1, long int ref2)
+{
+    double **C_rf;
+    double **Haum;
+    double *Dz;
+    double *Dv;
+    double *Dx;
+    double nGx, nFx;
+    double **H_rf;
+    double **H_T;
+    double *Dz_aux;
+    int i, j, k;
+    double *b = NULL;
+    H_rf = aloca_matriz(nmed, nvar);
+    H_T = aloca_matriz(nvar, nmed);
+    C_rf = aloca_matriz(nvir, nvar);
+    Dz = aloca_vetor(nmed);
+    Dz_aux = aloca_vetor(nvar);
+    Dv = aloca_vetor(nvir);
+    Dx = aloca_vetor(nvar + nvir);
+    Haum = aloca_matriz(nvar, nvar);
+    b = aloca_vetor(nvar);
+
+    atualiza_Rede(grafo, numeroBarras);                  //atualiza a condição da rede conforme o estado atual
+    atualiza_Modelo(grafo, numeroBarras, nmed, medidas); // atualiza modelo de medição conforme a condição atual da rede
+    atualiza_Modelo(grafo, numeroBarras, nvir, virtuais);
+
+    int it = 0;
+    int conv = 0;
+
+    while (it < 30)
+    {
+        if (conv == 1)
+        {
+            FILE *res = NULL;
+            res = fopen("residuo.txt", "w+");
+            int ct = 0;
+            for (int i = 0; i<nmed+nvir;i++){
+                if (ct<nmed){
+                    float resid = medidas[ct].zmed - medidas[ct].h;
+                    fprintf(res, "%f\n", resid);
+                } else {
+                    float resid = virtuais[ct].zmed - virtuais[ct].h;
+                    fprintf(res, "%f\n", resid);
+                }
+                ct += 1;
+            }
+            fclose(res);
+            return conv;
+        }
+        atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
+        atualiza_H(grafo, numeroBarras, ramos, virtuais, nvir);
+        double max_sigma=0;
+        for (i = 0; i < nmed; i++)
+        {
+            for (j = 0; j < medidas[i].nvar; j++)
+            {
+                //H.T * H / (sigma^2)
+                medidas[i].H[j] = (medidas[i].H[j]); // /  medidas[i].sigma;
+            }
+            //H.T*deltaZ/(sigma^2)
+            if (medidas[i].sigma > max_sigma){
+                max_sigma = medidas[i].sigma;
+            }
+            Dz[i] = (medidas[i].zmed - medidas[i].h); ///medidas[i].sigma;
+        }
+        for (i = 0; i < nvir; i++)
+        {
+            Dv[i] = virtuais[i].h;
+        }
+        double soma;
+        float somaDz;
+        int _i, _j;
+        //printf("max sigma: %f\n", (max_sigma));
+
+        float somaVl = 0;
+        for (int i = 0; i< nmed; i++){
+            somaVl += medidas[i].sigma;
+        }
+
+
+        //double vl = (max_sigma);
+        //double vl = sqrt(nmed)*somaVl;
+        double vl = 1;
+        //printf("vl: %f\n", vl);
+        for (i = 0; i < nmed; i++)
+        {
+            for (j = 0; j < nvar; j++)
+            {
+                H_rf[i][j] = *H[i][j];
+            }
+        }
+
+        cholmod_common Common, *c;
+
+        cholmod_triplet *A_col1_T = NULL;
+        cholmod_triplet *A_col2_T = NULL;
+        cholmod_triplet *A_col3_T = NULL;
+
+        cholmod_sparse *A_col1 = NULL;
+        cholmod_sparse *A_col2 = NULL;
+        cholmod_sparse *A_col3 = NULL;
+
+        cholmod_sparse *A_aux_col_12 = NULL;
+
+        cholmod_sparse *A_hatchel = NULL;
+        cholmod_dense *b_hatchel = NULL;
+        cholmod_dense *X_hatchel = NULL;
+        
+
+        c = &Common;
+        cholmod_l_start(c);
+        clock_t tIniMatriz = clock();
+        A_hatchel = cholmod_l_allocate_sparse((nmed + nvar + nvir), (nmed + nvar + nvir), (nmed + nvar + nvir) * (nmed + nvar + nvir), 0, 0, 0, CHOLMOD_REAL, c);
+        b_hatchel = cholmod_l_allocate_dense((nmed + nvar + nvir), 1, (nmed + nvar + nvir), CHOLMOD_REAL, c);
+        X_hatchel = cholmod_l_allocate_dense((nmed + nvar + nvir), 1, (nmed + nvar + nvir), CHOLMOD_REAL, c);
+
+        A_col1 = cholmod_l_allocate_sparse((nmed + nvar + nvir), nmed, ((nmed + nvar + nvir) * nmed), 0, 0, 0, CHOLMOD_REAL, c);
+        A_col2 = cholmod_l_allocate_sparse((nmed + nvar + nvir), nvar, ((nmed + nvar + nvir) * nvar), 0, 0, 0, CHOLMOD_REAL, c);
+        A_col3 = cholmod_l_allocate_sparse((nmed + nvar + nvir), nvir, ((nmed + nvar + nvir) * nvir), 0, 0, 0, CHOLMOD_REAL, c);
+
+        A_aux_col_12 = cholmod_l_allocate_sparse((nmed + nvar + nvir), (nmed + nvar), ((nmed + nvar + nvir) * (nmed+ nvar)), 0, 0, 0, CHOLMOD_REAL, c);
+
+        A_col1_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nmed, (nmed + nvar + nvir) * nmed, 0, CHOLMOD_REAL, c);
+        A_col2_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nvar, (nmed + nvar + nvir) * nvar, 0, CHOLMOD_REAL, c);
+        A_col3_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nvir, (nmed + nvar + nvir) * nvir, 0, CHOLMOD_REAL, c);
+
+
+        //Coluna 1 da matriz aumentada de Hatchel
+        int index1 = 0;
+        for (int i = 0; i < nmed; i++){
+            ((long int *)A_col1_T->i)[index1] = i;
+            ((long int *)A_col1_T->j)[index1] = i;
+            ((double *)A_col1_T->x)[index1] = medidas[i].sigma;
+            A_col1_T->nnz += 1;
+            index1 += 1;
+        }
+        for (int i = 0; i < nvar; i++){
+            for (int j = 0; j < nmed; j++){
+                if (*H[j][i] != 0) {
+                    ((long int *)A_col1_T->i)[index1] = i+nmed;
+                    ((long int *)A_col1_T->j)[index1] = j;
+                    ((double *)A_col1_T->x)[index1] = *H[j][i];
+                    A_col1_T->nnz += 1;
+                    index1 += 1;
+                }
+            }
+        }
+        
+        //Coluna 2 da matriz aumentada de Hatchel
+        int index2 = 0;
+        for (int i = 0; i < nmed; i++){
+            for (int j = 0; j < nvar; j++){
+                if (*H[i][j] != 0) {
+                    ((long int *)A_col2_T->i)[index2] = i;
+                    ((long int *)A_col2_T->j)[index2] = j;
+                    ((double *)A_col2_T->x)[index2] = *H[i][j];
+                    A_col2_T->nnz += 1;
+                    index2 += 1;
+                }
+            }
+        }
+        for (int i = 0; i < nvir; i++){
+            for (int j = 0; j < nvar; j++){
+                if (*C[i][j] != 0){
+                    ((long int *)A_col2_T->i)[index2] = i+nmed+nvar;
+                    ((long int *)A_col2_T->j)[index2] = j;
+                    ((double *)A_col2_T->x)[index2] = *C[i][j];
+                    A_col2_T->nnz += 1;
+                    index2 += 1;
+                }
+            }
+        }
+        
+        //Coluna 3 da matriz aumentada de Hatchel
+        int index3 = 0;
+        for (int i = 0; i < nvar; i++){
+            for (int j = 0; j < nvir; j++){
+                if (*C[j][i] != 0 ){
+                    ((long int *)A_col3_T->i)[index3] = i+nmed;
+                    ((long int *)A_col3_T->j)[index3] = j;
+                    ((double *)A_col3_T->x)[index3] = *C[j][i];
+                    A_col3_T->nnz += 1;
+                    index3 += 1;
+                }
+            }
+        }
+        
+        printf("nmed: %d, nvar: %d, nvir: %d\n", nmed, nvar, nvir);
+        A_col1 = cholmod_l_triplet_to_sparse(A_col1_T, A_col1_T->nnz, c);
+        
+        A_col2 = cholmod_l_triplet_to_sparse(A_col2_T, A_col2_T->nnz, c);
+        
+        A_col3 = cholmod_l_triplet_to_sparse(A_col3_T, A_col3_T->nnz, c);
+        
+        
+
+        A_aux_col_12 = cholmod_l_horzcat(A_col1, A_col2, 1, c);
+        A_hatchel = cholmod_l_horzcat(A_aux_col_12, A_col3, 1, c);
+
+
+        //Lado direito - formulação com matriz aumentada de Hatchel
+        for (int i = 0; i < nmed; i++)
+        {
+            ((double *)b_hatchel->x)[i] = (medidas[i].zmed - medidas[i].h);
+        }
+        for (int i = 0; i < nvar; i++)
+        {
+            ((double *)b_hatchel->x)[i+nmed] = 0;
+        }
+        for (int i = 0; i < nvir; i++)
+        {
+            ((double *)b_hatchel->x)[i+nmed+nvar] = -virtuais[i].h;
+        }
+
+        clock_t t1Matriz = clock();
+        double tempoMatriz = (double)(t1Matriz-tIniMatriz)/CLOCKS_PER_SEC;
+        printf("\nAlocacao e construcao das matrizes: %lf",tempoMatriz);
+        BOOL write = false;
+
+        //TODO: exportar matriz para plot spy
+        //if (write && it == 0)
+        //{
+        //    FILE *matHat;
+        //    matHat = fopen("matHatchel_123_alfa0.txt", "w+");
+        //    for (i = 0; i < T_nec->nnz; i++)
+        //    {
+        //        long int _i, _j;
+        //        double v;
+        //        _i = ((long int *)T_nec->i)[i];
+        //        _j = ((long int *)T_nec->j)[i];
+        //        v = ((double *)T_nec->x)[i];
+        //        fprintf(matHat, "%d,%d,%f\n", _i, _j, v);
+        //    }
+        //}
+        clock_t tIni = clock();
+        X_hatchel = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A_hatchel, b_hatchel, c);
+        clock_t t1 = clock();
+        double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
+        printf("\nResolucao sistema linear: %lf",tempoWLS);
+        Dx = (double *)X_hatchel->x;
+
+        for (i = 0; i < nvar; i++)
+        {
+            ponto[i] = ponto[i] + Dx[i+nmed];
+        }
+        for (i = 0; i < nvar; i++)
+        {
+            if (fabs(Dx[i+nmed]) >= tol)
+            {
+                conv = 0;
+                break;
+            }
+            else
+                conv = 1;
+        }
+
+        atualiza_estado(grafo, ponto, regua_comp, nvar); //atualiza o estado atual do grafo conforme o vetor x calculado
+        atualiza_Rede(grafo, numeroBarras);
+        atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
+        atualiza_Modelo(grafo, numeroBarras, nvir, virtuais);
+
+
+        nFx = norma_inf(Dx, nvar);
+        //nGx = norma_inf(b, nvar);
+        printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t", it, nFx);
+
+        it++;
+        printf(".");
+    }
+    atualiza_estado(grafo, ponto, regua_comp, nvar); //atualiza o estado atual do grafo conforme o vetor x calculado
+    atualiza_Rede(grafo, numeroBarras);
+    atualiza_Modelo(grafo, numeroBarras, nmed, medidas);
+    atualiza_Modelo(grafo, numeroBarras, nvir, virtuais);
+    //atualiza_h(grafo, numeroBarras, nmed, medidas);
+    //atualiza_h(grafo, numeroBarras, nvir, virtuais);
+
+    return conv;
+}
