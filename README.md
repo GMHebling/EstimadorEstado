@@ -9,6 +9,7 @@
    5. pythonMC:
    6. lagrangeIgualdades: Estimador de Estado Trifásico utilizando restrições de igualdade, rotinas de esparsidade e Multifrontal QR
    7. SparseHatchel: Estimador de Estado Trifásico utilizando a matriz aumentada de Hatchel, rotinas de esparsidade e Multifrontal QR 
+   8. BranchCurrent: Estimador baseado no Branch Current em coordenadas retangulares
 
 ## Guia de Implementação
   * Faça o pull do master, este é o código mais recente e com maior número de melhorias de desempenho. O branch possui também os sistemas de teste já validados.
