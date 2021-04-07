@@ -1,7 +1,7 @@
 
 formatSpec = '%d,%d,%f';
 sizeA = [3 Inf];
-file1 = fopen('matnec_342_alfa2.txt');
+file1 = fopen('mathatchel_342_alfa0.txt');
 dados1 = fscanf(file1, formatSpec, sizeA);
 dados1 = dados1';
 
@@ -41,14 +41,14 @@ gain_sym = sparse(A_sparse1(symrcmP,symrcmP));
 [q_no_order, r_no_order] = qr(A_sparse1);
 
 %%
-% figure
-% set(gca, 'FontSize', 20);
-% subplot(1,2,1)
-% spy(sparse(r_no_order))
-% title('R Factor - No ordering', 'FontSize', 20);
-% subplot(1,2,2)
-% spy(sparse(ramd))
-% title('R Factor - AMD', 'FontSize', 20);
+figure
+set(gca, 'FontSize', 20);
+subplot(1,2,1)
+spy(sparse(r_no_order))
+title('R Factor - No ordering', 'FontSize', 20);
+subplot(1,2,2)
+spy(sparse(ramd))
+title('R Factor - AMD', 'FontSize', 20);
 
 % %%
 % figure
@@ -56,7 +56,7 @@ gain_sym = sparse(A_sparse1(symrcmP,symrcmP));
 % spy(gain_amd)
 % title('AMD Ordered Matrix', 'FontSize', 20);
 %%
-figure
-set(gca, 'FontSize', 20);
-spy(A_sparse1)
-title('Matrix without ordering', 'FontSize', 20);
+% figure
+% set(gca, 'FontSize', 20);
+% spy(A_sparse1)
+% title('Matrix without ordering', 'FontSize', 20);

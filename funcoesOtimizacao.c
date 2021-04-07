@@ -2870,6 +2870,8 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         cholmod_sparse *A_hatchel = NULL;
         cholmod_dense *b_hatchel = NULL;
         cholmod_dense *X_hatchel = NULL;
+
+        cholmod_triplet *T_hatchel = NULL;
         
 
         c = &Common;
@@ -2888,6 +2890,8 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         A_col1_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nmed, (nmed + nvar + nvir) * nmed, 0, CHOLMOD_REAL, c);
         A_col2_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nvar, (nmed + nvar + nvir) * nvar, 0, CHOLMOD_REAL, c);
         A_col3_T = cholmod_l_allocate_triplet((nmed + nvar + nvir), nvir, (nmed + nvar + nvir) * nvir, 0, CHOLMOD_REAL, c);
+
+        T_hatchel = cholmod_l_allocate_triplet((nmed + nvar + nvir), (nmed + nvar + nvir), (nmed + nvar + nvir) * (nmed + nvar + nvir), 0, CHOLMOD_REAL, c);
 
 
         //Coluna 1 da matriz aumentada de Hatchel
@@ -2961,7 +2965,25 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
 
         A_aux_col_12 = cholmod_l_horzcat(A_col1, A_col2, 1, c);
         A_hatchel = cholmod_l_horzcat(A_aux_col_12, A_col3, 1, c);
+        T_hatchel = cholmod_l_sparse_to_triplet(A_hatchel, c);
 
+
+        BOOL write = false;
+
+        if (write && it == 0)
+        {
+            FILE *matNEC;
+            matNEC = fopen("mathatchel_342_alfa0.txt", "w+");
+            for (i = 0; i < T_hatchel->nnz; i++)
+            {
+                long int _i, _j;
+                double v;
+                _i = ((long int *)T_hatchel->i)[i];
+                _j = ((long int *)T_hatchel->j)[i];
+                v = ((double *)T_hatchel->x)[i];
+                fprintf(matNEC, "%d,%d,%f\n", _i, _j, v);
+            }
+        }
 
         //Lado direito - formulação com matriz aumentada de Hatchel
         for (int i = 0; i < nmed; i++)
@@ -2980,7 +3002,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         clock_t t1Matriz = clock();
         double tempoMatriz = (double)(t1Matriz-tIniMatriz)/CLOCKS_PER_SEC;
         printf("\nAlocacao e construcao das matrizes: %lf",tempoMatriz);
-        BOOL write = false;
+        
 
         //TODO: exportar matriz para plot spy
         //if (write && it == 0)
