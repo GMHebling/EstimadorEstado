@@ -56,6 +56,7 @@ double *solve_Householder_LS(double **A,int m,int n, double *b);
 double *solve_PreconHouseholder(double **A,int m,int n, double *b);
 double *solve_Crout(double **A,int m,int n, double *b);
 
+long int *aloca_vetor_int(int m);
 
 #endif	/* FUNCOESMATEMATICAS_H */
 

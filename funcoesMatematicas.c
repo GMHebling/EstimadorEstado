@@ -1801,3 +1801,14 @@ double *solve_Crout(double **A, int m, int n, double *b)
     return (x);
 }
 
+long int *aloca_vetor_int(int m){
+    int i;
+    long int *A;
+
+    A=(long int*)malloc(m*sizeof(long int));
+
+    for (i=0;i<m;i++){
+        A[i] = 0;
+    }
+    return(A);
+}

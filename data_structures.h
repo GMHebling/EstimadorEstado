@@ -273,7 +273,7 @@ typedef struct {
   long int nmed;
   DMED **medidores; /**< Lista dos medidores. Limite de 20 para evitar alocação dinamica*/
   
-  //Impedância Shunt Totoal
+  //Impedância Shunt Total
   __complex__ Ysh[3][3];
   
   //Grandezas elétricas que caracterizam a barra

@@ -20,6 +20,7 @@
 #include "funcoesCalculoEletrico.h"
 #include "funcoesOtimizacao.h"
 #include "funcoesMatematicas.h"
+#include "funcoesFluxoVarredura.h"
 
 //#include "mmio.h"
 #include <cholmod.h>
@@ -60,7 +61,7 @@ BOOL forward(GRAFO *noP, GRAFO *grafo){
                             idx = j;
                         }
                     }
-                    control_action = controleReguladorTensao_LDC(noP->Vbase, Sbase/noP->Vbase, noP->V, Vaux, noP->adjacentes[i].Cur, grafo[noAdj].adjacentes[idx].Cur, noP->adjacentes[i].ramo);
+                    //control_action = controleReguladorTensao_LDC(noP->Vbase, Sbase/noP->Vbase, noP->V, Vaux, noP->adjacentes[i].Cur, grafo[noAdj].adjacentes[idx].Cur, noP->adjacentes[i].ramo);
                     // printf("\nLDC %d\n",control_action);
                 }
             }
@@ -81,7 +82,7 @@ BOOL forward(GRAFO *noP, GRAFO *grafo){
 }
 
 
-int montaRNP(ALIMENTADOR alimentador){
+int *montaRNP(ALIMENTADOR *alimentadores){
     RNP = aloca_vetor_int(alimentador.numeroNos+1);
     barraAtual = &alimentador.rnp[0];
     while(barraAtual != NULL){
@@ -99,7 +100,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroBarras, DMED *medidas, long i
     int i, j, k, r;
     double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
 
-    printf("Estimador de Estado WLS Trifásico...\n");
+    printf("Estimador de Estado Branch Current em Coordenadas retangulares...\n");
     //--------------------------------------------------------------------------
     //Alocação de memória das variáveis do estimador de estado
     nmed = 0;
@@ -171,6 +172,14 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroBarras, DMED *medidas, long i
             H[i][j] = &aux;
         }
     }
+
+    //Inicializa vetor x (correntes)
+    //utilizar variavel numeroRamos
+
+    
+    //RNP - a partir do alimentador
+    RNP = montaRNP(alimentadores)
+
 
     //TODO: Montar a regua conforme a estrutura DRAM - Ramos 
     //--------------------------------------------------------------------------
