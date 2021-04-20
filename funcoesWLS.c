@@ -1939,7 +1939,7 @@ void fluxoPotencia_NRQR(GRAFO *grafo, long int numeroBarras, DMED *medidas, long
     //Tratamento da referência
     long int ref_1, ref_2;
     tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar); 
-      
+    tira_refs_regua(nvar, ref_1, ref_2, regua); 
     
     //vetor h aponta para a estrutura de dados das medidas
     for(i=0;i<nmed;i++){
