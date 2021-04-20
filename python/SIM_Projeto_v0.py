@@ -193,15 +193,15 @@ def PowerFlow(md, sd, network_model, loading, method):
     ExportMeasurementSet(md, sd, "/DMED.csv", 'w', loading, locMed_PF)
     
     #Calula fluxo de potência pelo método de newton
-    subprocess.check_call('./powerflow', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    
+    #subprocess.check_call('./powerflow', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_output('../powerflow')
     #Leitura do resultado
     filename = '/referencia.txt'
     df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
-    filename = '/state.txt'
-    x = pd.read_csv(md + filename, sep = '\t',header=None)
+    filename = 'state.txt'
+    x = pd.read_csv(filename, sep = '\t',header=None)
     x.columns = ['regua','val']
     
     Cov_X = []
@@ -252,15 +252,16 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
            
     
     #Roda estimador de estado
-    subprocess.check_call('./estimator', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    #subprocess.check_call('./estimator', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.check_output('../estimator')
     
     #Leitura do resultado
     filename = '/referencia.txt'
     df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
-    filename = '/state.txt'
-    x = pd.read_csv(md + filename, sep = '\t',header=None)
+    filename = 'state.txt'
+    x = pd.read_csv(filename, sep = '\t',header=None)
     x.columns = ['regua','val']
     
     Cov_X = []
@@ -304,7 +305,7 @@ tem_pmu = 0
 network_model = LeituraDados(md + sd)
 print("")
 # imprime config.txt
-PrintConfig(md,sd)
+#PrintConfig(md,sd)
 
 
 
@@ -464,12 +465,12 @@ for amostra in range(1,Namostras+1):
 t = 0    
 erro_x = []
 for amostra in range(0,Namostras):
-    erro_x.append(sim_MC[amostra][t].x.val.values - sim_ref[t].x.val.values)
+    erro_x.append(sim_MC[amostra][t].x.val.values - sim_ref[t].x.val.values[:-3])
     
 # MAE
 MAE_t = abs(np.nanmean(erro_x,0))
 MAE_x = abs(np.nanmean(erro_x,1))
-
+print('MAE: ', max(MAE_t))
 # RMSE
 aux = [i ** 2 for i in erro_x]
 RMSE_t = np.sqrt(np.nanmean(aux,0))
