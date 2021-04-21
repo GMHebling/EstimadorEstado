@@ -26,5 +26,6 @@ void dSkm_ret(GRAFO *noP, GRAFO *noS, DRAM *ramo, __complex__ double *dS, long i
 void dSmk_ret(GRAFO *noP, GRAFO *noS, DRAM *ramo, __complex__ double *dS, long int opt, long int i);
 void dSk_ret(GRAFO *grafo, long int k, __complex__ double *dS, long int opt, long int barra, long int fase);
 
+void tensaoDelta(__complex__ double *Vf, __complex__ double *Vl);
 
 #endif	/* funcoesCalculoEletrico_H */

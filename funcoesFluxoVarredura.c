@@ -153,7 +153,7 @@ void incializaTensoesVarredura(GRAFO *grafo, long int numeroBarras, ALIMENTADOR 
     int i, k, fase;
     BOOL visitado[numeroBarras];
     __complex__ double V0[3], **Yaux;
-    extern BOOL control_REG_OPT;
+    BOOL control_REG_OPT;
 
     Yaux = c_matAloca(3);
     
@@ -780,7 +780,7 @@ BOOL controleReguladorTensao_LDC(double Vbase, double Ibase, complex double *Vp,
 
             break;
         //------------------------------------------------------
-        // CONTROLE LOCKED FORWARD
+        // CONTROLE LOCKED forward_sweep
         case 1 :
             for (i=0;i<3;i++) Vdiff[i] = Vset[i] - cabs(Vbase*Vs[i]/ramo->regulador.TP - Zcont[i] * Ibase * ( - Isp[i])/ramo->regulador.TC);
 
@@ -918,16 +918,16 @@ BOOL controleReguladorTensao_LDC(double Vbase, double Ibase, complex double *Vp,
     return(ctr_act);
 }
 
-//Função que efetua a etapa forward
-BOOL forward(GRAFO *noP, GRAFO *grafo){
+//Função que efetua a etapa forward_sweep
+BOOL forward_sweep(GRAFO *noP, GRAFO *grafo){
     int i, noAdj, idx;
     complex double Vaux[3];
     BOOL control_action = 0; //variável para indicar se houve transição por parte dos controladores
-    extern double Sbase;
+    double Sbase;
     double Ibase;
 
-    extern BOOL control_REG_OPT;
-    extern BOOL control_CAP_OPT;
+    BOOL control_REG_OPT;
+    BOOL control_CAP_OPT;
 
     for (i = 0; i < noP->numeroAdjacentes;i ++){
         noAdj = noP->adjacentes[i].idNo;
@@ -971,8 +971,10 @@ BOOL forward(GRAFO *noP, GRAFO *grafo){
     return (control_action);
 }
 
-int fluxoPotencia_BFS_Alimentador(GRAFO *grafo, long int numeroBarras, ALIMENTADOR alimentador, DRAM *ramos,double Sbase){
+int fluxoPotencia_BFS_Alimentador(GRAFO *grafo, long int numeroBarras, ALIMENTADOR alimentador, DRAM *ramos, double Sbase){
     int it, nvar, k = 0,i, conv = 0;
+    int MAXIT = 30;
+    double tolerance = 0.00001;
     double *DV, nDV;
     long int *RNP;
     BOOL control_action = 0;
@@ -1019,9 +1021,9 @@ int fluxoPotencia_BFS_Alimentador(GRAFO *grafo, long int numeroBarras, ALIMENTAD
         }
 
         //---------------------------------------------------------------------- 
-        //Forward Sweep
+        //forward_sweep Sweep
         for(k = 0; k < alimentador.numeroNos; k++){
-            control_action = forward(&grafo[RNP[k]], grafo);
+            control_action = forward_sweep(&grafo[RNP[k]], grafo);
         }
 
         //Critério de Convergência
@@ -1051,6 +1053,7 @@ int fluxoPotencia_BFS_Alimentador(GRAFO *grafo, long int numeroBarras, ALIMENTAD
 //Método Baseado na Varredura Direta/Inversa Trifasica
 void fluxoPotencia_BFS_Multiplos(GRAFO *grafo, long int numeroBarras, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase){
     long int nmed,nvar,nmedTotal;
+    int MAXIT = 30;
     int i,j, idAlim, it;
     FILABARRAS *barraAtual;
     GRAFO *no;

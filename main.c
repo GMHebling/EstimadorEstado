@@ -10,6 +10,7 @@
 #include "funcoesTopologia.h"
 #include "funcoesMatematicas.h"
 #include "funcoesWLS.h"
+#include "funcoesBranchCurrent.h"
 
 int main(int argc, char **argv)
 {
@@ -45,8 +46,8 @@ int main(int argc, char **argv)
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
 
-    estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
-
+    //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);
     free(ramo);

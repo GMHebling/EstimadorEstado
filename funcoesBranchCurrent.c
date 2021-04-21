@@ -29,72 +29,26 @@
 
 #include "data_structures.h"
 
-BOOL forward(GRAFO *noP, GRAFO *grafo){
-    int i, noAdj, idx;
-    complex double Vaux[3];
-    BOOL control_action = 0; //variável para indicar se houve transição por parte dos controladores
-    extern double Sbase;
-    double Ibase;
-
-    extern BOOL control_REG_OPT;
-    extern BOOL control_CAP_OPT;
-
-    for (i = 0; i < noP->numeroAdjacentes;i ++){
-        noAdj = noP->adjacentes[i].idNo;
-        Vaux[0] = grafo[noAdj].V[0];
-        Vaux[1] = grafo[noAdj].V[1];
-        Vaux[2] = grafo[noAdj].V[2];
-        if (noP->profundidade < grafo[noAdj].profundidade){
-            calculaTensaoJusante(noP->V, Vaux, noP->adjacentes[i].Cur, noP->adjacentes[i].ramo);
-
-            grafo[noAdj].V[0] = Vaux[0];
-            grafo[noAdj].V[1] = Vaux[1];
-            grafo[noAdj].V[2] = Vaux[2]; 
-
-            //------------------------------------------------------------------
-            //Atualiza TAPs de acordo com o controlador LDC do regulador
-            if (control_REG_OPT == 1){
-                if(noP->adjacentes[i].tipo == 2){
-                    //Atualiza controle de taps do regulador de tensão
-                    for (int j = 0; j < grafo[noAdj].numeroAdjacentes;j ++){
-                        if (grafo[noAdj].adjacentes[j].idNo == noP->idNo){
-                            idx = j;
-                        }
-                    }
-                    //control_action = controleReguladorTensao_LDC(noP->Vbase, Sbase/noP->Vbase, noP->V, Vaux, noP->adjacentes[i].Cur, grafo[noAdj].adjacentes[idx].Cur, noP->adjacentes[i].ramo);
-                    // printf("\nLDC %d\n",control_action);
-                }
-            }
-            //------------------------------------------------------------------
-            //Atualiza Bancos de Capacitor Chaveados com os controladores de Bancos de Capacitor
-            if (control_CAP_OPT == 1){
-
-            }
-            // //------------------------------------------------------------------
-            // //Atualiza Geradores Distribuídos com os controladores de Tensão (Futuro)
-            // if (control_GD_OPT == 1){
-
-            // }
-
-        }
-    }
-    return (control_action);
-}
 
 
-int *montaRNP(ALIMENTADOR *alimentadores){
-    RNP = aloca_vetor_int(alimentador.numeroNos+1);
-    barraAtual = &alimentador.rnp[0];
+
+int *montaRNP(ALIMENTADOR alimentadores){
+    int *RNP;
+    int k = 0;
+    FILABARRAS *barraAtual;
+
+    RNP = aloca_vetor_int(alimentadores.numeroNos+1);
+    barraAtual = &alimentadores.rnp[0];
     while(barraAtual != NULL){
         RNP[k] = barraAtual->idNo;
         k++;
         barraAtual = barraAtual->prox;
     }
 
-    return RNP
+    return RNP;
 }
 
-void estimadorBC_RECT(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase)
+void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase)
 {
     long int nmed, nvar;
     int i, j, k, r;
@@ -178,8 +132,13 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroBarras, DMED *medidas, long i
 
     
     //RNP - a partir do alimentador
-    RNP = montaRNP(alimentadores)
+    int *RNP;
+    RNP = montaRNP(*alimentadores);
 
+    //inicializar vetor de variaveis de estado
+
+    
+    
 
     //TODO: Montar a regua conforme a estrutura DRAM - Ramos 
     //--------------------------------------------------------------------------
@@ -249,8 +208,9 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroBarras, DMED *medidas, long i
     //Tratamento da referência
     long int ref_1, ref_2;
     tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
-
     tira_refs_regua(nvar, ref_1, ref_2, regua);
+
+
     nvar = nvar - (ref_2 - ref_1 + 1);
     //printf("tira refs\n");
     //vetor h aponta para a estrutura de dados das medidas

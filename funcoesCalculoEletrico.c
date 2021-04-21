@@ -761,3 +761,9 @@ void dImk(GRAFO *noP, GRAFO *noS, DRAM *ramo, __complex__ double *dI, long int o
     }
     free(J);
 }
+
+void tensaoDelta(__complex__ double *Vf, __complex__ double *Vl){
+    Vl[0] = (Vf[0] - Vf[1]);
+    Vl[1] = (Vf[1] - Vf[2]);
+    Vl[2] = (Vf[2] - Vf[0]);
+}

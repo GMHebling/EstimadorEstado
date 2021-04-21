@@ -162,6 +162,7 @@ typedef struct {
   double deltaV, R1,X1,R2,X2,R3,X3, V1,V2,V3;
   long int controle; // (0 = Somente Forward sem Restrição / 1 = Locked Forward / 2 = Locked Reverse / 3 = Bidirectional / 4 = Idle / 5 = Neutral Reverse / 6 = Cogenartion / Ver manual Siemens MJ4A)
   double tap[3];
+  double tap_ini[3];
   double deltaVr, R1r,X1r,R2r,X2r,R3r,X3r, V1r,V2r,V3r; //Parametros de controle reverso
   
 } DREG;
@@ -180,6 +181,10 @@ typedef struct {
     DLIN linha;
     DTRF trafo;
     DREG regulador;
+
+    //Matrizes para modelo de linha
+    __complex__ double **Z;
+    __complex__ double **B;
     
     //Matrizes de Impedância
     __complex__ double **Ypp;
