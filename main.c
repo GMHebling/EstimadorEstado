@@ -27,25 +27,29 @@ int main(int argc, char **argv)
     DMED *medida = NULL, *medidaPMU = NULL, *virtuais = NULL;
     ALIMENTADOR *alimentador = NULL, *areas = NULL;
 
+    
+
     // Leitura dos dados da rede elétrica
     folder = leituraDados(&barra, &ramo, &numeroBarras, &numeroRamos, &numeroAlimentadores);
-
+    printf("leituraDados ok\n");
     //Melhorar o tratamento dos taps de reguladores e trafos - leitura separa de estados lógicos
     // Cria estrutura de dados da rede elétrica
     geraGrafo(&grafo, barra, numeroBarras, ramo, numeroRamos);
-
+    printf("geraGrafo ok\n");
     // Cria as listas encadeadas radiais dos alimentadores
     buscaProfundidadeAlimentadores(grafo, numeroBarras, &alimentador, numeroAlimentadores);
-
+    printf("buscaProfundidadeAlimentadores ok\n");
     // Transforma em pu e cria matrizes de admitância iniciais
     calculaPU(grafo, numeroBarras, ramo, numeroRamos, Sbase);
-
+    printf("calculaPU ok\n");
     //Atualiza Valores de taps
     atualizaTaps(ramo, numeroRamos); //terminar o tap de trafos
-
+    printf("atualizaTaps ok \n");
+    // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
 
+    
     //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
     estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);

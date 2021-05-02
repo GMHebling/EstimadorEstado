@@ -208,7 +208,7 @@ typedef struct {
     long int tipo; //
     long int idAlim; //
     long int idArea; //
-    long int idFront;
+    long int idFront; //
     ESTADO ligado; //aberto = on, 
     
     double zmed;
@@ -223,6 +223,35 @@ typedef struct {
     double *H; //salva o gradiente da respectiva medida
     
 } DMED;
+
+// Estrutura de dados para as medidas no formato complexo
+
+typedef struct {
+    long int DE;
+    long int PARA;
+    long int id;
+    long int k;
+    long int m;
+    long int ramo;
+    FASES fases;
+    long int tipo; //
+    long int idAlim; //
+    long int idArea; //
+    long int idFront; //
+    ESTADO ligado; //aberto = on, 
+    
+    __complex__ double zmed;
+    double sigma;
+    double prec;
+    
+    long int par; //para indicar o par PQ, par VTeta, e par IdeltaI
+    
+    __complex__ double h;
+    long int nvar;
+    double *reguaH;
+    double *H; //salva o gradiente da respectiva medida
+    
+} DMED_COMPLEX;
 
 //------------------------------------------------------------------------------
 //
@@ -279,7 +308,7 @@ typedef struct {
   DMED **medidores; /**< Lista dos medidores. Limite de 20 para evitar alocação dinamica*/
   
   //Impedância Shunt Total
-  __complex__ Ysh[3][3];
+  __complex__ double Ysh[3][3];
   
   //Grandezas elétricas que caracterizam a barra
   __complex__ double S[3];
