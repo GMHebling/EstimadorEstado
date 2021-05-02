@@ -6,11 +6,9 @@ i = []
 j = []
 x = []
 
-#fname = 'matnec_34_alfa0.txt'
-#fname = 'matnec_123_alfa0.txt'
 #fname = 'matrizH_34.txt'
 #fname = 'matrizH_123.txt'
-fname = 'matrizH_342.txt'
+#fname = 'matrizH_342.txt'
 
 with open(fname) as f:
     for line in f:

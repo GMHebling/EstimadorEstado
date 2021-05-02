@@ -329,7 +329,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     }
     fclose(matrizH);
 
-    
+    printf("\n");
     //Todo: estimador WLS para as correntes
 
     //Todo: atualizar as correntes e fazer a varredura forward
