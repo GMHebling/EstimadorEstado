@@ -51,7 +51,9 @@ int main(int argc, char **argv)
 
     
     //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
-    estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
+    //imprimeEstado(grafo, numeroBarras);
+    
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);
     free(ramo);
