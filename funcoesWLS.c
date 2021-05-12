@@ -1456,7 +1456,7 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
         }
     }
     nvar = 0;
-    //printf("numero barras: %d\n", numeroBarras);
+    //printf("numero barras: %d\n", nmed);
     for (i = 0; i < numeroBarras; i++)
     {
         switch (grafo[i].fases)

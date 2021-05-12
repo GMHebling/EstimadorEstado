@@ -51,13 +51,17 @@ int main(int argc, char **argv)
 
     
     //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+    clock_t tIni = clock();
     estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
+    clock_t t1 = clock();
+    double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;
+    printf("\nEstimação BC: %lf", tempoWLS);
     imprimeEstado(grafo, numeroBarras);
     
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
-    free(barra);
-    free(ramo);
-    free(grafo);
-    free(alimentador);
+    //free(barra);
+    //free(ramo);
+    //free(grafo);
+    //free(alimentador);
     return (EXIT_SUCCESS);
 }

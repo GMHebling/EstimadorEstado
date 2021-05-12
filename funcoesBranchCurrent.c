@@ -287,26 +287,34 @@ void monta_regua_medidas(long int nmed_BC, double *regua_med, double *regua_med_
 
 double  **monta_matriz_H(long int numeroRamos, long int nmed_BC, double *regua_x, double *regua_med, double *regua_med_inv){
     double **H_BC = NULL;
+    int ctnz = 0;
     H_BC = aloca_matriz(3*nmed_BC, 3*numeroRamos);
     
     for (int nm = 0; nm < 3*nmed_BC; nm++){
         for (int nv = 0; nv < 3*numeroRamos; nv++){
-            if (regua_med[nm] != 0 && regua_x[nv] != 0){
+            
+            if (regua_med[nm] != 0.0 && regua_x[nv] != 0.0){
+                ctnz += 1;
                 if (fabs(regua_med[nm] - regua_x[nv]) < EPS){
+                    
                     H_BC[nm][nv] = 1.0;                
                 }
                 if (fabs(regua_med_inv[nm] + regua_x[nv]) < EPS){
+                    
                     H_BC[nm][nv] = -1.0;                
                 }
                 if (regua_x[nv] - regua_med[nm] > 0 && regua_x[nv] - regua_med[nm] < 1.0){
+                    
                     H_BC[nm][nv] = 1.0; 
                 }
                 if (fabs(((regua_x[nv] - (int)regua_x[nv]) * 10000.0) - regua_med[nm]) < EPS){
+                    
                     H_BC[nm][nv] = -1.0;
                 }
             }
         }
     }
+    //printf("ctzn: %d\n", ctnz);
 
     return H_BC;
 }
@@ -420,9 +428,9 @@ void incializa_tensoes_grafo(GRAFO *grafo, long int numeroBarras, ALIMENTADOR *a
     for (i = 0; i < numeroAlimentadores; i++)
     {
         //Tensão Inicial da subestação
-        V0[0] =  1.0*(cos(0) + I*sin(0)); //grafo[alimentadores[i].noRaiz].barra->Vinicial[0];
-        V0[1] =  1.0*(cos(-120*PI/180) + I*sin(-120*PI/180)); //grafo[alimentadores[i].noRaiz].barra->Vinicial[1];
-        V0[2] =  1.0*(cos(120*PI/180) + I*sin(120*PI/180)); //grafo[alimentadores[i].noRaiz].barra->Vinicial[2];
+        V0[0] =  grafo[alimentadores[i].noRaiz].barra->Vinicial[0];
+        V0[1] =  grafo[alimentadores[i].noRaiz].barra->Vinicial[1];
+        V0[2] =  grafo[alimentadores[i].noRaiz].barra->Vinicial[2];
 
         FILABARRAS *barraAtual = &alimentadores[i].rnp[0];
 
@@ -553,7 +561,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     long int nmed, nvar;
     int i, j, k, r;
     double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
-
+    double tol = 0.000001;
     //__complex__ double *x_bc = NULL;
 
     
@@ -642,75 +650,94 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         barraAtual = barraAtual->prox;
     }
 
+    nmed_BC = conta_medidas_BC(medidas, nmed);
     //cria_B_Z_ramos(grafo, numeroRamos, ramos, Sbase);
     
     //x_bc = aloca_vetor(numeroRamos);
     //inicializa_vetor_estados_BC(x_bc, 3*numeroRamos);
     //inicializar vetor de variaveis de estado
     
-    incializa_tensoes_grafo(grafo, numeroBarras, alimentadores, numeroAlimentadores);
-    nmed_BC = conta_medidas_BC(medidas, nmed);
-
-    
-    
     DMED_COMPLEX *medidas_complexas = NULL;
     medidas_complexas = (DMED_COMPLEX *)malloc((nmed_BC) * sizeof(DMED_COMPLEX));
+    
+    
+    double *x_bc = NULL;
+    x_bc = aloca_vetor(6*numeroRamos);
+    //x_bc = (double *)malloc((6*numeroRamos) * sizeof(double));
+    
+
+    DMED_COMPLEX *medidas_equivalentes = NULL;
+    medidas_equivalentes = (DMED_COMPLEX *)malloc((nmed_BC) * sizeof(DMED_COMPLEX));
+
+    __complex__ double *z_eq = NULL;
+    z_eq = c_vetAloca(3*nmed_BC);
+    //z_eq = (__complex__ double *)malloc(3*nmed_BC * sizeof(__complex__ double));
+
+
+    double *regua_x = NULL;
+    double *regua_med = NULL;
+    double *regua_med_inv = NULL;
+    double **H_BC = NULL;
+    
+    double *x_anterior = NULL;
+    x_anterior = aloca_vetor(6*numeroRamos);
+    double *dif_x = NULL;
+    dif_x = aloca_vetor(6*numeroRamos);
+    //vetor de estados: 1 para cada ramo e fase;
+    regua_med = aloca_vetor(3*nmed_BC);
+    regua_med_inv = aloca_vetor(3*nmed_BC);
+    regua_x = aloca_vetor(3*numeroRamos);
+    H_BC = aloca_matriz(3*nmed_BC, 3*numeroRamos);
+
+    
+
+    
+
+    
+    incializa_tensoes_grafo(grafo, numeroBarras, alimentadores, numeroAlimentadores);
     medidas_complexas = converte_medidas_para_complexo(medidas, nmed);
+    medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_BC, numeroBarras, grafo);
+
+    monta_regua_x(numeroRamos, regua_x, ramos);
+    monta_regua_medidas(nmed_BC, regua_med, regua_med_inv, medidas_equivalentes);
     
-    
-
-
-
     int it = 0;
-    while (it < 1){
-        DMED_COMPLEX *medidas_equivalentes = NULL;
-        medidas_equivalentes = (DMED_COMPLEX *)malloc((nmed_BC) * sizeof(DMED_COMPLEX));
-        medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_BC, numeroBarras, grafo);
+    int conv = 0;
+    while (conv < 1){
 
-        __complex__ double *z_eq = NULL;
-        z_eq = (__complex__ double *)malloc(3*nmed_BC * sizeof(__complex__ double));
-        
         monta_z_complexa(medidas_equivalentes, z_eq, nmed_BC);
         //printf("\n");
-        //for (int ctz = 0; ctz < 10; ctz ++){
-        //    printf("z[%d] = %f + i*%f\n", ctz, creal(z_eq[ctz]), cimag(z_eq[ctz]));
-        //}
+
+        for (int ctz = 0; ctz < 20; ctz ++){
+            //printf("z[%d] = %f + i*%f\n", ctz, creal(z_eq[ctz]), cimag(z_eq[ctz]));
+            //printf("reguax : %f\n", regua_x[ctz]);
+        }
         //printf("\n");
-
-        double *regua_x = NULL;
-        //vetor de estados: 1 para cada ramo e fase;
-        regua_x = aloca_vetor(3*numeroRamos);
-        monta_regua_x(numeroRamos, regua_x, ramos);
-         
-
-        double *regua_med = NULL;
-        double *regua_med_inv = NULL;
-        regua_med = aloca_vetor(3*nmed_BC);
-        regua_med_inv = aloca_vetor(3*nmed_BC);
-
-        monta_regua_medidas(nmed_BC, regua_med, regua_med_inv, medidas_equivalentes);
         
-        
-        double **H_BC = NULL;
-        H_BC = aloca_matriz(3*nmed_BC, 3*numeroRamos);
         //monta matriz Jacobiana
         H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
         int st = 0;
 
-        double *x_bc = NULL;
-        x_bc = (double *)malloc((6*numeroRamos) * sizeof(double));
         
+        x_anterior = x_bc;
         x_bc = resolve_linear_QR(H_BC, z_eq, numeroRamos, nmed_BC);
         //for (int cx = 0; cx < 2; cx++){
         //    printf("xbc: %f\n", x_bc[cx]);
         //    printf("\n");
         //}
+
+        for (int cx = 0; cx < 6*numeroRamos; cx ++){
+            dif_x[cx] = x_anterior[cx] - x_bc[cx];
+        }
+        double nfx;
+
+        nfx = norma_inf(dif_x, 6*numeroRamos);
+        printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t  \n", it, nfx);
+
+
         
         //mudar atualiza rede para receber complexo
         atualiza_Rede_BC(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
-
-
-    
 
         //for (int nb = 0; nb < numeroBarras; nb++){
         //    for (int nj = 0; nj< grafo[nb].numeroAdjacentes; nj++){
@@ -722,8 +749,11 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         for (int k = 0; k<numeroBarras; k++){
             int ct = forward_sweep(&grafo[RNP[k]], grafo);
         }
-        
-        
+        if (nfx < tol | it > 30){
+            conv = 10;
+        }
+
+        medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_BC, numeroBarras, grafo);
         
         it++;
     }
