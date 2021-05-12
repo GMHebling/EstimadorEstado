@@ -237,6 +237,9 @@ void montaQuadripoloLinha(DRAM *ramo, DLIN *linha){
     ramo->Yps = c_matAloca(3);
     ramo->Ysp = c_matAloca(3);
     ramo->Yss = c_matAloca(3);
+
+    ramo->Z = c_matAloca(3);
+    ramo->B = c_matAloca(3);
     
     //Aloca Matrizes de Impedância e Admitância
     Zl = c_matAloca(3);
@@ -264,6 +267,8 @@ void montaQuadripoloLinha(DRAM *ramo, DLIN *linha){
     B[2][1] = I * linha->Bbc/2;
     B[2][2] = I * linha->Bcc/2;
     
+    c_matIgual(ramo->Z, Zl, 3);
+    c_matIgual(ramo->B, B, 3);
     //Inversa de Z - salva na variável Zl
     c_matInversaZ(Zl, 3);
     

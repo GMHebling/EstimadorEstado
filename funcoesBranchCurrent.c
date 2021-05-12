@@ -292,16 +292,16 @@ double  **monta_matriz_H(long int numeroRamos, long int nmed_BC, double *regua_x
     for (int nm = 0; nm < 3*nmed_BC; nm++){
         for (int nv = 0; nv < 3*numeroRamos; nv++){
             if (regua_med[nm] != 0 && regua_x[nv] != 0){
-                if (regua_med[nm] - regua_x[nv] < EPS){
-                H_BC[nm][nv] = 1.0;                
+                if (fabs(regua_med[nm] - regua_x[nv]) < EPS){
+                    H_BC[nm][nv] = 1.0;                
                 }
-                if (regua_med_inv[nm] + regua_x[nv] < EPS){
+                if (fabs(regua_med_inv[nm] + regua_x[nv]) < EPS){
                     H_BC[nm][nv] = -1.0;                
                 }
                 if (regua_x[nv] - regua_med[nm] > 0 && regua_x[nv] - regua_med[nm] < 1.0){
                     H_BC[nm][nv] = 1.0; 
                 }
-                if (((regua_x[nv] - (int)regua_x[nv]) * 10000.0) - regua_med[nm] < EPS){
+                if (fabs(((regua_x[nv] - (int)regua_x[nv]) * 10000.0) - regua_med[nm]) < EPS){
                     H_BC[nm][nv] = -1.0;
                 }
             }
@@ -501,6 +501,7 @@ void atualiza_Rede_BC(GRAFO *grafo, long int numeroBarras, DBAR *barra, double *
     int i, j, k, idMed, de, para, ramo, fase;
     __complex__ double *Saux, *Iaux;
     double aux_regua;
+    double aux_regua_inv;
     BOOL visitado[numeroBarras];
 
 
@@ -508,109 +509,44 @@ void atualiza_Rede_BC(GRAFO *grafo, long int numeroBarras, DBAR *barra, double *
     for (i = 0; i < numeroBarras; i++)
     {
         //Percorre os ramos adjacentes
-        for (k = 0; k < grafo[i].numeroAdjacentes; k++)
+        for (k = 0; k < (grafo)[i].numeroAdjacentes; k++)
         {
-            aux_regua = aux_regua = barra[grafo[i].idNo].ID + barra[grafo[i].adjacentes[k].idNo].ID/10000.0;
+            aux_regua = barra[(grafo)[i].idNo].ID + barra[(grafo)[i].adjacentes[k].idNo].ID/10000.0;
+            aux_regua_inv = -(barra[(grafo)[i].adjacentes[k].idNo].ID + barra[(grafo)[i].idNo].ID/10000.0);
+            
 
             for (j = 0; j < numeroRamos; j++){
-
-                if (aux_regua - regua_x[3*j] < EPS){
+                //printf("\naux: %f, regua: %f", aux_regua, regua_x[3*j]);
+                if (fabs(aux_regua - regua_x[3*j]) < EPS){
                     
-                    grafo[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
-                    //printf("\ni: %d -> k: %d = %f + j*%f", i, k, x_bc[6*j], x_bc[6*j+1]);
+                    (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
+                    //printf("\ni: %d -> k: %d = %f + j*%f", i, j, x_bc[6*j], x_bc[6*j+1]);
                     //printf("\ni: %d -> k: %d = %f + j*%f", i, k, creal(grafo[i].adjacentes[k].Cur[0]), cimag(grafo[i].adjacentes[k].Cur[0]));
-                    
-                    grafo[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
-                    grafo[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                    //printf("\ni: %d -> k: %d = %f + j*%f", 0, 0, creal(grafo[0].adjacentes[0].Cur[0]), cimag(grafo[0].adjacentes[0].Cur[0]));
+    
+                    (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
+                    (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
                 }
+                if (fabs(regua_x[3*j] + aux_regua_inv) < EPS){
+                    (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
+                    //printf("\ni: %d -> k: %d = %f + j*%f", i, j, x_bc[6*j], x_bc[6*j+1]);
+                    //printf("\ninv i: %d -> k: %d = %f + j*%f", i, k, creal(grafo[i].adjacentes[k].Cur[0]), cimag(grafo[i].adjacentes[k].Cur[0]));
+                    //printf("\ni: %d -> k: %d = %f + j*%f", 0, 0, creal(grafo[0].adjacentes[0].Cur[0]), cimag(grafo[0].adjacentes[0].Cur[0]));
+    
+                    (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
+                    (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+
+                }
+
+                
             }
         }
     }
+    //printf("\ni: %d -> k: %d = %f + j*%f", 0, 0, creal(grafo[0].adjacentes[0].Cur[0]), cimag(grafo[0].adjacentes[0].Cur[0]));
+                    
 }
 
-void montaQuadripoloLinha_BC(DRAM *ramo, DLIN *linha){
-    int aux = 1;
-    __complex__ double y, **Zl,**B;
-    
-    //Aloca Matrizes de Quadripolos
-    ramo->Ypp = c_matAloca(3);
-    ramo->Yps = c_matAloca(3);
-    ramo->Ysp = c_matAloca(3);
-    ramo->Yss = c_matAloca(3);
-    
-    //Aloca Matrizes de Quadripolos
-    ramo->Z = c_matAloca(3);
-    ramo->B = c_matAloca(3);
-    
-    //Aloca Matrizes de Impedância e Admitância
-    Zl = c_matAloca(3);
-    B = c_matAloca(3);
-    
-    //Matriz Impedância da linha
-    Zl[0][0] = linha->Zaa;
-    Zl[0][1] = linha->Zab;
-    Zl[0][2] = linha->Zac;
-    Zl[1][0] = linha->Zab;
-    Zl[1][1] = linha->Zbb;
-    Zl[1][2] = linha->Zbc;
-    Zl[2][0] = linha->Zac;
-    Zl[2][1] = linha->Zbc;
-    Zl[2][2] = linha->Zcc;
-    
-    //Matriz Susceptãncia Shunt da linha
-    B[0][0] = I * linha->Baa/2;
-    B[0][1] = I * linha->Bab/2;
-    B[0][2] = I * linha->Bac/2;
-    B[1][0] = I * linha->Bab/2;
-    B[1][1] = I * linha->Bbb/2;
-    B[1][2] = I * linha->Bbc/2;
-    B[2][0] = I * linha->Bac/2;
-    B[2][1] = I * linha->Bbc/2;
-    B[2][2] = I * linha->Bcc/2;
-    
-    //Matriz de impedância
-    c_matIgual(ramo->Z, Zl, 3);
-    c_matIgual(ramo->B, B, 3);
-}
 
-void cria_B_Z_ramos(GRAFO *grafo, long int numeroRamos, DRAM *ramos, double Sbase){
-    for (int idRam=0;idRam<numeroRamos;idRam++){
-        double Vbase = grafo[ramos[idRam].m].Vbase;
-        //Transforma as impedâncias em pu
-        switch(ramos[idRam].tipo){
-            case 0:
-                ramos[idRam].linha.Zaa = ramos[idRam].linha.Zaa/((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Zab = ramos[idRam].linha.Zab/((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Zac = ramos[idRam].linha.Zac/((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Zbb = ramos[idRam].linha.Zbb/((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Zbc = ramos[idRam].linha.Zbc/((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Zcc = ramos[idRam].linha.Zcc/((pow(Vbase,2))/Sbase);
-                
-                ramos[idRam].linha.Baa = ramos[idRam].linha.Baa * ((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Bab = ramos[idRam].linha.Bab * ((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Bac = ramos[idRam].linha.Bac * ((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Bbb = ramos[idRam].linha.Bbb * ((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Bbc = ramos[idRam].linha.Bbc * ((pow(Vbase,2))/Sbase);
-                ramos[idRam].linha.Bcc = ramos[idRam].linha.Bcc * ((pow(Vbase,2))/Sbase);
-                
-                
-                montaQuadripoloLinha_BC(&ramos[idRam], &ramos[idRam].linha);
-                break;
-            case 1:
-                ramos[idRam].trafo.R = 3*ramos[idRam].trafo.R/((pow(Vbase,2))/Sbase);
-                ramos[idRam].trafo.X = 3*ramos[idRam].trafo.X/((pow(Vbase,2))/Sbase);
-                
-                //montaQuadripoloTrafo(&ramos[idRam], &ramos[idRam].trafo);
-                break;
-            case 2:
-                ramos[idRam].regulador.R = 3*ramos[idRam].regulador.R/((pow(Vbase,2))/Sbase);
-                ramos[idRam].regulador.X = 3*ramos[idRam].regulador.X/((pow(Vbase,2))/Sbase);
-                
-                //montaQuadripoloRegulador(&ramos[idRam], &ramos[idRam].regulador);
-                break;    
-        }
-    }   
-}
 
 void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase, DBAR *barra)
 {
@@ -693,7 +629,6 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     //Inicializa vetor x (correntes)
     //utilizar variavel numeroRamos
 
-    
     //RNP - a partir do alimentador
     int *RNP;
     //RNP = aloca_vetor(numeroBarras);
@@ -707,10 +642,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         barraAtual = barraAtual->prox;
     }
 
-
-    
-    
-    cria_B_Z_ramos(grafo, numeroRamos, ramos, Sbase);
+    //cria_B_Z_ramos(grafo, numeroRamos, ramos, Sbase);
     
     //x_bc = aloca_vetor(numeroRamos);
     //inicializa_vetor_estados_BC(x_bc, 3*numeroRamos);
@@ -730,7 +662,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
 
 
     int it = 0;
-    while (it < 10){
+    while (it < 1){
         DMED_COMPLEX *medidas_equivalentes = NULL;
         medidas_equivalentes = (DMED_COMPLEX *)malloc((nmed_BC) * sizeof(DMED_COMPLEX));
         medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_BC, numeroBarras, grafo);
@@ -776,10 +708,19 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         
         //mudar atualiza rede para receber complexo
         atualiza_Rede_BC(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
-        
+
+
+    
+
+        //for (int nb = 0; nb < numeroBarras; nb++){
+        //    for (int nj = 0; nj< grafo[nb].numeroAdjacentes; nj++){
+        //        printf("\ni: %d -> k: %d = %f + j*%f", nb, nj, creal(grafo[nb].adjacentes[nj].Cur[0]), cimag(grafo[nb].adjacentes[nj].Cur[0]));
+        //
+        //    }
+        //}
         
         for (int k = 0; k<numeroBarras; k++){
-            forward_sweep(&grafo[RNP[k]], grafo);
+            int ct = forward_sweep(&grafo[RNP[k]], grafo);
         }
         
         

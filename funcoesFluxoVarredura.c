@@ -417,7 +417,7 @@ void calculaCorrenteMontante(){
 }
 
 //cálculo de tensão a jusante no quadripolo
-void calculaTensaoJusante(complex double *Vp, complex double *Vs, complex double *Ips, DRAM *ramo){
+void calculaTensaoJusante(__complex__ double *Vp, __complex__ double *Vs, __complex__ double *Ips, DRAM *ramo){
     
     int i,j;
     __complex__ double Vaux[3], Aux[3], **Y, **Yp, **Ys, Iaux[3], V0;
@@ -928,8 +928,8 @@ BOOL forward_sweep(GRAFO *noP, GRAFO *grafo){
     double Sbase;
     double Ibase;
 
-    BOOL control_REG_OPT;
-    BOOL control_CAP_OPT;
+    BOOL control_REG_OPT = 0;
+    BOOL control_CAP_OPT = 0;
     
     for (i = 0; i < noP->numeroAdjacentes;i ++){
         noAdj = noP->adjacentes[i].idNo;
@@ -937,11 +937,12 @@ BOOL forward_sweep(GRAFO *noP, GRAFO *grafo){
         Vaux[1] = grafo[noAdj].V[1];
         Vaux[2] = grafo[noAdj].V[2];
         
+        
         if (noP->profundidade < grafo[noAdj].profundidade){
             
             calculaTensaoJusante(noP->V, Vaux, noP->adjacentes[i].Cur, noP->adjacentes[i].ramo);
+            //printf("%f +i*%f\n", creal(Vaux[0]), cimag(Vaux[0]));
             
-            //printf("Vaux: %f + i*%f\n", creal(Vaux[0]), cimag(Vaux[0]));
 
             grafo[noAdj].V[0] = Vaux[0];
             grafo[noAdj].V[1] = Vaux[1];
