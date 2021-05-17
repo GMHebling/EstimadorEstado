@@ -554,7 +554,19 @@ void atualiza_Rede_BC(GRAFO *grafo, long int numeroBarras, DBAR *barra, double *
                     
 }
 
-
+void exportaEstado_BC(GRAFO *grafo,  long int nvar){
+    int i, k, fase;
+    FILE *arqout;
+    
+    arqout = fopen("state.txt","w+");
+    for(i=0;i<nvar;i++){
+        for (k = 0; k<3; k++){
+            fprintf(arqout,"%.2f\t%.15f\n",i,carg(grafo[k].V[fase]));
+        }
+        
+    }
+    fclose(arqout);
+}
 
 void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase, DBAR *barra)
 {
@@ -738,6 +750,9 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         
         //mudar atualiza rede para receber complexo
         atualiza_Rede_BC(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
+        
+        exportaCasoReferencia(grafo, numeroBarras, Sbase);
+        exportaEstado_BC(grafo, numeroBarras);
 
         //for (int nb = 0; nb < numeroBarras; nb++){
         //    for (int nj = 0; nj< grafo[nb].numeroAdjacentes; nj++){
