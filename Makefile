@@ -1,8 +1,8 @@
 CC=gcc
 CFLAGS= -o -W 
 LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++
-OBJFILES = main.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o funcoesBranchCurrent.o funcoesFluxoVarredura.o
-OBJFILESFP = main_fp.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
+OBJFILES = main.o funcoesBranchCurrent.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
+OBJFILESFP = main_fp.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
 TARGET = estimator powerflow clean
 
 all: $(TARGET)
