@@ -708,10 +708,10 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         monta_z_complexa(medidas_equivalentes, z_eq, nmed_BC);
         //printf("\n");
 
-        for (int ctz = 0; ctz < 20; ctz ++){
+        //for (int ctz = 0; ctz < 20; ctz ++){
             //printf("z[%d] = %f + i*%f\n", ctz, creal(z_eq[ctz]), cimag(z_eq[ctz]));
             //printf("reguax : %f\n", regua_x[ctz]);
-        }
+        //}
         //printf("\n");
         
         //monta matriz Jacobiana
