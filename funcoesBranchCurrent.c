@@ -554,14 +554,21 @@ void atualiza_Rede_BC(GRAFO *grafo, long int numeroBarras, DBAR *barra, double *
                     
 }
 
-void exportaEstado_BC(GRAFO *grafo,  long int nvar){
+void exportaEstado_BC(GRAFO *grafo,  long int numeroBarras){
     int i, k, fase;
     FILE *arqout;
     
     arqout = fopen("state.txt","w+");
-    for(i=0;i<nvar;i++){
+    for(i=0;i<numeroBarras;i++){
         for (k = 0; k<3; k++){
-            fprintf(arqout,"%.2f\t%.15f\n",i,carg(grafo[k].V[fase]));
+            fprintf(arqout,"%.2f\t%.15f\n",i,cabs(grafo[i].V[k]));
+        }
+        
+    }
+
+    for(i=0;i<numeroBarras;i++){
+        for (k = 0; k<3; k++){
+            fprintf(arqout,"%.2f\t%.15f\n",i,carg(grafo[i].V[k]));
         }
         
     }
@@ -645,7 +652,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         exit(1);
     }
 
-
+    
     //Inicializa vetor x (correntes)
     //utilizar variavel numeroRamos
 
@@ -720,10 +727,10 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         monta_z_complexa(medidas_equivalentes, z_eq, nmed_BC);
         //printf("\n");
 
-        //for (int ctz = 0; ctz < 20; ctz ++){
+        for (int ctz = 0; ctz < 20; ctz ++){
             //printf("z[%d] = %f + i*%f\n", ctz, creal(z_eq[ctz]), cimag(z_eq[ctz]));
             //printf("reguax : %f\n", regua_x[ctz]);
-        //}
+        }
         //printf("\n");
         
         //monta matriz Jacobiana
@@ -751,8 +758,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         //mudar atualiza rede para receber complexo
         atualiza_Rede_BC(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
         
-        exportaCasoReferencia(grafo, numeroBarras, Sbase);
-        exportaEstado_BC(grafo, numeroBarras);
+        
 
         //for (int nb = 0; nb < numeroBarras; nb++){
         //    for (int nj = 0; nj< grafo[nb].numeroAdjacentes; nj++){
@@ -772,6 +778,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         
         it++;
     }
+
 
 }
 

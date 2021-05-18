@@ -56,6 +56,8 @@ int main(int argc, char **argv)
     clock_t t1 = clock();
     double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;
     printf("\nEstimação BC: %lf", tempoWLS);
+
+    exportaCasoReferencia(grafo, numeroBarras, Sbase);
     imprimeEstado(grafo, numeroBarras);
     
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
