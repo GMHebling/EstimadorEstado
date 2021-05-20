@@ -390,7 +390,7 @@ np.random.seed(100)
 
 
 
-# Plano de Medição para o IEEE123
+#Plano de Medição para o IEEE123
 locMed_SCADA = {'IPQ': [150, 83, 88, 90, 92],
                'FPQ': [(150, 149), (149, 150), (9, 9000), (25, 2500), (60, 6000), (61, 610),
                        (18, 35), (13, 52), (97, 101)],

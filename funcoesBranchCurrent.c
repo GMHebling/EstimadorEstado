@@ -362,7 +362,7 @@ double *resolve_linear_QR(double **H_BC, double *z, long int numeroRamos, long i
 
     A = cholmod_l_triplet_to_sparse(T, 3*nmed_BC*3*numeroRamos, c);
       
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, A, b, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A, b, c);
 
     double *ponto;
     ponto = aloca_vetor(6*numeroRamos);
