@@ -559,18 +559,67 @@ void exportaEstado_BC(GRAFO *grafo,  long int numeroBarras){
     FILE *arqout;
     
     arqout = fopen("state.txt","w+");
+    
     for(i=0;i<numeroBarras;i++){
-        for (k = 0; k<3; k++){
-            fprintf(arqout,"%.2f\t%.15f\n",i,cabs(grafo[i].V[k]));
+        switch (grafo[i].fases){
+            case 1:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[0]));
+                break;
+            case 2:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[1]));
+                break;
+            case 3:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[2]));
+                break;
+            case 4:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[1]));
+                break;
+            case 5:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[2]));
+                break;
+            case 6:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[1]));
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[2]));
+                break;
+            case 7:
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[1]));
+                fprintf(arqout,"%d\t%.15f\n",i,cabs(grafo[i].V[2]));
+                break;
         }
-        
     }
 
     for(i=0;i<numeroBarras;i++){
-        for (k = 0; k<3; k++){
-            fprintf(arqout,"%.2f\t%.15f\n",i,carg(grafo[i].V[k]));
+        switch (grafo[i].fases){
+            case 1:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[0]));
+                break;
+            case 2:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[1]));
+                break;
+            case 3:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[2]));
+                break;
+            case 4:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[1]));
+                break;
+            case 5:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[2]));
+                break;
+            case 6:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[1]));
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[2]));
+                break;
+            case 7:
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[0]));
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[1]));
+                fprintf(arqout,"%d\t%.15f\n",i,carg(grafo[i].V[2]));
+                break;
         }
-        
     }
     fclose(arqout);
 }
