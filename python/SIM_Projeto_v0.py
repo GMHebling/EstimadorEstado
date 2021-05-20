@@ -300,7 +300,7 @@ precision = {'PSEUDO': 0.30,
              'VIRTUAL': 0.000}
 
 # Parâmetros das simulações
-Namostras = 0
+Namostras = 100
 Dt = 1
 tem_pmu = 0
 
