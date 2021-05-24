@@ -526,23 +526,65 @@ void atualiza_Rede_BC(GRAFO *grafo, long int numeroBarras, DBAR *barra, double *
             for (j = 0; j < numeroRamos; j++){
                 //printf("\naux: %f, regua: %f", aux_regua, regua_x[3*j]);
                 if (fabs(aux_regua - regua_x[3*j]) < EPS){
-                    
-                    (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
-                    //printf("\ni: %d -> k: %d = %f + j*%f", i, j, x_bc[6*j], x_bc[6*j+1]);
-                    //printf("\ni: %d -> k: %d = %f + j*%f", i, k, creal(grafo[i].adjacentes[k].Cur[0]), cimag(grafo[i].adjacentes[k].Cur[0]));
-                    //printf("\ni: %d -> k: %d = %f + j*%f", 0, 0, creal(grafo[0].adjacentes[0].Cur[0]), cimag(grafo[0].adjacentes[0].Cur[0]));
-    
-                    (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
-                    (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                    switch (grafo[i].adjacentes[k].ramo->fases){
+                        case 1:
+                            (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
+                            break;
+                        case 2:
+                            (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
+                            break;
+                        case 3:
+                            (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                            break;
+                        case 4:
+                            (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
+                            (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
+                            break;
+                        case 5:
+                            (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
+                            (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                            break;
+                        case 6:
+                            (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
+                            (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                            break;
+                        case 7:
+                            (grafo)[i].adjacentes[k].Cur[0] = x_bc[6*j] + I * x_bc[6*j+1];
+                            (grafo)[i].adjacentes[k].Cur[1] = x_bc[6*j+2] + I * x_bc[6*j+3];
+                            (grafo)[i].adjacentes[k].Cur[2] = x_bc[6*j+4] + I * x_bc[6*j+5];
+                            break;
+                    }
                 }
                 if (fabs(regua_x[3*j] + aux_regua_inv) < EPS){
-                    (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
-                    //printf("\ni: %d -> k: %d = %f + j*%f", i, j, x_bc[6*j], x_bc[6*j+1]);
-                    //printf("\ninv i: %d -> k: %d = %f + j*%f", i, k, creal(grafo[i].adjacentes[k].Cur[0]), cimag(grafo[i].adjacentes[k].Cur[0]));
-                    //printf("\ni: %d -> k: %d = %f + j*%f", 0, 0, creal(grafo[0].adjacentes[0].Cur[0]), cimag(grafo[0].adjacentes[0].Cur[0]));
-    
-                    (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
-                    (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+
+                    switch (grafo[i].adjacentes[k].ramo->fases){
+                        case 1:
+                            (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
+                            break;
+                        case 2:
+                            (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
+                            break;
+                        case 3:
+                            (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+                            break;
+                        case 4:
+                            (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
+                            (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
+                            break;
+                        case 5:
+                            (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
+                            (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+                            break;
+                        case 6:
+                            (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
+                            (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+                            break;
+                        case 7:
+                            (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[6*j] + I * x_bc[6*j+1]);
+                            (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[6*j+2] + I * x_bc[6*j+3]);
+                            (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[6*j+4] + I * x_bc[6*j+5]);
+                            break;
+                    }
 
                 }
 
