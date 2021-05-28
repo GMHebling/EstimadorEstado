@@ -58,8 +58,8 @@ int main(int argc, char **argv)
     printf("\nEstimação BC: %lf", tempoWLS);
 
     //exportaCasoReferencia(grafo, numeroBarras, Sbase);
-    exportaEstado_BC(grafo, numeroBarras);
-    imprimeEstado(grafo, numeroBarras);
+    //exportaEstado_BC(grafo, numeroBarras);
+    //imprimeEstado(grafo, numeroBarras);
     
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     //free(barra);
