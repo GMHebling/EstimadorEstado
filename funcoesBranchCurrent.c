@@ -849,7 +849,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
 
     monta_regua_x(numeroRamos, regua_x, ramos);
     monta_regua_medidas(nmed_BC, regua_med, regua_med_inv, medidas_equivalentes);
-
+    H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
     int it = 0;
     int conv = 0;
     while (conv < 1)
@@ -866,7 +866,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         // //printf("\n");
 
         //monta matriz Jacobiana
-        H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
+        //H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
         int st = 0;
 
         x_anterior = x_bc;
