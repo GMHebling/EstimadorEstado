@@ -20,14 +20,7 @@
  Para utilizar o código no branch master, é necessário fazer a instalação do pacote SuiteSparse. Até o momento, só foi possível fazer a instalação em máquinas Unix/Linux. O código abaixo não é garantia que a instalação será concluída 100%. É necessário verificar se a compilação do código do estimador é feita corretamente.
  
  ```
-sudo apt update && sudo apt upgrade
-sudo apt install g++
-sudo apt install wget
-sudo apt install m4
-sudo apt install cmake
-sudo apt install libopenblas-dev
-sudo apt install liblapack-dev
-sudo apt install libcholmod3
+sudo apt install g++ wget m4 cmake libopenblas-dev liblapack-dev libcholmod3
 
 wget https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.zip
 
