@@ -2497,9 +2497,9 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         }
 
 
-        double vl = (max_sigma);
+        //double vl = (max_sigma);
         //double vl = sqrt(nmed)*somaVl;
-        //double vl = 1;
+        double vl = 1;
         //printf("vl: %f\n", vl);
         for (i = 0; i < nmed; i++)
         {
