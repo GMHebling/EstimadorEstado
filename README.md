@@ -24,9 +24,9 @@ sudo apt install g++ wget m4 cmake libopenblas-dev liblapack-dev libcholmod3
 
 wget https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.zip
 
+unzip v5.6.0.zip
 
 cd SuiteSparse
-cd SuiteSparse-5.6.0
 
 make
 
