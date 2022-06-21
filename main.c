@@ -52,6 +52,10 @@ int main(int argc, char **argv)
     
     //estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
     clock_t tIni = clock();
+
+    //busca por loops no grafo.
+    //existeMalha = buscaMalhaGrafo();
+    busca_loop_grafo(grafo, numeroRamos, numeroBarras);
     estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
     clock_t t1 = clock();
     double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;

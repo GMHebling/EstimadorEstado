@@ -381,14 +381,55 @@ double *resolve_linear_QR(double **H_BC, double *z, long int numeroRamos, long i
 
     c = &Common;
     cholmod_l_start(c);
+    printf("start\n");
 
-    T = cholmod_l_allocate_triplet(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, CHOLMOD_COMPLEX, c);
-    A = cholmod_l_allocate_sparse(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, 0, 0, CHOLMOD_COMPLEX, c);
-    b = cholmod_l_allocate_dense(3 * nmed_BC, 1, 3 * nmed_BC, CHOLMOD_COMPLEX, c);
+    //T = cholmod_l_allocate_triplet(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, CHOLMOD_COMPLEX, c);
+    T = cholmod_l_allocate_triplet(3 * numeroRamos, 3 * numeroRamos, 3 * numeroRamos * 3 * numeroRamos, 0, CHOLMOD_COMPLEX, c);
+    
+    //A = cholmod_l_allocate_sparse(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, 0, 0, CHOLMOD_COMPLEX, c);
+    A = cholmod_l_allocate_sparse(3 * numeroRamos, 3 * numeroRamos, 3 * numeroRamos * 3 * numeroRamos, 0, 0, 0, CHOLMOD_COMPLEX, c);
+    
+    b = cholmod_l_allocate_dense(3 * numeroRamos, 1, 3 * numeroRamos, CHOLMOD_COMPLEX, c);
     X = cholmod_l_allocate_dense(3 * numeroRamos, 1, 3 * numeroRamos, CHOLMOD_COMPLEX, c);
 
+    double **H_BC_T = NULL;
+    H_BC_T = aloca_matriz(3 * numeroRamos, 3 * nmed_BC);
+    printf("H_BC_T\n");
+
+    double **Gain_BC = NULL;
+    Gain_BC = aloca_matriz(3 * numeroRamos, 3 * numeroRamos);
+    printf("Gain_BC\n");
+
+    for (int i = 0; i < 3 * numeroRamos; i++)
+    {
+        for (int r = 0; r < 3 * nmed_BC; r++)
+        {
+            H_BC_T[i][r] = H_BC[r][i];
+        }
+    }
+
+    printf("Trasposta\n");
+
+    double G_soma = 0.0;
+    for (int k = 0; k < 3 * numeroRamos; k++){
+        G_soma = 0.0;
+        for (int i = 0; i < 3 * numeroRamos; i++)
+        {
+            for (int r = 0; r < 3 * nmed_BC; r++)
+            {
+                G_soma += H_BC[r][i] * H_BC_T[i][r];
+            }
+            Gain_BC[k][i] = G_soma;            
+        }
+    }
+    printf("Ganho\n");
+    __complex__ double *z_eq_m = NULL;
+    z_eq_m = c_vetAloca(3 * numeroRamos);
+
+    __complex__ double soma_z = 0.0;
+
     int index = 0;
-    for (int i = 0; i < 3 * nmed_BC; i++)
+    for (int i = 0; i < 3 * numeroRamos; i++)
     {
         for (int r = 0; r < 3 * numeroRamos; r++)
         {
@@ -404,13 +445,26 @@ double *resolve_linear_QR(double **H_BC, double *z, long int numeroRamos, long i
         }
     }
 
-    for (int i = 0; i < 3 * nmed_BC; i++)
+
+    for (int i = 0; i < 3 * numeroRamos; i++)
     {
-        ((double *)b->x)[(2 * i)] = creal(z[i]);
-        ((double *)b->x)[(2 * i) + 1] = cimag(z[i]);
+        soma_z = 0.0;
+        for (int r = 0; r < 3 * nmed_BC; r++)
+        {
+            soma_z += H_BC_T[i][r]*z[r];
+        }
+        z_eq_m[i] = soma_z;
     }
 
-    A = cholmod_l_triplet_to_sparse(T, 3 * nmed_BC * 3 * numeroRamos, c);
+   
+
+    for (int i = 0; i < 3 * numeroRamos; i++)
+    {
+        ((double *)b->x)[(2 * i)] = creal(z_eq[i]);
+        ((double *)b->x)[(2 * i) + 1] = cimag(z_eq[i]);
+    }
+
+    A = cholmod_l_triplet_to_sparse(T, 3 * numeroRamos * 3 * numeroRamos, c);
 
     X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A, b, c);
 
@@ -844,18 +898,27 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     H_BC = aloca_matriz(3 * nmed_BC, 3 * numeroRamos);
 
     incializa_tensoes_grafo(grafo, numeroBarras, alimentadores, numeroAlimentadores);
+    printf("1\n");
     medidas_complexas = converte_medidas_para_complexo(medidas, nmed);
+    printf("2\n");
     medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_BC, numeroBarras, grafo);
 
+    printf("3\n");
+
     monta_regua_x(numeroRamos, regua_x, ramos);
+    printf("4\n");
     monta_regua_medidas(nmed_BC, regua_med, regua_med_inv, medidas_equivalentes);
+    printf("5\n");
     H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
+    printf("6\n");
     int it = 0;
     int conv = 0;
     while (conv < 1)
     {
 
         monta_z_complexa(medidas_equivalentes, z_eq, nmed_BC);
+        printf("7\n");
+        
         //printf("\n");
 
         // for (int ctz = 0; ctz < 20; ctz++)
@@ -925,3 +988,66 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
         it++;
     }
 }
+void buscaProfundidadeLoop(GRAFO *grafo, int idNo, int barraAnterior, BOOL *visitado, int *caminho, int *contBarras, int *barraEntrada){
+    int i;
+    int proxBarra;
+    
+    
+    visitado[idNo] = true;
+    barraEntrada[idNo] = barraAnterior;
+    for (i = 0; i < grafo[idNo].numeroAdjacentes; i++){
+        proxBarra = grafo[idNo].adjacentes[i].idNo;
+        
+        if (proxBarra != barraEntrada[idNo]){
+            if (visitado[proxBarra] == true) {
+                printf("loop!");
+                //primeiro adjacente pode ser diferente da barra imediatamente antes
+                //contar os loops e salvar na estrutura
+                continue;
+            } 
+            else {
+                barraAnterior = idNo;
+                contBarras[0] += 1;
+                caminho[contBarras[0]] = proxBarra;
+                //printf("%d\n", caminho[contBarras[0]]);
+                buscaProfundidadeLoop(grafo, proxBarra, barraAnterior, visitado, caminho, contBarras, barraEntrada);
+            }
+        } 
+        else {
+            continue;
+        }
+
+        
+    }
+}
+
+void busca_loop_grafo(GRAFO *grafo, long int numeroRamos, long int numeroBarras){
+    //funcao recursiva
+    //usar buscaprofundidade
+    BOOL *visitado = NULL;
+    int *barraEntrada = NULL;
+    int *caminho = NULL;
+    int i;
+    visitado = malloc(numeroBarras*sizeof(BOOL));
+    caminho = malloc(numeroBarras*sizeof(int));
+    barraEntrada = malloc(numeroBarras*sizeof(int));
+    for (i = 0; i < numeroBarras; i++){
+        visitado[i] = false;
+    }
+    int noRaiz = 0;
+    int barraAnterior = 0;
+    int *contBarras;
+    contBarras = malloc(1*sizeof(int));
+    contBarras[0] = 0;
+    caminho[0] = noRaiz;
+    barraEntrada[0] = noRaiz;
+    buscaProfundidadeLoop(grafo, noRaiz, barraAnterior, visitado, caminho, contBarras, barraEntrada);
+    printf("\n");
+    for (i = 0; i < numeroBarras; i++){
+        
+        printf("%d ", caminho[i]);
+    }
+    printf("\n");
+    printf("busca Completa\n");
+}
+
