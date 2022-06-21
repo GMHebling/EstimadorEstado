@@ -2846,7 +2846,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         //double vl = (max_sigma);
         //double vl = sqrt(nmed)*somaVl;
         double vl = 1;
-        //printf("vl: %f\n", vl);
+        printf("vl: %f\n", vl);
         for (i = 0; i < nmed; i++)
         {
             for (j = 0; j < nvar; j++)
@@ -2854,7 +2854,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
                 H_rf[i][j] = *H[i][j];
             }
         }
-
+        printf("construcao QR\n");
         cholmod_common Common, *c;
 
         cholmod_triplet *A_col1_T = NULL;
@@ -2873,7 +2873,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
 
         cholmod_triplet *T_hatchel = NULL;
         
-
+        
         c = &Common;
         cholmod_l_start(c);
         clock_t tIniMatriz = clock();
@@ -2893,7 +2893,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
 
         T_hatchel = cholmod_l_allocate_triplet((nmed + nvar + nvir), (nmed + nvar + nvir), (nmed + nvar + nvir) * (nmed + nvar + nvir), 0, CHOLMOD_REAL, c);
 
-
+        
         //Coluna 1 da matriz aumentada de Hatchel
         int index1 = 0;
         for (int i = 0; i < nmed; i++){

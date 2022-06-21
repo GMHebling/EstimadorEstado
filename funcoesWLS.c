@@ -2290,7 +2290,11 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
         exit(1); 
     }
     
-    H = (double***)malloc(nmed * sizeof(double**)); 
+    H = (double ***)malloc((nmed) * sizeof(double **)); 
+    // if (H = (double ***)malloc((nmed) * sizeof(double **)) ==NULL){
+    //     printf("Erro -- Nao foi possivel alocar espaco para a matriz H");
+    //     exit(1);
+    // }
     for (i = 0; i < nmed; i++){ 
          H[i] = (double**) malloc(nvar * sizeof(double*));
          for (j = 0; j < nvar; j++){

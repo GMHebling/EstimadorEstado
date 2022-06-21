@@ -31,20 +31,20 @@ int main(int argc, char **argv)
 
     // Leitura dos dados da rede elétrica
     folder = leituraDados(&barra, &ramo, &numeroBarras, &numeroRamos, &numeroAlimentadores);
-    //printf("leituraDados ok\n");
+    printf("leituraDados ok\n");
     //Melhorar o tratamento dos taps de reguladores e trafos - leitura separa de estados lógicos
     // Cria estrutura de dados da rede elétrica
     geraGrafo(&grafo, barra, numeroBarras, ramo, numeroRamos);
-    //printf("geraGrafo ok\n");
+    printf("geraGrafo ok\n");
     // Cria as listas encadeadas radiais dos alimentadores
     buscaProfundidadeAlimentadores(grafo, numeroBarras, &alimentador, numeroAlimentadores);
-    //printf("buscaProfundidadeAlimentadores ok\n");
+    printf("buscaProfundidadeAlimentadores ok\n");
     // Transforma em pu e cria matrizes de admitância iniciais
     calculaPU(grafo, numeroBarras, ramo, numeroRamos, Sbase);
-    //printf("calculaPU ok\n");
+    printf("calculaPU ok\n");
     //Atualiza Valores de taps
     atualizaTaps(ramo, numeroRamos); //terminar o tap de trafos
-    //printf("atualizaTaps ok \n");
+    printf("atualizaTaps ok \n");
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
     if (verificaDVMED(folder) == 1) {
         numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
