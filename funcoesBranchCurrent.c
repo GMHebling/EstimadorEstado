@@ -463,9 +463,16 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
                         i_fase = 0;
                         i_grafo = calcula_idx_ID(grafo, DE, numeroBarras);
                         theta = calculo_theta_dv(grafo, i_grafo, i_fase);
-                        ramo_Z = ramos[j].Z[0][0];
-                        R = creal(ramo_Z);
-                        X = cimag(ramo_Z);
+                        if (ramos[j].Z == NULL){
+                            R = 0.0;
+                            X = 0.0;
+                        }
+                        else{
+                            ramo_Z = ramos[j].Z[0][0];
+                            R = creal(ramo_Z);
+                            X = cimag(ramo_Z);
+                        }
+                        
                         dVdIr = _dVdIr(R, X, theta);
                         dVdIx = _dVdIx(R, X, theta);
                         H_T[3*i][3*j] = dVdIr;
@@ -475,9 +482,15 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
                         i_fase = 1;
                         i_grafo = calcula_idx_ID(grafo, DE, numeroBarras);
                         theta = calculo_theta_dv(grafo, i_grafo, i_fase);
-                        ramo_Z = ramos[j].Z[1][1];
-                        R = creal(ramo_Z);
-                        X = cimag(ramo_Z);
+                        if (ramos[j].Z == NULL){
+                            R = 0.0;
+                            X = 0.0;
+                        } else {
+                            ramo_Z = ramos[j].Z[1][1];
+                            R = creal(ramo_Z);
+                            X = cimag(ramo_Z);
+                        }
+                        
                         dVdIr = _dVdIr(R, X, theta);
                         dVdIx = _dVdIx(R, X, theta);
                         H_T[3*i+1][3*j+1] = dVdIr;
@@ -487,9 +500,15 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
                         i_fase = 2;
                         i_grafo = calcula_idx_ID(grafo, DE, numeroBarras);
                         theta = calculo_theta_dv(grafo, i_grafo, i_fase);
-                        ramo_Z = ramos[j].Z[2][2];
-                        R = creal(ramo_Z);
-                        X = cimag(ramo_Z);
+                        if (ramos[j].Z == NULL){
+                            R = 0.0;
+                            X = 0.0;
+                        } else{
+                            ramo_Z = ramos[j].Z[2][2];
+                            R = creal(ramo_Z);
+                            X = cimag(ramo_Z);
+                        }
+                        
                         dVdIr = _dVdIr(R, X, theta);
                         dVdIx = _dVdIx(R, X, theta);
                         H_T[3*i+2][3*j+2] = dVdIr;
@@ -556,10 +575,10 @@ double *resolve_linear_QR_Tensao(double **H_BC, double **H_T, double *z, long in
     cholmod_common Common, *c;
     c = &Common;
     cholmod_l_start(c);
-    T = cholmod_l_allocate_triplet(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, CHOLMOD_COMPLEX, c);
-    A = cholmod_l_allocate_sparse(3 * nmed_BC, 3 * numeroRamos, 3 * nmed_BC * 3 * numeroRamos, 0, 0, 0, CHOLMOD_COMPLEX, c);
-    b = cholmod_l_allocate_dense(3 * nmed_BC, 1, 3 * nmed_BC, CHOLMOD_COMPLEX, c);
-    X = cholmod_l_allocate_dense(3 * numeroRamos, 1, 3 * numeroRamos, CHOLMOD_COMPLEX, c);
+    T = cholmod_l_allocate_triplet(6 * nmed_BC + nmed_T, 6 * numeroRamos, (6 * nmed_BC + nmed_T) * 3 * numeroRamos, 0, CHOLMOD_REAL, c);
+    A = cholmod_l_allocate_sparse(6 * nmed_BC + nmed_T, 6 * numeroRamos, (6 * nmed_BC + nmed_T) * 3 * numeroRamos, 0, 0, 0, CHOLMOD_REAL, c);
+    b = cholmod_l_allocate_dense(6 * nmed_BC + nmed_T, 1, 6 * nmed_BC+nmed_T, CHOLMOD_REAL, c);
+    X = cholmod_l_allocate_dense(6 * numeroRamos, 1, 6 * numeroRamos, CHOLMOD_REAL, c);
     int index = 0;
     for (int i = 0; i < 3 * nmed_BC; i++)
     {
@@ -572,15 +591,34 @@ double *resolve_linear_QR_Tensao(double **H_BC, double **H_T, double *z, long in
                 ((double *)T->x)[index] = H_BC[i][r];
                 T->nnz += 1;
                 index += 1;
+
+                ((long int *)T->i)[index] = i + 3*nmed_BC;
+                ((long int *)T->j)[index] = r + 3*numeroRamos;
+                ((double *)T->x)[index] = H_BC[i][r];
+                T->nnz += 1;
+                index += 1;
             }
         }
     }
-    for (int i = 0; i < 3 * nmed_BC; i++)
-    {
-        ((double *)b->x)[(2 * i)] = creal(z[i]);
-        ((double *)b->x)[(2 * i) + 1] = cimag(z[i]);
+
+    for (int t = 0; t++; t<nmed_T){
+        for (int cv = 0; cv++; cv < 6*numeroRamos){
+            if (H_T[t][cv] != 0){
+                ((long int *)T->i)[index] = t + 6*nmed_BC;
+                ((long int *)T->j)[index] = cv;
+                ((double *)T->x)[index] = H_T[t][cv];
+                T->nnz += 1;
+                index += 1;
+            }
+        }
     }
-    A = cholmod_l_triplet_to_sparse(T, 3 * nmed_BC * 3 * numeroRamos, c);
+
+    for (int i = 0; i < 6 * nmed_BC + nmed_T; i++)
+    {
+        ((double *)b->x)[(i)] = (z[i]);
+        
+    }
+    A = cholmod_l_triplet_to_sparse(T, (6 * nmed_BC + nmed_T) * 3 * numeroRamos, c);
     X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A, b, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroRamos);
@@ -946,7 +984,7 @@ void atualiza_Rede_BC_Tensao(GRAFO *grafo, long int numeroBarras, DBAR *barra, d
                     case 7:
                         (grafo)[i].adjacentes[k].Cur[0] = -(x_bc[3 * j] + I * x_bc[3 * j + numeroRamos]);
                         (grafo)[i].adjacentes[k].Cur[1] = -(x_bc[3 * j + 1] + I * x_bc[3 * j + 1 + numeroRamos]);
-                        (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[3 * j + 2] + I * x_bc[3 * j + 2 + numeroRamos];
+                        (grafo)[i].adjacentes[k].Cur[2] = -(x_bc[3 * j + 2] + I * x_bc[3 * j + 2 + numeroRamos]);
                         break;
                     }
                 }
@@ -1657,12 +1695,11 @@ void estimadorBC_RECT_Malhado(GRAFO *grafo, long int numeroRamos, long int numer
         int st = 0;
 
         x_anterior = x_bc;
-        x_bc = resolve_linear_QR(H_BC, z_eq, numeroRamos, nmed_BC);
-        // for (int cx = 0; cx < 2; cx++){
-        //     printf("xbc: %f\n", x_bc[cx]);
-        //     printf("\n");
-        // }
-
+        //x_bc = resolve_linear_QR(H_BC, z_eq, numeroRamos, nmed_BC);
+        x_bc = resolve_linear_QR_Tensao(H_BC, H_T, z_eq_tensao, numeroRamos, nmed_BC,nmed_T);
+        
+        
+        
         for (int cx = 0; cx < 6 * numeroRamos; cx++)
         {
             dif_x[cx] = x_anterior[cx] - x_bc[cx];
@@ -1674,6 +1711,7 @@ void estimadorBC_RECT_Malhado(GRAFO *grafo, long int numeroRamos, long int numer
 
         // mudar atualiza rede para receber complexo
         atualiza_Rede_BC(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
+        //atualiza_Rede_BC_Tensao(grafo, numeroBarras, barra, regua_x, numeroRamos, x_bc);
 
         // for (int nb = 0; nb < numeroBarras; nb++){
         //     for (int nj = 0; nj< grafo[nb].numeroAdjacentes; nj++){
