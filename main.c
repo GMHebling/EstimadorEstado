@@ -64,14 +64,14 @@ int main(int argc, char **argv)
     double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;
     printf("\nEstimação BC: %lf", tempoWLS);
 
-    //exportaCasoReferencia(grafo, numeroBarras, Sbase);
-    //exportaEstado_BC(grafo, numeroBarras);
-    //imprimeEstado(grafo, numeroBarras);
+    exportaCasoReferencia(grafo, numeroBarras, Sbase);
+    exportaEstado_BC(grafo, numeroBarras);
+    imprimeEstado(grafo, numeroBarras);
     
     //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
-    //free(barra);
-    //free(ramo);
-    //free(grafo);
-    //free(alimentador);
+    free(barra);
+    free(ramo);
+    free(grafo);
+    free(alimentador);
     return (EXIT_SUCCESS);
 }
