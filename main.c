@@ -27,13 +27,6 @@ int main(int argc, char **argv)
     DMED *medida = NULL, *medidaPMU = NULL, *virtuais = NULL;
     ALIMENTADOR *alimentador = NULL, *areas = NULL;
 
-    
-
-    
-
-    
-
-    
 
     // Leitura dos dados da rede elétrica
     folder = leituraDados(&barra, &ramo, &numeroBarras, &numeroRamos, &numeroAlimentadores);
