@@ -123,11 +123,11 @@ void Sk(GRAFO *grafo, long int k, __complex__ double *S){
         }
     }
     //Potência nos shunts
-    for (j=0;j<3;j++){
-        for (i=0;i<3;i++){
-            S[j] = S[j] + grafo[k].V[j]*conj(grafo[k].Ysh[j][i])*conj(grafo[k].V[i]);
-        }
-    }
+     for (j=0;j<3;j++){
+         for (i=0;i<3;i++){
+             S[j] = S[j] + grafo[k].V[j]*conj(grafo[k].Ysh[j][i])*conj(grafo[k].V[i]);
+         }
+     }
     
     free(Saux);
 }

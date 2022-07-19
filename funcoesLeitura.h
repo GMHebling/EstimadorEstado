@@ -27,6 +27,7 @@ void leituraDTRF(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barr
 void leituraDREG(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barras, long int *numeroBarras);
 void leituraDSWTC(FILE *arquivo, DRAM **ramos, long int *numeroRamos, DBAR **barras, long int *numeroBarras);
 long int **leituraMedidas(char *folder,char *file, DMED **medidas, DRAM *ramos, long int numeroRamos, DBAR *barras, long int numeroBarras, GRAFO *grafo, double Sbase);
+long int **LeituraFP(char *folder, DMED **medidas, DRAM *ramos, long int numeroRamos, DBAR *barras, long int numeroBarras, GRAFO *grafo, double Sbase);
 
 void leituraVinicial(FILE *arquivo, DBAR **barras, long int *numeroBarras);
 

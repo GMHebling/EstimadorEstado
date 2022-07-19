@@ -1105,8 +1105,8 @@ void tira_refs_regua(int m, int col1, int col2, double *regua)
     }
 }
 
-//Tira coluna de matriz
-void tira_refs(double ***A, int m, int n, int col1, int col2, double **temp, double *regua, double *x, long int it)
+//Tira coluna de matriz da regua e do vetor x
+void tira_refs(double ***A, int m, int n, int col1, int col2, double ***temp, double *regua, double *x, long int it)
 {
     int i, j, n_cols;
     int index = 0;
@@ -1118,14 +1118,96 @@ void tira_refs(double ***A, int m, int n, int col1, int col2, double **temp, dou
         {
             if (j < col1)
             {
-                temp[i][j] = *A[i][j];
+                temp[i][j] = A[i][j];
             }
 
             else if (j > col2)
-                temp[i][(j - n_cols)] = *A[i][j];
+                temp[i][(j - n_cols)] = A[i][j];
         }
     }
     if (it == 0)
+    {
+        for (j = 0; j < m; j++)
+        {
+            if (j < col1)
+            {
+                regua[j] = regua[j];
+                x[j] = x[j];
+            }
+            else if (j > col2)
+            {
+                regua[(j - n_cols)] = regua[j];
+                x[(j - n_cols)] = x[j];
+            }
+        }
+    }
+}
+
+
+void tira_varsFP(double ***A, int m, int n,double *regua_rem,int nrem ,double ***temp, double *regua, double *x)
+{
+    int i, j, n_cols;
+    int index = 0;
+    int k,l;
+
+    n_cols=m;
+
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < m; j++)
+        {
+
+            temp[i][j] = A[i][j];
+        }
+    }
+
+   
+
+    for (i=0;i<nrem;i++)
+    {
+        for(j=0;j<n_cols;j++)
+        {
+            if(regua_rem[i]==regua[j])
+            {
+                for(k=j;k<n_cols-1;k++)
+                {
+                    regua[k]=regua[k+1];
+                    x[k] = x[k+1];
+                    for(l=0;l<n;l++)
+                    {
+                        temp[l][k] = temp[l][k+1];
+                    }
+                }
+                n_cols--;
+                break;
+            }
+
+        }
+    }
+
+
+}
+
+void tira_refs2(double ***A, int m, int n, int col1, int col2, double ***temp, double *regua, double *x, long int it)
+{
+    int i, j, n_cols;
+    int index = 0;
+
+    n_cols = col2 - col1 + 1;
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < m; j++)
+        {
+            if (j < col1)
+            {
+                temp[i][j] = A[i][j];
+            }
+
+            else if (j > col2)
+                temp[i][(j - n_cols)] = A[i][j];
+        }
+    }
+    if (it == 1)
     {
         for (j = 0; j < m; j++)
         {

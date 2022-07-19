@@ -7,8 +7,11 @@
 
 #include "data_structures.h"
 #include "funcoesWLS.h"
+#include "leitura.h"
+#include "matriz.h"
 #include "funcoesTopologia.h"
 #include "funcoesCalculoEletrico.h"
+#include "funcoesOtimizacao.h"
 #include "funcoesMatematicas.h"
 
 //Imprime na tela o estado atual da rede (tensões complexas nodais em cada fase)
@@ -31,7 +34,7 @@ void imprimeEstado(GRAFO *grafo, long int numeroBarras)
             printf("%ld\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI);
             break;
         case 3:
-            printf("%ld\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            printf("%ld\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[2]) * 180 / PI);
             break;
         case 4:
             printf("%ld\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI);
@@ -49,7 +52,44 @@ void imprimeEstado(GRAFO *grafo, long int numeroBarras)
     }
 }
 
-//Salva arquivo com o estado atual da rede (vetor x) conforme régua
+void imprimeInjecoes(GRAFO *grafo, long int numeroBarras)
+{
+    int i;
+
+    printf("\nInjecoes Nodais (p.u.):\n");
+    for (i = 0; i < numeroBarras; i++)
+    {
+        //Retangulares
+        //printf("%d\tVa: %.5lf + j%.5lf\tVb: %.5lf + j%.5lf\tVc: %.5lf + j%.5lf\n",grafo[i].barra->ID,__real__ grafo[i].V[0],__imag__ grafo[i].V[0],__real__ grafo[i].V[1],__imag__ grafo[i].V[1],__real__ grafo[i].V[2],__imag__ grafo[i].V[2]);
+        //Polares
+        switch (grafo[i].fases)
+        {
+        case 1:
+            printf("%ld\tSa: %.5lf | %.3lf \tSb:    -    |    -   \tSc:    -    |    -   \n", grafo[i].barra->ID, creal(grafo[i].S[0]), cimag(grafo[i].S[0])) ;
+            break;
+        case 2:
+            printf("%ld\tSa:    -    |    -    \tSb: %.5lf | %.3lf\tSc:    -    |    -   \n", grafo[i].barra->ID, creal(grafo[i].S[1]), cimag(grafo[i].S[1]) );
+            break;
+        case 3:
+            printf("%ld\tSa:    -    |    -    \tSb:    -    |    -   \tSc: %.5lf | %.3lf\n", grafo[i].barra->ID, creal(grafo[i].S[0]), cimag(grafo[i].S[2]) );
+            break;
+        case 4:
+            printf("%ld\tSa: %.5lf | %.3lf \tSb: %.5lf | %.3lf\tSc:    -    |    -   \n", grafo[i].barra->ID, creal(grafo[i].S[0]), cimag(grafo[i].S[0]) , creal(grafo[i].S[1]), cimag(grafo[i].S[1]) );
+            break;
+        case 5:
+            printf("%ld\tSa: %.5lf | %.3lf \tSb:    -    |    -   \tSc: %.5lf | %.3lf\n", grafo[i].barra->ID, creal(grafo[i].S[0]), cimag(grafo[i].S[0]) , creal(grafo[i].S[2]), cimag(grafo[i].S[2]) );
+            break;
+        case 6:
+            printf("%ld\tSa:    -    |    -    \tSb: %.5lf | %.3lf\tSc: %.5lf | %.3lf\n", grafo[i].barra->ID, creal(grafo[i].S[1]), cimag(grafo[i].S[1]) , creal(grafo[i].S[2]), cimag(grafo[i].S[2]) );
+            break;
+        case 7:
+            printf("%ld\tSa: %.5lf | %.3lf \tSb: %.5lf | %.3lf\tSc: %.5lf | %.3lf\n", grafo[i].barra->ID, creal(grafo[i].S[0]), cimag(grafo[i].S[0]) , creal(grafo[i].S[1]), cimag(grafo[i].S[1]) , creal(grafo[i].S[2]), cimag(grafo[i].S[2]) );
+            break;
+        }
+    }
+}
+
+//SalSa arquivo com o estado atual da rede (vetor x) conforme régua
 void exportaEstado(GRAFO *grafo, double *regua, long int nvar)
 {
     int i, k, fase;
@@ -75,6 +115,70 @@ void exportaEstado(GRAFO *grafo, double *regua, long int nvar)
     fclose(arqout);
 }
 
+void exportaRamoscorrentes(GRAFO *grafo, long int numeroBarras, double Sbase)
+{
+    int i, k, fase;
+    FILE *arquivo;
+    complex A;
+    arquivo = fopen("correntes.txt", "w+");
+    for (i = 0; i < numeroBarras; i++)
+    {
+        //Percorre os ramos adjacentes
+        for (k = 0; k < grafo[i].numeroAdjacentes; k++)
+        {
+
+            switch (grafo[i].adjacentes[k].ramo->fases)
+            {
+            case 1:
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[0]*1000000)/(grafo[i].Vbase*grafo[i].V[0])) ,carg((grafo[i].adjacentes[k].S[0]*1000000/(grafo[i].Vbase*grafo[i].V[0]))));
+                break;
+            case 2:
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[1]*1000000)/(grafo[i].Vbase*grafo[i].V[1])) ,carg((grafo[i].adjacentes[k].S[1]*1000000/(grafo[i].Vbase*grafo[i].V[1]))));
+                break;
+            case 3:
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[2]*1000000)/(grafo[i].Vbase*grafo[i].V[2])) ,carg((grafo[i].adjacentes[k].S[2]*1000000/(grafo[i].Vbase*grafo[i].V[2]))));
+                break;
+            case 4:
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[0]*1000000)/(grafo[i].Vbase*grafo[i].V[0])) ,carg((grafo[i].adjacentes[k].S[0]*1000000/(grafo[i].Vbase*grafo[i].V[0]))));
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[1]*1000000)/(grafo[i].Vbase*grafo[i].V[1])) ,carg((grafo[i].adjacentes[k].S[1]*1000000/(grafo[i].Vbase*grafo[i].V[1]))));
+                break;
+            case 5:
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[0]*1000000)/(grafo[i].Vbase*grafo[i].V[0])) ,carg((grafo[i].adjacentes[k].S[0]*1000000/(grafo[i].Vbase*grafo[i].V[0]))));
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[2]*1000000)/(grafo[i].Vbase*grafo[i].V[2])) ,carg((grafo[i].adjacentes[k].S[2]*1000000/(grafo[i].Vbase*grafo[i].V[2]))));
+                break;
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[1]*1000000)/(grafo[i].Vbase*grafo[i].V[1])) ,carg((grafo[i].adjacentes[k].S[1]*1000000/(grafo[i].Vbase*grafo[i].V[1]))));
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[2]*1000000)/(grafo[i].Vbase*grafo[i].V[2])) ,carg((grafo[i].adjacentes[k].S[2]*1000000/(grafo[i].Vbase*grafo[i].V[2]))));
+                break;
+            case 7:
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[0]*1000000)/(grafo[i].Vbase*grafo[i].V[0])) ,carg((grafo[i].adjacentes[k].S[0]*1000000/(grafo[i].Vbase*grafo[i].V[0]))));
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[1]*1000000)/(grafo[i].Vbase*grafo[i].V[1])) ,carg((grafo[i].adjacentes[k].S[1]*1000000/(grafo[i].Vbase*grafo[i].V[1]))));
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,%.10lf\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, cabs((grafo[i].adjacentes[k].S[2]*1000000)/(grafo[i].Vbase*grafo[i].V[2])) ,carg((grafo[i].adjacentes[k].S[2]*1000000/(grafo[i].Vbase*grafo[i].V[2]))));
+                break;
+            }
+        }
+    }
+    fclose(arquivo);
+}
+
+void exportaEstadoIT(GRAFO *grafo,int it, double *regua, long int nvar,int bus)
+{
+    int i, k, fase;
+    FILE *arqout;
+    char buff[50];
+    sprintf(buff,"stateiTbus%d.txt",bus);
+    if (it==0)
+    {
+        arqout = fopen(buff, "w+");
+    }
+    else
+    {
+        arqout = fopen(buff, "a");
+    }
+    
+    fprintf(arqout, "%d,%.15f,%.15f,%.15f,%.15f,%.15f,%.15f\n", it, cabs(grafo[bus].V[0]),cabs(grafo[bus].V[1]),cabs(grafo[bus].V[2]),carg(grafo[bus].V[0]),carg(grafo[bus].V[1]),carg(grafo[bus].V[2]),"a");
+
+    fclose(arqout);
+}
 void saidaEstado(GRAFO *grafo, long int numeroBarras, int it, double tempoIt, double nFx, double nGx)
 {
     int i, j, k;
@@ -92,25 +196,25 @@ void saidaEstado(GRAFO *grafo, long int numeroBarras, int it, double tempoIt, do
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "A\t%ld\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI);
+            fprintf(arquivo, "A\t%ld\tVa: %.5lf | %.3lf \tSb:    -    |    -   \tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) );
             break;
         case 2:
-            fprintf(arquivo, "B\t%ld\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI);
+            fprintf(arquivo, "B\t%ld\tVa:    -    |    -    \tSb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) );
             break;
         case 3:
-            fprintf(arquivo, "C\t%ld\tVa:    -    |    -    \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "C\t%ld\tVa:    -    |    -    \tSb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) );
             break;
         case 4:
-            fprintf(arquivo, "AB\t%ld\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI);
+            fprintf(arquivo, "AB\t%ld\tVa: %.5lf | %.3lf \tSb: %.5lf | %.3lf\tVc:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) , cabs(grafo[i].V[1]), carg(grafo[i].V[1]) );
             break;
         case 5:
-            fprintf(arquivo, "CA\t%ld\tVa: %.5lf | %.3lf \tVb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "CA\t%ld\tVa: %.5lf | %.3lf \tSb:    -    |    -   \tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) , cabs(grafo[i].V[2]), carg(grafo[i].V[2]) );
             break;
         case 6:
-            fprintf(arquivo, "BC\t%ld\tVa:    -    |    -    \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "BC\t%ld\tVa:    -    |    -    \tSb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) , cabs(grafo[i].V[2]), carg(grafo[i].V[2]) );
             break;
         case 7:
-            fprintf(arquivo, "ABC\t%ld\tVa: %.5lf | %.3lf \tVb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "ABC\t%ld\tVa: %.5lf | %.3lf \tSb: %.5lf | %.3lf\tVc: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) , cabs(grafo[i].V[1]), carg(grafo[i].V[1]) , cabs(grafo[i].V[2]), carg(grafo[i].V[2]) );
             break;
         }
     }
@@ -121,25 +225,25 @@ void saidaEstado(GRAFO *grafo, long int numeroBarras, int it, double tempoIt, do
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "A\t%ld\tVan: %.5lf | %.3lf \tVbn:    -    |    -   \tVcn:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) * 180 / PI);
+            fprintf(arquivo, "A\t%ld\tVan: %.5lf | %.3lf \tVbn:    -    |    -   \tVcn:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0]), carg(grafo[i].V[0]) );
             break;
         case 2:
-            fprintf(arquivo, "B\t%ld\tVan:    -    |    -    \tVbn: %.5lf | %.3lf\tVcn:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) * 180 / PI);
+            fprintf(arquivo, "B\t%ld\tVan:    -    |    -    \tVbn: %.5lf | %.3lf\tVcn:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[1]), carg(grafo[i].V[1]) );
             break;
         case 3:
-            fprintf(arquivo, "C\t%ld\tVan:    -    |    -    \tVbn:    -    |    -   \tVcn: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "C\t%ld\tVan:    -    |    -    \tVbn:    -    |    -   \tVcn: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2]), carg(grafo[i].V[2]) );
             break;
         case 4:
-            fprintf(arquivo, "AB\t%ld\tVab: %.5lf | %.3lf \tVbc:   -    |   -  \tVca:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0] - grafo[i].V[1]), carg(grafo[i].V[0] - grafo[i].V[1]) * 180 / PI);
+            fprintf(arquivo, "AB\t%ld\tVab: %.5lf | %.3lf \tVbc:   -    |   -  \tVca:    -    |    -   \n", grafo[i].barra->ID, cabs(grafo[i].V[0] - grafo[i].V[1]), carg(grafo[i].V[0] - grafo[i].V[1]) );
             break;
         case 5:
-            fprintf(arquivo, "CA\t%ld\tVab:   -   |   -  \tVbc:    -    |    -   \tVca: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2] - grafo[i].V[0]), carg(grafo[i].V[2] - grafo[i].V[0]) * 180 / PI);
+            fprintf(arquivo, "CA\t%ld\tVab:   -   |   -  \tVbc:    -    |    -   \tVca: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[2] - grafo[i].V[0]), carg(grafo[i].V[2] - grafo[i].V[0]) );
             break;
         case 6:
-            fprintf(arquivo, "BC\t%ld\tVab:    -    |    -    \tVbc: %.5lf | %.3lf\tVca:   -    |   -  \n", grafo[i].barra->ID, cabs(grafo[i].V[1] - grafo[i].V[2]), carg(grafo[i].V[1] - grafo[i].V[2]) * 180 / PI);
+            fprintf(arquivo, "BC\t%ld\tVab:    -    |    -    \tVbc: %.5lf | %.3lf\tVca:   -    |   -  \n", grafo[i].barra->ID, cabs(grafo[i].V[1] - grafo[i].V[2]), carg(grafo[i].V[1] - grafo[i].V[2]) );
             break;
         case 7:
-            fprintf(arquivo, "ABC\t%ld\tVab: %.5lf | %.3lf \tVbc: %.5lf | %.3lf\tVca: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0] - grafo[i].V[1]), carg(grafo[i].V[0] - grafo[i].V[1]) * 180 / PI, cabs(grafo[i].V[1] - grafo[i].V[2]), carg(grafo[i].V[1] - grafo[i].V[2]) * 180 / PI, cabs(grafo[i].V[2] - grafo[i].V[0]), carg(grafo[i].V[2] - grafo[i].V[0]) * 180 / PI);
+            fprintf(arquivo, "ABC\t%ld\tVab: %.5lf | %.3lf \tVbc: %.5lf | %.3lf\tVca: %.5lf | %.3lf\n", grafo[i].barra->ID, cabs(grafo[i].V[0] - grafo[i].V[1]), carg(grafo[i].V[0] - grafo[i].V[1]) , cabs(grafo[i].V[1] - grafo[i].V[2]), carg(grafo[i].V[1] - grafo[i].V[2]) , cabs(grafo[i].V[2] - grafo[i].V[0]), carg(grafo[i].V[2] - grafo[i].V[0]) );
             break;
         }
     }
@@ -165,30 +269,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
             switch (grafo[i].adjacentes[k].ramo->fases)
             {
             case 1:
-                fprintf(arquivo, "1,0,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
                 break;
             case 2:
-                fprintf(arquivo, "1,0,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
                 break;
             case 3:
-                fprintf(arquivo, "1,0,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 4:
-                fprintf(arquivo, "1,0,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,0,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
                 break;
             case 5:
-                fprintf(arquivo, "1,0,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,0,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 6:
-                fprintf(arquivo, "1,0,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
-                fprintf(arquivo, "1,0,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 7:
-                fprintf(arquivo, "1,0,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,0,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
-                fprintf(arquivo, "1,0,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,0,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__real__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             }
         }
@@ -204,30 +308,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
             switch (grafo[i].adjacentes[k].ramo->fases)
             {
             case 1:
-                fprintf(arquivo, "1,1,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
                 break;
             case 2:
-                fprintf(arquivo, "1,1,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
                 break;
             case 3:
-                fprintf(arquivo, "1,1,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 4:
-                fprintf(arquivo, "1,1,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,1,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
                 break;
             case 5:
-                fprintf(arquivo, "1,1,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,1,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 6:
-                fprintf(arquivo, "1,1,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
-                fprintf(arquivo, "1,1,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             case 7:
-                fprintf(arquivo, "1,1,%ld,%ld,1,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
-                fprintf(arquivo, "1,1,%ld,%ld,2,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
-                fprintf(arquivo, "1,1,%ld,%ld,3,%.8lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,1,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[0]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,2,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[1]) * Sbase);
+                fprintf(arquivo, "1,1,%ld,%ld,3,%.10lf,0.020000\n", grafo[i].barra->ID, grafo[grafo[i].adjacentes[k].idNo].barra->ID, (__imag__ grafo[i].adjacentes[k].S[2]) * Sbase);
                 break;
             }
         }
@@ -240,30 +344,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "1,2,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
             break;
         case 2:
-            fprintf(arquivo, "1,2,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
             break;
         case 3:
-            fprintf(arquivo, "1,2,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
             break;
         case 4:
-            fprintf(arquivo, "1,2,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,2,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
             break;
         case 5:
-            fprintf(arquivo, "1,2,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,2,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
             break;
         case 6:
-            fprintf(arquivo, "1,2,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
-            fprintf(arquivo, "1,2,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
             break;
         case 7:
-            fprintf(arquivo, "1,2,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,2,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
-            fprintf(arquivo, "1,2,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,2,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__real__ grafo[i].S[2]) * Sbase);
             break;
         }
     }
@@ -274,30 +378,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "1,3,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
             break;
         case 2:
-            fprintf(arquivo, "1,3,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
             break;
         case 3:
-            fprintf(arquivo, "1,3,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
             break;
         case 4:
-            fprintf(arquivo, "1,3,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,3,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
             break;
         case 5:
-            fprintf(arquivo, "1,3,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,3,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
             break;
         case 6:
-            fprintf(arquivo, "1,3,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
-            fprintf(arquivo, "1,3,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
             break;
         case 7:
-            fprintf(arquivo, "1,3,%ld,-1,1,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
-            fprintf(arquivo, "1,3,%ld,-1,2,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
-            fprintf(arquivo, "1,3,%ld,-1,3,%.8lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,1,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[0]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,2,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[1]) * Sbase);
+            fprintf(arquivo, "1,3,%ld,-1,3,%.10lf,0.020000\n", grafo[i].barra->ID, (__imag__ grafo[i].S[2]) * Sbase);
             break;
         }
     }
@@ -308,30 +412,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "1,4,%ld,-1,1,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
+            fprintf(arquivo, "1,4,%ld,-1,1,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
             break;
         case 2:
-            fprintf(arquivo, "1,4,%ld,-1,2,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
+            fprintf(arquivo, "1,4,%ld,-1,2,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
             break;
         case 3:
-            fprintf(arquivo, "1,4,%ld,-1,3,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
+            fprintf(arquivo, "1,4,%ld,-1,3,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
             break;
         case 4:
-            fprintf(arquivo, "1,4,%ld,-1,1,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
-            fprintf(arquivo, "1,4,%ld,-1,2,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
+            fprintf(arquivo, "1,4,%ld,-1,1,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
+            fprintf(arquivo, "1,4,%ld,-1,2,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
             break;
         case 5:
-            fprintf(arquivo, "1,4,%ld,-1,1,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
-            fprintf(arquivo, "1,4,%ld,-1,3,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
+            fprintf(arquivo, "1,4,%ld,-1,1,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
+            fprintf(arquivo, "1,4,%ld,-1,3,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
             break;
         case 6:
-            fprintf(arquivo, "1,4,%ld,-1,2,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
-            fprintf(arquivo, "1,4,%ld,-1,3,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
+            fprintf(arquivo, "1,4,%ld,-1,2,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
+            fprintf(arquivo, "1,4,%ld,-1,3,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
             break;
         case 7:
-            fprintf(arquivo, "1,4,%ld,-1,1,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
-            fprintf(arquivo, "1,4,%ld,-1,2,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
-            fprintf(arquivo, "1,4,%ld,-1,3,%.8lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
+            fprintf(arquivo, "1,4,%ld,-1,1,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[0]));
+            fprintf(arquivo, "1,4,%ld,-1,2,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[1]));
+            fprintf(arquivo, "1,4,%ld,-1,3,%.10lf,0.010000\n", grafo[i].barra->ID, grafo[i].Vbase / 1000 * cabs(grafo[i].V[2]));
             break;
         }
     }
@@ -342,30 +446,30 @@ void exportaCasoReferencia(GRAFO *grafo, long int numeroBarras, double Sbase)
         switch (grafo[i].fases)
         {
         case 1:
-            fprintf(arquivo, "1,5,%ld,-1,1,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
+            fprintf(arquivo, "1,5,%ld,-1,1,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
             break;
         case 2:
-            fprintf(arquivo, "1,5,%ld,-1,2,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
+            fprintf(arquivo, "1,5,%ld,-1,2,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
             break;
         case 3:
-            fprintf(arquivo, "1,5,%ld,-1,3,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
+            fprintf(arquivo, "1,5,%ld,-1,3,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
             break;
         case 4:
-            fprintf(arquivo, "1,5,%ld,-1,1,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
-            fprintf(arquivo, "1,5,%ld,-1,2,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
+            fprintf(arquivo, "1,5,%ld,-1,1,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
+            fprintf(arquivo, "1,5,%ld,-1,2,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
             break;
         case 5:
-            fprintf(arquivo, "1,5,%ld,-1,1,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
-            fprintf(arquivo, "1,5,%ld,-1,3,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
+            fprintf(arquivo, "1,5,%ld,-1,1,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
+            fprintf(arquivo, "1,5,%ld,-1,3,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
             break;
         case 6:
-            fprintf(arquivo, "1,5,%ld,-1,2,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
-            fprintf(arquivo, "1,5,%ld,-1,3,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
+            fprintf(arquivo, "1,5,%ld,-1,2,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
+            fprintf(arquivo, "1,5,%ld,-1,3,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
             break;
         case 7:
-            fprintf(arquivo, "1,5,%ld,-1,1,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
-            fprintf(arquivo, "1,5,%ld,-1,2,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
-            fprintf(arquivo, "1,5,%ld,-1,3,%.8lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
+            fprintf(arquivo, "1,5,%ld,-1,1,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[0]));
+            fprintf(arquivo, "1,5,%ld,-1,2,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[1]));
+            fprintf(arquivo, "1,5,%ld,-1,3,%.10lf,0.001000\n", grafo[i].barra->ID, 180 / PI * carg(grafo[i].V[2]));
             break;
         }
     }
@@ -425,8 +529,9 @@ void monta_W(double **W, long int nmed, DMED *medidas)
         case 5:
         case 7:
             //W[i][i] = 1000000;
-            medidas[i].sigma = 0.0001;
+            //medidas[i].sigma = 0.0001;
             prec = medidas[i].prec; //0.001; //0.1% para PMU de ângulo de tensão ou corrente
+            medidas[i].sigma = 0.33333 * prec * cabs(medidas[i].zmed);
             break;
         case 8:
         case 9:
@@ -615,6 +720,240 @@ void incializa_vetor_x(GRAFO *grafo, long int numeroBarras, ALIMENTADOR *aliment
                         grafo[para].V[1] = grafo[de].V[1];
                         grafo[para].V[2] = grafo[de].V[2];
                     }
+                }
+            }
+            visitado[de] = true;
+            barraAtual = barraAtual->prox;
+        }
+    }
+
+    //Montagem do vetor x e da régua
+    for (i = 0; i < nVariaveis; i++)
+    {
+        k = (int)regua[i];
+        fase = (int)cabs((regua[i] - k) * 10);
+        if (regua[i] > 0)
+        {                                  //magnitude de tensão
+            x[i] = cabs(grafo[k].V[fase]); //mantém o ângulo anterior e altera a magnitude
+        }
+        else
+        { //ângulo de tensão
+            fase = fase;
+            k = -k;
+            x[i] = carg(grafo[k].V[fase]);
+        }
+    }
+}
+
+
+void incializa_vetor_x_FP(GRAFO *grafo,long int numeroBarras, ALIMENTADOR *alimentadores, long int numeroAlimentadores, double *x, double *regua, long int nVariaveis)
+{
+
+    //Flat start trifásico (Va = Vb = Vc = 1p.u.  Ta = 0  Tb = -120  Tc = 120) - com busca em profundidade para atualizar taps iniciais
+    int i, k, fase;
+    BOOL visitado[numeroBarras];
+    __complex__ double V0[3], **Yaux;
+
+    Yaux = c_matAloca(3);
+
+    //Flat start trifásico (Va = Vb = Vc = 1p.u.  Ta = 0  Tb = -120  Tc = 120) - com busca em profundidade para atualizar taps iniciais
+    for (i = 0; i < numeroBarras; i++)
+    {
+        visitado[i] = false;
+    }
+    for (i = 0; i < numeroAlimentadores; i++)
+    {
+        //Tensão Inicial da subestação
+        V0[0] =grafo[alimentadores[i].noRaiz].barra->Vinicial[0];
+        V0[1] =grafo[alimentadores[i].noRaiz].barra->Vinicial[1]; //1.0*(cos(-120*PI/180) + I*sin(-120*PI/180));
+        V0[2] =grafo[alimentadores[i].noRaiz].barra->Vinicial[2];//1.0*(cos(120*PI/180) + I*sin(120*PI/180));
+
+        FILABARRAS *barraAtual = &alimentadores[i].rnp[0];
+
+        int de = barraAtual->idNo;
+        grafo[de].V[0] = V0[0];
+        grafo[de].V[1] = V0[1];
+        grafo[de].V[2] = V0[2];
+
+        while (barraAtual != NULL)
+        {
+            de = barraAtual->idNo;
+            int n_adj = grafo[de].numeroAdjacentes;
+            for (k = 0; k < n_adj; k++)
+            {
+                int para = grafo[de].adjacentes[k].idNo;
+                if (visitado[para] == false)
+                {
+                    if ((grafo[de].adjacentes[k].tipo == 1))
+                    { //Atualiza o V0 para trafo visto a ligação e tap
+                        grafo[para].V[0] = grafo[de].V[0];
+                        grafo[para].V[1] = grafo[de].V[1];
+                        grafo[para].V[2] = grafo[de].V[2];
+
+                        if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 1) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 2))
+                        {
+                            grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                            grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                            grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                        }
+                        else if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 3) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 2))
+                        {
+                            grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                            grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                            grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                        }
+                        else if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 2) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 1))
+                        {
+                            if (grafo[de].adjacentes[k].ramo->k == de)
+                            {
+                                grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                                grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                                grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                            }
+                            else
+                            {
+                                grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(0 * PI / 180) + I * sin(0 * PI / 180));
+                                grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-120 * PI / 180) + I * sin(-120 * PI / 180));
+                                grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(120 * PI / 180) + I * sin(120 * PI / 180));
+                            }
+                        }
+                    }
+                    else if (grafo[de].adjacentes[k].tipo == 2)
+                    { //Para o caso de regulador de tensão
+                        grafo[para].V[0] = grafo[de].V[0] * grafo[de].adjacentes[k].ramo->tap_pri[0] * grafo[de].adjacentes[k].ramo->tap_sec[0];
+                        grafo[para].V[1] = grafo[de].V[1] * grafo[de].adjacentes[k].ramo->tap_pri[1] * grafo[de].adjacentes[k].ramo->tap_sec[1];
+                        grafo[para].V[2] = grafo[de].V[2] * grafo[de].adjacentes[k].ramo->tap_pri[2] * grafo[de].adjacentes[k].ramo->tap_sec[2];
+                    }
+                    else
+                    {
+                        grafo[para].V[0] = grafo[de].V[0];
+                        grafo[para].V[1] = grafo[de].V[1];
+                        grafo[para].V[2] = grafo[de].V[2];
+                    }
+                }
+            }
+            visitado[de] = true;
+            barraAtual = barraAtual->prox;
+        }
+    }
+
+    for (i = 0; i < numeroBarras; i++)
+    {
+        //Tensão Inicial da subestação
+        if (grafo[i].tipo==1)
+        {
+            grafo[i].V[0]=(grafo[i].V[0]/cabs(grafo[i].V[0]))*cabs(grafo[i].barra->Vinicial[0]);
+            grafo[i].V[1]=(grafo[i].V[1]/cabs(grafo[i].V[1]))*cabs(grafo[i].barra->Vinicial[1]);
+            grafo[i].V[2]=(grafo[i].V[2]/cabs(grafo[i].V[2]))*cabs(grafo[i].barra->Vinicial[2]);
+        }
+
+    }
+
+    //Montagem do vetor x e da régua
+    for (i = 0; i < nVariaveis; i++)
+    {
+        k = (int)regua[i];
+        fase = (int)cabs((regua[i] - k) * 10);
+        if (regua[i] > 0)
+        {                                  //magnitude de tensão
+            x[i] = cabs(grafo[k].V[fase]); //mantém o ângulo anterior e altera a magnitude
+        }
+        else
+        { //ângulo de tensão
+            fase = fase;
+            k = -k;
+            x[i] = carg(grafo[k].V[fase]);
+        }
+    }
+}
+
+
+void incializa_vetor_x_perturbado(GRAFO *grafo, long int numeroBarras, ALIMENTADOR *alimentadores, long int numeroAlimentadores, double *x, double *regua, long int nVariaveis)
+{
+    int i, k, fase;
+    BOOL visitado[numeroBarras];
+    __complex__ double V0[3], **Yaux;
+
+    Yaux = c_matAloca(3);
+
+    //Flat start trifásico (Va = Vb = Vc = 1p.u.  Ta = 0  Tb = -120  Tc = 120) - com busca em profundidade para atualizar taps iniciais
+    for (i = 0; i < numeroBarras; i++)
+    {
+        visitado[i] = false;
+    }
+    for (i = 0; i < numeroAlimentadores; i++)
+    {
+        //Tensão Inicial da subestação
+        V0[0] = grafo[alimentadores[i].noRaiz].barra->Vinicial[0]; //1.0*(cos(0) + I*sin(0));
+        V0[1] = grafo[alimentadores[i].noRaiz].barra->Vinicial[1]; //1.0*(cos(-120*PI/180) + I*sin(-120*PI/180));
+        V0[2] = grafo[alimentadores[i].noRaiz].barra->Vinicial[2]; //1.0*(cos(120*PI/180) + I*sin(120*PI/180));
+
+        FILABARRAS *barraAtual = &alimentadores[i].rnp[0];
+
+        int de = barraAtual->idNo;
+        grafo[de].V[0] = V0[0];
+        grafo[de].V[1] = V0[1];
+        grafo[de].V[2] = V0[2];
+
+        while (barraAtual != NULL)
+        {
+            de = barraAtual->idNo;
+            int n_adj = grafo[de].numeroAdjacentes;
+            for (k = 0; k < n_adj; k++)
+            {
+                int para = grafo[de].adjacentes[k].idNo;
+                if (visitado[para] == false)
+                {
+                    if ((grafo[de].adjacentes[k].tipo == 1))
+                    { //Atualiza o V0 para trafo visto a ligação e tap
+                        grafo[para].V[0] = grafo[de].V[0];
+                        grafo[para].V[1] = grafo[de].V[1];
+                        grafo[para].V[2] = grafo[de].V[2];
+
+
+                        if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 1) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 2))
+                        {
+                            grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                            grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                            grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                        }
+                        else if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 3) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 2))
+                        {
+                            grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                            grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                            grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                        }
+                        else if ((grafo[de].adjacentes[k].ramo->trafo.lig_pri == 2) && (grafo[de].adjacentes[k].ramo->trafo.lig_sec == 1))
+                        {
+                            if (grafo[de].adjacentes[k].ramo->k == de)
+                            {
+                                grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(-30 * PI / 180) + I * sin(-30 * PI / 180));
+                                grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-150 * PI / 180) + I * sin(-150 * PI / 180));
+                                grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(90 * PI / 180) + I * sin(90 * PI / 180));
+                            }
+                            else
+                            {
+                                grafo[para].V[0] = cabs(grafo[de].V[0]) * (cos(0 * PI / 180) + I * sin(0 * PI / 180));
+                                grafo[para].V[1] = cabs(grafo[de].V[1]) * (cos(-120 * PI / 180) + I * sin(-120 * PI / 180));
+                                grafo[para].V[2] = cabs(grafo[de].V[2]) * (cos(120 * PI / 180) + I * sin(120 * PI / 180));
+                            }
+                        }
+                    }
+                    else if (grafo[de].adjacentes[k].tipo == 2)
+                    { //Para o caso de regulador de tensão
+                        grafo[para].V[0] = grafo[de].V[0] * grafo[de].adjacentes[k].ramo->tap_pri[0] * grafo[de].adjacentes[k].ramo->tap_sec[0];
+                        grafo[para].V[1] = grafo[de].V[1] * grafo[de].adjacentes[k].ramo->tap_pri[1] * grafo[de].adjacentes[k].ramo->tap_sec[1];
+                        grafo[para].V[2] = grafo[de].V[2] * grafo[de].adjacentes[k].ramo->tap_pri[2] * grafo[de].adjacentes[k].ramo->tap_sec[2];
+                    }
+                    else
+                    {
+                        grafo[para].V[0] = grafo[de].V[0];
+                        grafo[para].V[1] = grafo[de].V[1];
+                        grafo[para].V[2] = grafo[de].V[2];
+                    }
+                    grafo[para].V[0] = grafo[para].V[0]+((double)rand()/RAND_MAX*2.0-1.0)/1000+I*((double)rand()/RAND_MAX*2.0-1.0)/1000;
+                    grafo[para].V[1] = grafo[para].V[1]+((double)rand()/RAND_MAX*2.0-1.0)/1000+I*((double)rand()/RAND_MAX*2.0-1.0)/1000;
+                    grafo[para].V[2] = grafo[para].V[2]+((double)rand()/RAND_MAX*2.0-1.0)/1000+I*((double)rand()/RAND_MAX*2.0-1.0)/1000;
                 }
             }
             visitado[de] = true;
@@ -1406,6 +1745,145 @@ void atualiza_estado(GRAFO *grafo, double *x, double *regua, long int nVariaveis
     }
 }
 
+void add_pseudo(ALIMENTADOR *alimentador,GRAFO *grafo,DRAM *ramos, DMED *medidas, long int nmed)
+{
+        printf("pseudo medida foi adicionada\n\n");
+        int medB=nmed-2,medC=nmed-1;
+        int ind;
+        int k;
+        int j;
+        double regua;
+
+        medidas[medB].ligado =1; //se a medida esta ativa
+        medidas[medB].tipo = 5;// tipo de medida 
+        medidas[medB].DE = grafo[alimentador->noRaiz].barra->ID;// barra DE conforme nomeclatura do DBAR
+        medidas[medB].PARA = -1;// barra PARA conforme a nomeclatura do DBAR
+        medidas[medB].fases = 2;// De qual fase é a medida
+        medidas[medB].id = medB;// id da medida
+        medidas[medB].par = -1;// par ???
+        medidas[medB].h = 0; //valor do h(x)
+        medidas[medB].zmed = -120 * PI / 180;// valor medida
+        medidas[medB].sigma = 1; //atof(getfield(dados,7));// sigma, desvio padrão calculado internamente
+        medidas[medB].prec = 0.042;// precisão do medidor
+        medidas[medB].k=alimentador->noRaiz;
+        medidas[medB].m=-1;
+        medidas[medB].ramo=-1;
+
+        medidas[medC].ligado =1; //se a medida esta ativa
+        medidas[medC].tipo = 5;// tipo de medida 
+        medidas[medC].DE = grafo[alimentador->noRaiz].barra->ID;// barra DE conforme nomeclatura do DBAR
+        medidas[medC].PARA = -1;// barra PARA conforme a nomeclatura do DBAR
+        medidas[medC].fases = 3;// De qual fase é a medida
+        medidas[medC].id = medC;// id da medida
+        medidas[medC].par = -1;// par ???
+        medidas[medC].h = 0; //valor do h(x)
+        medidas[medC].zmed = 120 * PI / 180;// valor medida
+        medidas[medC].sigma = 1; //atof(getfield(dados,7));// sigma, desvio padrão calculado internamente
+        medidas[medC].prec = 0.042;// precisão do medidor
+        medidas[medC].k=alimentador->noRaiz;
+        medidas[medC].m=-1;
+        medidas[medC].ramo=-1;
+
+        k=alimentador->noRaiz;
+
+
+
+        // coloca a medida no grafo
+        ind = grafo[k].nmed;
+        grafo[k].medidores[ind] = &medidas[medB];
+        grafo[k].nmed++;
+
+        //aloca o espaço na estrutura medidas
+        medidas[medB].nvar = 3;
+        medidas[medB].reguaH = (double *)malloc(medidas[medB].nvar * sizeof(double));
+        medidas[medB].H = (double *)malloc(medidas[medB].nvar * sizeof(double));
+        medidas[medC].nvar = 3;
+        medidas[medC].reguaH = (double *)malloc(medidas[medC].nvar * sizeof(double));
+        medidas[medC].H = (double *)malloc(medidas[medC].nvar * sizeof(double));
+            //inicia os malores com zero
+        for (j = 0; j < medidas[medB].nvar; j++)
+        {
+            medidas[medB].H[j] = 0;
+        }
+
+        //preenche a regua
+
+        regua = (double)k;
+        regua += 0.01;
+        for (j = 0; j < 3; j++)
+        {
+            medidas[medB].reguaH[j] = -regua;
+            regua += 0.1;
+        }
+        ind = grafo[k].nmed;
+        grafo[k].medidores[ind] = &medidas[medC];
+        grafo[k].nmed++;
+
+        //aloca o espaço na estrutura medidas
+        medidas[medC].nvar = 3;
+        medidas[medC].reguaH = (double *)malloc(medidas[medC].nvar * sizeof(double));
+        medidas[medC].H = (double *)malloc(medidas[medC].nvar * sizeof(double));
+            //inicia os malores com zero
+        for (j = 0; j < medidas[medC].nvar; j++)
+        {
+            medidas[medC].H[j] = 0;
+        }
+
+            //preenche a regua
+
+        regua = (double)k;
+        regua += 0.01;
+        for (j = 0; j < 3; j++)
+        {
+            medidas[medC].reguaH[j] = -regua;
+            regua += 0.1;
+        }
+
+    
+    
+}
+
+void tratamento_referencia_improv(long int *ref_1, long int *ref_2, ALIMENTADOR *alimentador, double *regua, long int nvar,double ***H,GRAFO *grafo, long int numeroBarras,DRAM *ramos, DMED *medidas, long int *nmed,int* pseu)
+{
+    double **Href;
+    int nref;
+    int i,j,k;
+    *pseu=0;
+    
+    atualiza_H(grafo, numeroBarras, ramos, medidas, *nmed);
+    matrizDinamica(&Href,(int)*nmed,(int)nvar);
+
+    mat_ig(H,*nmed,nvar,Href);
+    nref=numref(Href,(int)*nmed,(int)nvar,1,1);
+   
+    if(nref>1)
+    {
+        (*nmed)=(*nmed)+2;
+        add_pseudo(alimentador,grafo,ramos,medidas,*nmed);
+        *pseu=1;
+        nref=1;   
+    }
+
+    
+
+    for (j = 0; j < nvar; j++)
+    {
+        if (regua[j] < 0)
+        {
+            k = (int)regua[j];
+            k = -k;
+            if (k == alimentador->noRaiz)
+            {
+                ref_1[0] = j;
+                ref_2[0] = j + nref - 1;
+                break;
+            }
+        }
+    }
+   
+
+}
+
 //Tratamento da referência (por alimentador)
 void tratamento_referencia(long int *ref_1, long int *ref_2, ALIMENTADOR *alimentador, double *regua, long int nVariaveis)
 {
@@ -1438,12 +1916,31 @@ void tratamento_referencia(long int *ref_1, long int *ref_2, ALIMENTADOR *alimen
 // ESTIMADOR WLS CONVENCIONAL VIA WLS
 //
 //------------------------------------------------------------------------------
-void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase)
+void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase,char **argv)
 {
-    long int nmed, nvar;
-    int i, j, k, r;
-    double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
+    long int nmed, nvar,tratref;
+    int i, j, k, r,nref,pseu;
+    long int ref_1, ref_2;
+    double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL,*regua_o=NULL, aux = 0;
+    FILE *reguaout;
+    reguaout=fopen("regua.csv","w");
 
+
+    if(argv[1]==NULL || atoi(argv[1])==1)
+    {
+        tratref=1;
+    }
+    else if(atoi(argv[1])==2)
+    {
+        tratref=2;
+    }
+    else if(atoi(argv[1])==3)
+    {
+        tratref=3;
+    }
+   
+    
+    
     printf("Estimador de Estado WLS Trifásico...\n");
     //--------------------------------------------------------------------------
     //Alocação de memória das variáveis do estimador de estado
@@ -1484,14 +1981,13 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
             break;
         }
     }
-    //printf("nmed: %d\n", nmed);
-    //printf("nvar: %d\n", nvar);
-    if ((z = (double *)malloc((nmed) * sizeof(double))) == NULL)
+
+    if ((z = (double *)malloc((nmed+2) * sizeof(double))) == NULL)
     {
         printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor z!!!!");
         exit(1);
     }
-    if ((h = malloc((nmed) * sizeof(double *))) == NULL)
+    if ((h = malloc((nmed+2) * sizeof(double *))) == NULL)
     {
         printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor h!!!!");
         exit(1);
@@ -1506,9 +2002,14 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
         printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor regua!!!!");
         exit(1);
     }
+    if ((regua_o = (double *)malloc((nvar) * sizeof(double))) == NULL)
+    {
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para o vetor regua!!!!");
+        exit(1);
+    }
 
-    H = (double ***)malloc(nmed * sizeof(double **));
-    for (i = 0; i < nmed; i++)
+    H = (double ***)malloc((nmed+2) * sizeof(double **));
+    for (i = 0; i < nmed+2; i++)
     {
         H[i] = (double **)malloc(nvar * sizeof(double *));
         for (j = 0; j < nvar; j++)
@@ -1578,16 +2079,21 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
             break;
         }
     }
+    for(i=0;i<(int)nvar / 2;i++)
+    {
+        regua_o[i] = regua[i];
+        regua_o[i + (int)nvar / 2] = -regua_o[i];
+    }
     aux = 0;
 
-    //Tratamento da referência
-    long int ref_1, ref_2;
-    tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
+    for (i=0;i<nvar;i++)
+    {
+        fprintf(reguaout,"%f\n",regua_o[i]);
+    }
 
-    tira_refs_regua(nvar, ref_1, ref_2, regua);
-    nvar = nvar - (ref_2 - ref_1 + 1);
-    //printf("tira refs\n");
-    //vetor h aponta para a estrutura de dados das medidas
+    
+
+
     for (i = 0; i < nmed; i++)
     {
         h[i] = &medidas[i].h;
@@ -1607,6 +2113,69 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
             }
         }
     }
+
+   
+    incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores, x, regua, nvar);
+
+    if (tratref==3)
+    {
+        tratamento_referencia_improv(&ref_1, &ref_2, &alimentadores[0], regua, nvar,H,grafo,numeroBarras,ramos,medidas,&nmed,&pseu);
+        if (pseu ==1)
+        {
+            for (i = 0; i < nmed; i++)
+            {
+                h[i] = &medidas[i].h;
+            }
+            //Matriz H aponta para a estrutura de dados das medidas
+            for (i = 0; i < nmed; i++)
+            {
+                for (j = 0; j < medidas[i].nvar; j++)
+                {
+                    for (r = 0; r < nvar; r++)
+                    {
+                        if (cabs(medidas[i].reguaH[j] - regua[r]) < EPS)
+                        {
+                            H[i][r] = &medidas[i].H[j];
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+        nref=1;
+    }
+    else if (tratref==1||tratref==2)
+    {
+        tratamento_referencia(&ref_1,&ref_2,&alimentadores[0],regua,nvar);
+        nref=3;
+        if (tratref==2)
+        {
+            ref_2=ref_1;
+            nref=1;    
+        }
+    }
+    
+    
+
+
+
+    double **Href;
+    FILE* JACOBPSEU;
+    atualiza_H(grafo, numeroBarras, ramos, medidas, nmed);
+
+    
+    matrizDinamica(&Href,nmed,nvar);
+
+    mat_ig(H,nmed,nvar,Href);
+
+    JACOBPSEU=fopen("Hpseudoan.csv","w");
+    fimprimirmat(JACOBPSEU,Href,nmed,nvar);
+
+    fclose(JACOBPSEU);
+    
+    
+    //tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
     //--------------------------------------------------------------------------
     //Estimação de Estado
     monta_z(z, nmed, medidas);
@@ -1614,19 +2183,27 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
     //monta_W_cte(W,nmed,medidas);
     //monta_W_Ident(NULL,nmed,medidas);
 
-    incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores, x, regua, nvar);
+    
+    //incializa_vetor_x_perturbado(grafo, numeroBarras, alimentadores, numeroAlimentadores, x, regua, nvar);
+    FILE *TWLS;
+    TWLS=fopen("twls.csv","a");
+    double tol = 1e-6;
+    clock_t tic  = clock();
+    
+    (void) otimiza_Gauss_NewtonQR(z, h, H, grafo, numeroBarras, ramos, medidas, nvar, nmed, regua, x, tol, ref_1, ref_2,nref);
 
-    double tol = 0.000001;
-    clock_t tIni = clock();
-    int conv = otimiza_Gauss_NewtonQR(z, h, H, grafo, numeroBarras, ramos, medidas, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    clock_t toc = clock();
 
-    clock_t t1 = clock();
-    double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;
+    double tempoWLS = (double)(toc - tic) / CLOCKS_PER_SEC;
     printf("\nEstimação WLS: %lf", tempoWLS);
+    
+    ///fprintf(TWLS,"%.2e\n",tempoWLS);
 
     exportaCasoReferencia(grafo, numeroBarras, Sbase);
+    exportaRamoscorrentes(grafo, numeroBarras, Sbase);
     exportaEstado(grafo, regua, nvar);
     imprimeEstado(grafo, numeroBarras);
+    //imprimeInjecoes(grafo, numeroBarras);
 
     FILE *residuo;
     residuo = fopen("residuo.txt", "wt");
@@ -1635,7 +2212,7 @@ void estimadorWLS(GRAFO *grafo, long int numeroBarras, DMED *medidas, long int *
         fprintf(residuo, "%.10lf\n", z[i] - medidas[i].h);
     }
     fclose(residuo);
-
+    fclose(TWLS);
     free(z);
     free(h);
     free(x);

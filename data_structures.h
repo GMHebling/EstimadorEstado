@@ -5,7 +5,10 @@
  * Created on 24 de Fevereiro de 2017, 12:58
  */
 
-#ifndef DATA_STRUCTURES_H
+
+
+#ifndef DATA_STRUCTURES_H 
+// IF DEF GUARD se já está definido, não define novamente
 #define	DATA_STRUCTURES_H
 
 #define PI 3.14159265359

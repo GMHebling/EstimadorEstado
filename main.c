@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string.h>
 #include <math.h>
 #include <complex.h>
 #include <time.h>
@@ -10,9 +11,12 @@
 #include "funcoesTopologia.h"
 #include "funcoesMatematicas.h"
 #include "funcoesWLS.h"
+#include "fluxoNRQR.h"
+#include "Observabilidade.h"
 
 int main(int argc, char **argv)
 {
+
     long int numeroBarras = 0;
     long int numeroAlimentadores = 0, numeroAreas = 0;
     long int numeroRamos = 0;
@@ -43,14 +47,29 @@ int main(int argc, char **argv)
     atualizaTaps(ramo, numeroRamos); //terminar o tap de trafos
 
     // Leitura das Medidas e associa os medidores ao grafo da rede - Numero de medidas retorna matriz tipo de media/por fase
-    numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase); //Melhorar o tratamento de chaves
+    
+    if(argc==1|atoi(argv)!=0)
+    {
+        //Estimador de estado
+        numeroMedidas = leituraMedidas(folder, "DMED.csv", &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase);
+        estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000,argv);
+    }
+    else
+    {
+        numeroMedidas = LeituraFP(folder, &medida, ramo, numeroRamos, barra, numeroBarras, grafo, Sbase);
+        fluxoNRQR(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase/ 1000);
+    
+    }
 
-    estimadorWLS(grafo, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000);
+     //Melhorar o tratamento de chaves
 
-    //    salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
+    
+    
+    //salvaDadosRedeEletrica(barra, numeroBarras, ramo, numeroRamos, medida, numeroMedidas);
     free(barra);
     free(ramo);
     free(grafo);
     free(alimentador);
     return (EXIT_SUCCESS);
+    
 }

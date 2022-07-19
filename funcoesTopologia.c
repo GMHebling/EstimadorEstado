@@ -202,7 +202,7 @@ void buscaProfundidadeAlimentadores(GRAFO *grafo, long int numeroBarras, ALIMENT
 
     BOOL visitado[numeroBarras];
 
-    if (((*alimentadores) = (ALIMENTADOR *)malloc(numeroAlimentadores * sizeof(ALIMENTADOR))) == NULL)
+    if (((*alimentadores) = (ALIMENTADOR *)malloc(numeroAlimentadores * sizeof(ALIMENTADOR))) == NULL)//Aloca espaço para a estrutura alimentador
     {
         printf("Erro -- Nao foi possivel alocar espaco de memoria para alimentadores !!!!");
         exit(1);
@@ -211,22 +211,24 @@ void buscaProfundidadeAlimentadores(GRAFO *grafo, long int numeroBarras, ALIMENT
     for (i = 0; i < numeroBarras; i++)
     {
         visitado[i] = false;
-        if (grafo[i].tipo == 2)
+        if (grafo[i].tipo == 2)//so entra se o nó for uma barra de referência
         {
-            (*alimentadores)[idAlim].idAlim = idAlim;
-            (*alimentadores)[idAlim].noRaiz = i;
-            (*alimentadores)[idAlim].numeroNos = 1;
-            (*alimentadores)[idAlim].idRaiz = grafo[i].barra->ID;
-            (*alimentadores)[idAlim].rnp[0].idNo = i;
-            (*alimentadores)[idAlim].rnp[0].profundidade = 0;
-            (*alimentadores)[idAlim].rnp[0].prox = NULL;
+            (*alimentadores)[idAlim].idAlim = idAlim;//entra com o ID do alimentador que ele pertence
+            (*alimentadores)[idAlim].noRaiz = i;//Salv o ID do no raiz
+            (*alimentadores)[idAlim].numeroNos = 1;//inicia o numero de nos do alimentador
+            (*alimentadores)[idAlim].idRaiz = grafo[i].barra->ID;//id do no raiz daquele alimentador
+            (*alimentadores)[idAlim].rnp[0].idNo = i;//id do no
+            (*alimentadores)[idAlim].rnp[0].profundidade = 0;//profundidade do no
+            (*alimentadores)[idAlim].rnp[0].prox = NULL;//proximo no, lista?
             idAlim++;
         }
     }
-
+    // depois de determinado o numero de alimentadores e o nó raiz de cada um começa a busca profundidade
     for (i = 0; i < numeroAlimentadores; i++)
     {
         //buscaLargura(grafo, (*alimentadores), i, (*alimentadores)[i].noRaiz, visitado);
+
+        //atribui a produndidade do nó no dado alimentador que ele pertence
         barraAtual = &(*alimentadores)[i].rnp[0];
         buscaProfundidade(barraAtual, (*alimentadores)[i].noRaiz, 0, visitado, grafo, i);
         //printf("\n alimentador %d Raiz: %d   Nos: %d",i,(*alimentadores)[i].idRaiz,(*alimentadores)[i].numeroNos);
@@ -370,6 +372,12 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yi, 3);
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yi, 3);
+        //ramo->Yps[2][0] = ramo->Yps[2][0] +100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Yps[2][1] = ramo->Yps[2][1] +100 * cabs(y);
+        //ramo->Yps[2][2] = ramo->Yps[2][2] +100 * cabs(y);
+        //ramo->Ysp[2][0] = ramo->Ysp[2][0] +100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Ysp[2][1] = ramo->Ysp[2][1] +100 * cabs(y);
+        //ramo->Ysp[2][2] = ramo->Ysp[2][2] +100 * cabs(y);
     }
     else if ((trafo->lig_pri == 1) && (trafo->lig_sec == 3))
     { //Ligação YN-Y
@@ -379,9 +387,9 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yii, 3);
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yii, 3);
-        ramo->Ypp[2][0] = ramo->Ypp[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Ypp[2][1] = ramo->Ypp[2][1] + 100 * cabs(y);
-        ramo->Ypp[2][2] = ramo->Ypp[2][2] + 100 * cabs(y);
+        ramo->Ypp[2][0] = ramo->Ypp[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Ypp[2][1] = ramo->Ypp[2][1] +1;// 100 * cabs(y);
+        ramo->Ypp[2][2] = ramo->Ypp[2][2] +1;// 100 * cabs(y);
     }
     else if ((trafo->lig_pri == 1) && (trafo->lig_sec == 2))
     { //Ligação YN-D
@@ -393,6 +401,12 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         ramo->Yss[2][0] = ramo->Yss[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
         ramo->Yss[2][1] = ramo->Yss[2][1] + 100 * cabs(y);
         ramo->Yss[2][2] = ramo->Yss[2][2] + 100 * cabs(y);
+        //ramo->Ypp[2][0] = ramo->Ypp[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Ypp[2][1] = ramo->Ypp[2][1] +1;// 100 * cabs(y);
+        //ramo->Ypp[2][2] = ramo->Ypp[2][2] +1;// 100 * cabs(y);
+        //ramo->Ysp[2][0] = ramo->Ysp[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Ysp[2][1] = ramo->Ysp[2][1] +1;// 100 * cabs(y);
+        //ramo->Ysp[2][2] = ramo->Ysp[2][2] +1;// 100 * cabs(y);
     }
     else if ((trafo->lig_pri == 3) && (trafo->lig_sec == 1))
     { //Ligação Y-YN
@@ -402,9 +416,9 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yii, 3);
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yii, 3);
-        ramo->Yss[2][0] = ramo->Yss[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yss[2][1] = ramo->Yss[2][1] + 100 * cabs(y);
-        ramo->Yss[2][2] = ramo->Yss[2][2] + 100 * cabs(y);
+        ramo->Yss[2][0] = ramo->Yss[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Yss[2][1] = ramo->Yss[2][1] +1;// 100 * cabs(y);
+        ramo->Yss[2][2] = ramo->Yss[2][2] +1;// 100 * cabs(y);
     }
     else if ((trafo->lig_pri == 3) && (trafo->lig_sec == 3))
     { //Ligação Y-Y
@@ -414,9 +428,9 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yii, 3);
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yii, 3);
-        ramo->Yss[2][0] = ramo->Yss[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yss[2][1] = ramo->Yss[2][1] + 100 * cabs(y); //Pensar se trata-se de simplificação, pois pode existir tensão de neutro neste caso, mas não irá te corrente de neutro.
-        ramo->Yss[2][2] = ramo->Yss[2][2] + 100 * cabs(y);
+        ramo->Yss[2][0] = ramo->Yss[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Yss[2][1] = ramo->Yss[2][1] +1;// 100 * cabs(y); //Pensar se trata-se de simplificação, pois pode existir tensão de neutro neste caso, mas não irá te corrente de neutro.
+        ramo->Yss[2][2] = ramo->Yss[2][2] +1;// 100 * cabs(y);
     }
     else if ((trafo->lig_pri == 3) && (trafo->lig_sec == 2))
     { //Ligação Y-D
@@ -425,9 +439,9 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yiii, 3);
         c_matTransp(ramo->Ysp, 3);
         c_matIgual(ramo->Yss, Yii, 3);
-        ramo->Yss[2][0] = ramo->Yss[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yss[2][1] = ramo->Yss[2][1] + 100 * cabs(y);
-        ramo->Yss[2][2] = ramo->Yss[2][2] + 100 * cabs(y);
+        ramo->Yss[2][0] = ramo->Yss[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Yss[2][1] = ramo->Yss[2][1] +1;// 100 * cabs(y);
+        ramo->Yss[2][2] = ramo->Yss[2][2] + 1;//100 * cabs(y);
     }
     else if ((trafo->lig_pri == 2) && (trafo->lig_sec == 1))
     { //Ligação D-YN
@@ -436,12 +450,12 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matIgual(ramo->Ysp, Yiii, 3);
         c_matTransp(ramo->Ysp, 3);
         c_matIgual(ramo->Yss, Yi, 3);
-        ramo->Ypp[2][0] = ramo->Ypp[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Ypp[2][1] = ramo->Ypp[2][1] + 100 * cabs(y);
-        ramo->Ypp[2][2] = ramo->Ypp[2][2] + 100 * cabs(y);
-        ramo->Yps[2][0] = ramo->Yps[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yps[2][1] = ramo->Yps[2][1] + 100 * cabs(y);
-        ramo->Yps[2][2] = ramo->Yps[2][2] + 100 * cabs(y);
+        ramo->Ypp[2][0] = ramo->Ypp[2][0] +1;//+100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Ypp[2][1] = ramo->Ypp[2][1] +1;//+100 * cabs(y);
+        ramo->Ypp[2][2] = ramo->Ypp[2][2] +1;//+100 * cabs(y);
+        ramo->Yps[2][0] = ramo->Yps[2][0] +1;//+100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Yps[2][1] = ramo->Yps[2][1] +1;//+100 * cabs(y);
+        ramo->Yps[2][2] = ramo->Yps[2][2] +1;//+100 * cabs(y);
     }
     else if ((trafo->lig_pri == 2) && (trafo->lig_sec == 3))
     { //Ligação D-Y
@@ -450,14 +464,14 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matTransp(ramo->Yps, 3);
         c_matIgual(ramo->Ysp, Yiii, 3);
         c_matIgual(ramo->Yss, Yii, 3);
-        ramo->Ypp[2][0] = ramo->Ypp[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Ypp[2][1] = ramo->Ypp[2][1] + 100 * cabs(y);
-        ramo->Ypp[2][2] = ramo->Ypp[2][2] + 100 * cabs(y);
+        ramo->Ypp[2][0] = ramo->Ypp[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Ypp[2][1] = ramo->Ypp[2][1] +1;// 100 * cabs(y);
+        ramo->Ypp[2][2] = ramo->Ypp[2][2] +1;// 100 * cabs(y);
 
         // Aproximação para o caso do Y não aterrado - tensão de sequência é igual a zero no secundário - fica igual DYn
-        ramo->Yps[2][0] = ramo->Yps[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yps[2][1] = ramo->Yps[2][1] + 100 * cabs(y);
-        ramo->Yps[2][2] = ramo->Yps[2][2] + 100 * cabs(y);
+        ramo->Yps[2][0] = ramo->Yps[2][0] +1;// 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        ramo->Yps[2][1] = ramo->Yps[2][1] +1;// 100 * cabs(y);
+        ramo->Yps[2][2] = ramo->Yps[2][2] +1;// 100 * cabs(y);
     }
     else if ((trafo->lig_pri == 2) && (trafo->lig_sec == 2))
     { //Ligação D-D
@@ -468,9 +482,12 @@ void montaQuadripoloTrafo(DRAM *ramo, DTRF *trafo)
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yii, 3);
 
-        ramo->Yss[2][0] = ramo->Yss[2][0] + 100 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
-        ramo->Yss[2][1] = ramo->Yss[2][1] + 100 * cabs(y);
-        ramo->Yss[2][2] = ramo->Yss[2][2] + 100 * cabs(y);
+       ramo->Yss[2][0] = ramo->Yss[2][0] + 100000 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+       ramo->Yss[2][1] = ramo->Yss[2][1] + 100000 * cabs(y);
+       ramo->Yss[2][2] = ramo->Yss[2][2] + 100000 * cabs(y);
+       ramo->Ypp[2][0] = ramo->Ypp[2][0] + 100000 * cabs(y); //Sequência zero para manter o quadripólo com posto completo
+       ramo->Ypp[2][1] = ramo->Ypp[2][1] + 100000 * cabs(y);
+       ramo->Ypp[2][2] = ramo->Ypp[2][2] + 100000 * cabs(y);
     }
 }
 
@@ -564,6 +581,12 @@ void montaQuadripoloRegulador(DRAM *ramo, DREG *reg)
         c_matIgual(ramo->Ysp, Yi, 3);
         c_matMultEsc(ramo->Ysp, -1, 3);
         c_matIgual(ramo->Yss, Yi, 3);
+        //ramo->Yps[2][0] = ramo->Yps[2][0] +100* cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Yps[2][1] = ramo->Yps[2][1] +100* cabs(y);
+        //ramo->Yps[2][2] = ramo->Yps[2][2] +100* cabs(y);
+        //ramo->Ysp[2][0] = ramo->Ysp[2][0] +100* cabs(y); //Sequência zero para manter o quadripólo com posto completo
+        //ramo->Ysp[2][1] = ramo->Ysp[2][1] +100* cabs(y);
+        //ramo->Ysp[2][2] = ramo->Ysp[2][2] +100* cabs(y);
     }
     else if (reg->lig == 2)
     { //Ligação D
@@ -628,9 +651,13 @@ void montaQuadripoloShunt(GRAFO *no, DSHNT *shunt)
 
     //Admitância do trafo
 
+
     ya = I * shunt->Qnom[0] / (pow(shunt->Vbase / sqrt(3), 2) / pow(no->Vbase, 2));
     yb = I * shunt->Qnom[1] / (pow(shunt->Vbase / sqrt(3), 2) / pow(no->Vbase, 2));
     yc = I * shunt->Qnom[2] / (pow(shunt->Vbase / sqrt(3), 2) / pow(no->Vbase, 2));
+
+
+
 
     //Yi
     Yi[0][0] = 1 * ya;
@@ -669,7 +696,7 @@ void montaQuadripoloShunt(GRAFO *no, DSHNT *shunt)
     }
     else if (shunt->lig == 2)
     { //Ligação D trifásico
-        c_matIgual(Ysh, Yiii, 3);
+        c_matIgual(Ysh, Yii, 3);
         Ysh[2][0] = Ysh[2][0] + 1; //Sequência zero para manter o quadripólo com posto completo
         Ysh[2][1] = Ysh[2][1] + 1;
         Ysh[2][2] = Ysh[2][2] + 1;
@@ -734,12 +761,12 @@ void calculaPU(GRAFO *grafo, long int numeroBarras, DRAM *ramos, long int numero
             ramos[idRam].linha.Zbc = ramos[idRam].linha.Zbc / ((pow(Vbase, 2)) / Sbase);
             ramos[idRam].linha.Zcc = ramos[idRam].linha.Zcc / ((pow(Vbase, 2)) / Sbase);
 
-            ramos[idRam].linha.Baa = ramos[idRam].linha.Baa / ((pow(Vbase, 2)) / Sbase);
-            ramos[idRam].linha.Bab = ramos[idRam].linha.Bab / ((pow(Vbase, 2)) / Sbase);
-            ramos[idRam].linha.Bac = ramos[idRam].linha.Bac / ((pow(Vbase, 2)) / Sbase);
-            ramos[idRam].linha.Bbb = ramos[idRam].linha.Bbb / ((pow(Vbase, 2)) / Sbase);
-            ramos[idRam].linha.Bbc = ramos[idRam].linha.Bbc / ((pow(Vbase, 2)) / Sbase);
-            ramos[idRam].linha.Bcc = ramos[idRam].linha.Bcc / ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Baa = ramos[idRam].linha.Baa * ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Bab = ramos[idRam].linha.Bab * ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Bac = ramos[idRam].linha.Bac * ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Bbb = ramos[idRam].linha.Bbb * ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Bbc = ramos[idRam].linha.Bbc * ((pow(Vbase, 2)) / Sbase);
+            ramos[idRam].linha.Bcc = ramos[idRam].linha.Bcc * ((pow(Vbase, 2)) / Sbase);
 
             montaQuadripoloLinha(&ramos[idRam], &ramos[idRam].linha);
             break;
@@ -748,6 +775,7 @@ void calculaPU(GRAFO *grafo, long int numeroBarras, DRAM *ramos, long int numero
             ramos[idRam].trafo.X = 3 * ramos[idRam].trafo.X / ((pow(Vbase, 2)) / Sbase);
 
             montaQuadripoloTrafo(&ramos[idRam], &ramos[idRam].trafo);
+            //printf("%d \t %d \t %d\n",idRam,ramos[idRam].DE,ramos[idRam].PARA);
             break;
         case 2:
             ramos[idRam].regulador.R = 3 * ramos[idRam].regulador.R / ((pow(Vbase, 2)) / Sbase);
