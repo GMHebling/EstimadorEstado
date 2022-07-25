@@ -1,0 +1,3 @@
+void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase, DBAR *barra);
+DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroMedidas, GRAFO *grafo, int numeroBarras);
+double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nmed_AMB, int *caminho, DMED_COMPLEX *medidas_equivalentes, double *regua_x, double *regua_caminho, DRAM *ramos, GRAFO *grafo, double *hx_V);

@@ -10,6 +10,7 @@
 #include "funcoesTopologia.h"
 #include "funcoesMatematicas.h"
 #include "funcoesWLS.h"
+#include "funcoesAMB.h"
 #include "funcoesBranchCurrent.h"
 
 int main(int argc, char **argv)
@@ -59,7 +60,7 @@ int main(int argc, char **argv)
     
     //estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
     
-    estimadorBC_RECT_Malhado(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
+    estimadorAMB(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
     clock_t t1 = clock();
     double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;
     printf("\nEstimação BC: %lf", tempoWLS);
