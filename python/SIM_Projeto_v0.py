@@ -198,8 +198,9 @@ def PowerFlow(md, sd, network_model, loading, method):
     subprocess.check_output('../powerflow')
     
     #Leitura do resultado
-    filename = '/referencia.txt'
-    df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    filename = 'referencia.txt'
+    #df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    df_DSIM = pd.read_csv(filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
     filename = 'state.txt'
@@ -259,8 +260,9 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
     #subprocess.check_call('./estimator', cwd = md, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     subprocess.check_output('../estimator')
     #Leitura do resultado
-    filename = '/referencia.txt'
-    df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    filename = 'referencia.txt'
+    #df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    df_DSIM = pd.read_csv(filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
     filename = 'state.txt'
@@ -291,7 +293,7 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
 md = '..'
 # sd = '/IEEE342SIM' 
 sd = '/IEEE123' 
-#sd = '/IEEE34'
+# sd = '/IEEE34'
 
 # Valores de Precisão dos tipos de medidores
 precision = {'PSEUDO': 0.30,

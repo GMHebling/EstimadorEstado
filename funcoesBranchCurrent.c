@@ -153,25 +153,25 @@ DMED_COMPLEX *divide_medidas_por_tensao(DMED_COMPLEX *medidas_complexas, long in
                 switch (medidas_div[cont].fases)
                 {
                 case 1:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 2:
-                    medidas_div[cont].zmed = aux / grafo[i].V[1];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[1]);
                     break;
                 case 3:
-                    medidas_div[cont].zmed = aux / grafo[i].V[2];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[2]);
                     break;
                 case 4:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 5:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 6:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 7:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 }
             }
@@ -666,7 +666,7 @@ double *resolve_linear_QR_Tensao(double **H_BC, double **H_T, double *z, long in
     double one[2] = {1, 0};
     double m1[2] = {0, 0};
     cholmod_l_sdmult(A, 1, one, m1, b, bH, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A, b, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A, b, c);
     // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroRamos);
@@ -1122,7 +1122,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     long int nmed, nvar;
     int i, j, k, r;
     double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
-    double tol = 0.000001;
+    double tol = 0.00001;
     //__complex__ double *x_bc = NULL;
 
     long int nmed_BC;
@@ -1797,7 +1797,7 @@ void estimadorBC_RECT_Malhado(GRAFO *grafo, long int numeroRamos, long int numer
         {
             int ct = forward_sweep(&grafo[RNP[k]], grafo);
         }
-        if (nfx<tol | it> 70)
+        if (nfx<tol | it> 30)
         {
             conv = 10;
         }
