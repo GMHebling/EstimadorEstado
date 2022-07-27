@@ -94,13 +94,35 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
                 f_idx = 2;
                 break;
             }
+            __complex__ double tensao_de = grafo[idx_barra_DE].V[f_idx];
+            double abs_tensao_de = abs(tensao_de);
 
-            medida_tensao[aux_contador].zmed = magnitude_tensao + 0 * I;
+            double parte_real = creal(tensao_de)/abs_tensao_de;
+            double parte_imag = cimag(tensao_de)/abs_tensao_de;
+
+            medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
 
             aux_contador += 1;
         }
     }
     return medida_tensao;
+}
+
+double calcula_G_AMB(int fase, int i_ramo, DRAM *ramos){
+    double R, X;
+    R = creal(ramos[i_ramo].Z[fase][fase]);
+    X = cimag(ramos[i_ramo].Z[fase][fase]);
+    double G;
+    G = R/((R*R) + (X*X));
+    return G;
+}
+double calcula_B_AMB(int fase, int i_ramo, DRAM *ramos){
+    double R, X;
+    R = creal(ramos[i_ramo].Z[fase][fase]);
+    X = cimag(ramos[i_ramo].Z[fase][fase]);
+    double B;
+    B = -X/((R*R) + (X*X));
+    return B;
 }
 
 double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nmed_AMB, int *caminho, DMED_COMPLEX *medidas_equivalentes, double *regua_x, double *regua_caminho, DRAM *ramos, GRAFO *grafo, double *hx_V)
@@ -123,6 +145,7 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
     {
         long int DE = medidas_equivalentes[i].DE;
         long int PARA = medidas_equivalentes[i].PARA;
+        long int i_ramo = medidas_equivalentes[i].ramo;
         for (j = 0; j < numeroBarras; j++)
         {
             int x_atual = regua_x[j];
@@ -141,6 +164,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         //calcula Y
                         //FASE A
                         //IR/VR
+                        G = calcula_G_AMB(0,i_ramo,ramos);
+                        B = calcula_B_AMB(0,i_ramo,ramos);
                         H_T[3*i][3*j] = G;
                         //IR/VX
                         H_T[3*i][3*j + (3*numeroBarras)] = -B;
@@ -153,6 +178,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 2:
                         //calcula Y
                         //FASE B
+                        G = calcula_G_AMB(1,i_ramo,ramos);
+                        B = calcula_B_AMB(1,i_ramo,ramos);
                         //IR/VR
                         H_T[3*i+1][3*j+1] = G;
                         //IR/VX
@@ -165,6 +192,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 3:
                         //calcula Y
                         //FASE C
+                        G = calcula_G_AMB(2,i_ramo,ramos);
+                        B = calcula_B_AMB(2,i_ramo,ramos);
                         //IR/VR
                         H_T[3*i+2][3*j+2] = G;
                         //IR/VX
@@ -177,6 +206,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 4:
                         //FASE AB
                         //IR/VR
+                        G = calcula_G_AMB(0,i_ramo,ramos);
+                        B = calcula_B_AMB(0,i_ramo,ramos);
                         H_T[3*i][3*j] = G;
                         //IR/VX
                         H_T[3*i][3*j + (3*numeroBarras)] = -B;
@@ -186,6 +217,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         H_T[3*i +(3*nmed_AMB)][3*j + (3*numeroBarras)] = G;
 
                         //IR/VR
+                        G = calcula_G_AMB(1,i_ramo,ramos);
+                        B = calcula_B_AMB(1,i_ramo,ramos);
                         H_T[3*i+1][3*j+1] = G;
                         //IR/VX
                         H_T[3*i+1][3*j+1 + (3*numeroBarras)] = -B;
@@ -197,6 +230,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 5:
                         //FASE CA
                         //IR/VR
+                        G = calcula_G_AMB(0,i_ramo,ramos);
+                        B = calcula_B_AMB(0,i_ramo,ramos);
                         H_T[3*i][3*j] = G;
                         //IR/VX
                         H_T[3*i][3*j + (3*numeroBarras)] = -B;
@@ -206,6 +241,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         H_T[3*i +(3*nmed_AMB)][3*j + (3*numeroBarras)] = G;
 
                         //IR/VR
+                        G = calcula_G_AMB(2,i_ramo,ramos);
+                        B = calcula_B_AMB(2,i_ramo,ramos);
                         H_T[3*i+2][3*j+2] = G;
                         //IR/VX
                         H_T[3*i+2][3*j+2 + (3*numeroBarras)] = -B;
@@ -217,6 +254,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 6:
                         //FASE BC
                         //IR/VR
+                        G = calcula_G_AMB(1,i_ramo,ramos);
+                        B = calcula_B_AMB(1,i_ramo,ramos);
                         H_T[3*i+1][3*j+1] = G;
                         //IR/VX
                         H_T[3*i+1][3*j+1 + (3*numeroBarras)] = -B;
@@ -227,6 +266,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
 
 
                         //IR/VR
+                        G = calcula_G_AMB(2,i_ramo,ramos);
+                        B = calcula_B_AMB(2,i_ramo,ramos);
                         H_T[3*i+2][3*j+2] = G;
                         //IR/VX
                         H_T[3*i+2][3*j+2 + (3*numeroBarras)] = -B;
@@ -238,6 +279,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                     case 7:
                         //FASE ABC
                         //IR/VR
+                        G = calcula_G_AMB(0,i_ramo,ramos);
+                        B = calcula_B_AMB(0,i_ramo,ramos);
                         H_T[3*i][3*j] = G;
                         //IR/VX
                         H_T[3*i][3*j + (3*numeroBarras)] = -B;
@@ -247,6 +290,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         H_T[3*i +(3*nmed_AMB)][3*j + (3*numeroBarras)] = G;
 
                         //IR/VR
+                        G = calcula_G_AMB(1,i_ramo,ramos);
+                        B = calcula_B_AMB(1,i_ramo,ramos);
                         H_T[3*i+1][3*j+1] = G;
                         //IR/VX
                         H_T[3*i+1][3*j+1 + (3*numeroBarras)] = -B;
@@ -257,6 +302,8 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
 
                         
                         //IR/VR
+                        G = calcula_G_AMB(2,i_ramo,ramos);
+                        B = calcula_B_AMB(2,i_ramo,ramos);
                         H_T[3*i+2][3*j+2] = G;
                         //IR/VX
                         H_T[3*i+2][3*j+2 + (3*numeroBarras)] = -B;
@@ -276,6 +323,43 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
     }
 
     return H_T;
+}
+
+double **monta_matriz_H_AMB_Tensao(DMED_COMPLEX *medidas_tensao, GRAFO *grafo, long int numeroBarras, int nmed_T){
+    double **H_Tensao;
+    H_Tensao = aloca_matriz(nmed_T, 6*numeroBarras);
+
+    int i, j;
+    for (i = 0; i< nmed_T; i++){
+        int DE_med = medidas_tensao[i].DE;
+        for (j = 0; j<numeroBarras; j++){
+            //TODO
+            int DE_barra = grafo[j].barra->ID;
+            if (DE_med == DE_barra){
+                switch (medidas_tensao[i].fases)
+                {
+                case 1:
+                    /* code */
+                    H_Tensao[i][3*j] = 1;
+                    H_Tensao[i][3*j + 3*numeroBarras] = 1;
+                    break;
+                case 2:
+                    /* code */
+                    H_Tensao[i][3*j+1] = 1;
+                    H_Tensao[i][3*j+1 + 3*numeroBarras] = 1;
+                    break;
+                case 3:
+                    /* code */
+                    H_Tensao[i][3*j+2] = 1;
+                    H_Tensao[i][3*j+2 + 3*numeroBarras] = 1;
+                    break;
+                }
+            }
+
+        }
+    }
+
+    return H_Tensao;
 }
 
 
@@ -491,7 +575,6 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
         delta_x_bc = resolve_linear_QR_Tensao(H_AMB, H_T, z_AMB, numeroRamos, nmed_AMB, nmed_T, hx_I, hx_V);
 
         atualiza_vetor_x(x_bc, delta_x_bc, numeroRamos);
-
 
         //calcula_hx_corrente(H_BC, x_bc, hx_I, nmed_BC, numeroRamos);
 
