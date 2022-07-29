@@ -199,7 +199,8 @@ def PowerFlow(md, sd, network_model, loading, method):
     
     #Leitura do resultado
     filename = '/referencia.txt'
-    df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    # df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    df_DSIM = pd.read_csv(filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
     filename = 'state.txt'
@@ -260,7 +261,8 @@ def StateEstimation(md, sd, network_model, measurement_set, method):
     subprocess.check_output('../estimator')
     #Leitura do resultado
     filename = '/referencia.txt'
-    df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    #df_DSIM = pd.read_csv(md + filename, sep = ',',header=None)
+    df_DSIM = pd.read_csv(filename, sep = ',',header=None)
     df_DSIM.columns = ['Estado','Tipo','De','Para','Fases','Zmed','Sigma']
     
     filename = 'state.txt'

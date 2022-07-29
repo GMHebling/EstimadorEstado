@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.ejs": "html",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "funcoesfluxovarredura.h": "c"
     }
 }

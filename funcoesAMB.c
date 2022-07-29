@@ -18,6 +18,7 @@
 #include "funcoesOtimizacao.h"
 #include "funcoesMatematicas.h"
 #include "funcoesFluxoVarredura.h"
+#include "funcoesBranchCurrent.h"
 
 //#include "mmio.h"
 #include <cholmod.h>
@@ -106,6 +107,66 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
         }
     }
     return medida_tensao;
+}
+
+
+DMED_COMPLEX *converte_medidas_para_complexo_AMB(DMED *medidas, long int numeroMedidas)
+{
+    DMED_COMPLEX *medidas_complexas = NULL;
+
+    int cont_med_complex;
+    cont_med_complex = conta_medidas_BC(medidas, numeroMedidas);
+
+    printf("nmed_complex = %d\n", cont_med_complex);
+    if (((medidas_complexas) = (DMED_COMPLEX *)malloc((cont_med_complex) * sizeof(DMED_COMPLEX))) == NULL)
+    {
+        printf("Erro -- Nao foi possivel alocar espaco de memoria para as medidas complexas !!!!");
+        exit(1);
+    }
+
+    int aux_contador = 0;
+    int med_found = 0;
+    for (int contador = 0; contador < numeroMedidas; contador++)
+    {
+        if (medidas[contador].tipo == 0 || medidas[contador].tipo == 2)
+        {
+            medidas_complexas[aux_contador].ligado = medidas[contador].ligado;
+            medidas_complexas[aux_contador].tipo = medidas[contador].tipo;
+            medidas_complexas[aux_contador].DE = medidas[contador].DE;
+            medidas_complexas[aux_contador].PARA = medidas[contador].PARA;
+            medidas_complexas[aux_contador].fases = medidas[contador].fases;
+            medidas_complexas[aux_contador].id = medidas[contador].id;
+            medidas_complexas[aux_contador].par = medidas[contador].par;
+
+            medidas_complexas[aux_contador].sigma = medidas[contador].sigma;
+            medidas_complexas[aux_contador].prec = medidas[contador].prec;
+
+            double parte_real = medidas[contador].zmed;
+
+            medidas_complexas[aux_contador].zmed = parte_real + 0 * I;
+
+            for (int j = 0; j < numeroMedidas; j++)
+            {
+                if (medidas[j].tipo == 1 || medidas[j].tipo == 3)
+                {
+                    if (medidas[j].DE == medidas[contador].DE && medidas[j].PARA == medidas[contador].PARA && medidas[j].fases == medidas[contador].fases)
+                    {
+                        double parte_imag = medidas[j].zmed;
+
+                        medidas_complexas[aux_contador].zmed = parte_real + parte_imag * I;
+                        med_found += 1;
+                        break;
+                    }
+                }
+            }
+
+            // printf("medida %d: %f + i*%f\n", aux_contador, creal(medidas_complexas[aux_contador].zmed)), cimag(medidas_complexas[aux_contador].zmed);
+            aux_contador += 1;
+        }
+    }
+    // printf("med_found: %d\n", med_found);
+
+    return medidas_complexas;
 }
 
 double calcula_G_AMB(int fase, int i_ramo, DRAM *ramos){
@@ -318,6 +379,18 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
             //é medida de injecao
             if (medidas_equivalentes[i].tipo == 2 || medidas_equivalentes[i].tipo == 3){
                 //TODO
+                //medida i e barra j
+                //percorre os adjacentes da barra i e caso encontre a barra da medida j, associa a impedancia na matriz 
+                int adjacentes_barra_atual = grafo[j].numeroAdjacentes;
+                for (int k = 0; k < adjacentes_barra_atual; k ++){
+                    int idx_grafo_ajd = grafo[j].adjacentes[k].idNo;
+                    int para_ajd = grafo[idx_grafo_ajd].barra->ID;
+
+                    if (PARA == para_ajd){
+                        G = creal(grafo[j].adjacentes[k].ramo->Z[0][0]);
+                        B = cimag(grafo[j].adjacentes[k].ramo->Z[0][0]);
+                    }
+                }
             }
         }
     }
@@ -513,7 +586,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
 
     incializa_tensoes_grafo(grafo, numeroBarras, alimentadores, numeroAlimentadores);
     // printf("1\n");
-    medidas_complexas = converte_medidas_para_complexo(medidas, nmed);
+    medidas_complexas = converte_medidas_para_complexo_AMB(medidas, nmed);
 
 
     //
@@ -534,6 +607,8 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     //monta_regua_x(numeroRamos, regua_x, ramos);
     regua_x = monta_regua_x_AMB(grafo, numeroBarras);
     // printf("4\n");
+
+    //
     monta_regua_medidas(nmed_AMB, regua_med, regua_med_inv, medidas_equivalentes);
 
     double *regua_caminho = NULL;
