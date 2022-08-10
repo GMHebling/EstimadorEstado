@@ -1,0 +1,95 @@
+Leitura de dados da rede elétrica...
+Main directory: 
+ . 
+Data sub-folder: 
+ /IEEE34 
+DBAR ok
+leituraDados ok
+geraGrafo ok
+buscaProfundidadeAlimentadores ok
+calculaPU ok
+atualizaTaps ok 
+leitura ok
+Estimador de Estado via Matriz Aumentada de Hatchel...
+ref 1: 92, ref 2: 94
+vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001564
+Resolucao sistema linear: 0.004374
+
+Iteracao:  0 	|Dx|_inf =  27.64516316970964027 	.vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001237
+Resolucao sistema linear: 0.003921
+
+Iteracao:  1 	|Dx|_inf =  2.26814927217850526 	.vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001184
+Resolucao sistema linear: 0.004398
+
+Iteracao:  2 	|Dx|_inf =  2.29830250584478080 	.vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001098
+Resolucao sistema linear: 0.003855
+
+Iteracao:  3 	|Dx|_inf =  2.29719217972561651 	.vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001172
+Resolucao sistema linear: 0.004020
+
+Iteracao:  4 	|Dx|_inf =  2.29715400711666629 	.vl: 1.000000
+construcao QR
+nmed: 316, nvar: 181, nvir: 72
+
+Alocacao e construcao das matrizes: 0.001185
+Resolucao sistema linear: 0.004312
+
+Iteracao:  5 	|Dx|_inf =  2.29715442578454176 	.
+Estimação Hatchel: 0.073386
+Tensoes Nodais (p.u.):
+800	Va: 1.05146 | 0.000 	Vb: 1.06321 | -120.000	Vc: 1.04397 | 120.000
+802	Va: 1.04942 | -0.054 	Vb: 1.06150 | -120.044	Vc: 1.04163 | 119.953
+806	Va: 1.04804 | -0.090 	Vb: 1.06041 | -120.073	Vc: 1.04010 | 119.922
+808	Va: 1.02215 | -0.796 	Vb: 1.04065 | -120.639	Vc: 1.01226 | 119.357
+810	Va:    -    |    -    	Vb: 1.04051 | -120.639	Vc:    -    |    -   
+812	Va: 0.99239 | -1.689 	Vb: 1.01910 | -121.292	Vc: 0.97963 | 118.664
+814	Va: 0.96898 | -2.436 	Vb: 1.00211 | -121.829	Vc: 0.95386 | 118.081
+816	Va: 1.04074 | -2.647 	Vb: 1.03259 | -122.023	Vc: 0.98241 | 117.855
+818	Va: 1.03981 | -2.648 	Vb:    -    |    -   	Vc:    -    |    -   
+820	Va: 1.01634 | -2.659 	Vb:    -    |    -   	Vc:    -    |    -   
+822	Va: 1.01335 | -2.661 	Vb:    -    |    -   	Vc:    -    |    -   
+824	Va: 1.03422 | -2.815 	Vb: 1.02268 | -122.154	Vc: 0.97066 | 117.632
+826	Va:    -    |    -    	Vb: 1.02249 | -122.155	Vc:    -    |    -   
+828	Va: 1.03369 | -2.830 	Vb: 1.02195 | -122.164	Vc: 0.96967 | 117.613
+830	Va: 1.02108 | -3.198 	Vb: 1.00418 | -122.413	Vc: 0.94587 | 117.152
+832	Va: 1.07998 | -4.022 	Vb: 1.03925 | -123.067	Vc: 0.97173 | 116.076
+834	Va: 1.07739 | -4.209 	Vb: 1.03420 | -123.208	Vc: 0.96485 | 115.838
+836	Va: 1.07689 | -4.204 	Vb: 1.03345 | -123.206	Vc: 0.96416 | 115.837
+838	Va:    -    |    -    	Vb: 1.03328 | -123.208	Vc:    -    |    -   
+840	Va: 1.07685 | -4.203 	Vb: 1.03342 | -123.206	Vc: 0.96414 | 115.838
+842	Va: 1.07736 | -4.214 	Vb: 1.03414 | -123.213	Vc: 0.96479 | 115.832
+844	Va: 1.07722 | -4.239 	Vb: 1.03383 | -123.235	Vc: 0.96452 | 115.805
+846	Va: 1.07753 | -4.284 	Vb: 1.03381 | -123.277	Vc: 0.96473 | 115.753
+848	Va: 1.07757 | -4.291 	Vb: 1.03384 | -123.283	Vc: 0.96477 | 115.746
+850	Va: 1.04107 | -2.641 	Vb: 1.03285 | -122.018	Vc: 0.98278 | 117.860
+852	Va: 0.99878 | -3.894 	Vb: 0.97269 | -122.908	Vc: 0.90454 | 116.276
+854	Va: 1.02077 | -3.207 	Vb: 1.00373 | -122.420	Vc: 0.94530 | 117.141
+856	Va:    -    |    -    	Vb: 1.00358 | -122.420	Vc:    -    |    -   
+858	Va: 1.07874 | -4.108 	Vb: 1.03689 | -123.131	Vc: 0.96852 | 115.967
+860	Va: 1.07712 | -4.207 	Vb: 1.03380 | -123.204	Vc: 0.96429 | 115.837
+862	Va: 1.07688 | -4.204 	Vb: 1.03344 | -123.206	Vc: 0.96416 | 115.837
+864	Va: 1.07874 | -4.108 	Vb:    -    |    -   	Vc:    -    |    -   
+888	Va: 1.04220 | -5.565 	Vb: 0.99940 | -124.729	Vc: 0.92759 | 114.128
+890	Va: 0.95958 | -6.210 	Vb: 0.91612 | -125.601	Vc: 0.82526 | 112.830
+8140	Va: 1.04108 | -2.641 	Vb: 1.03286 | -122.018	Vc: 0.98279 | 117.860
+8520	Va: 1.07998 | -4.022 	Vb: 1.03925 | -123.067	Vc: 0.97174 | 116.076

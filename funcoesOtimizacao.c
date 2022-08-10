@@ -2713,7 +2713,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
         //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
         //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
-        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
+        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
 
         Dx = (double *)X_nec->x;
 
