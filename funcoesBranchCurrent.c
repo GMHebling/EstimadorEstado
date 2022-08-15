@@ -84,6 +84,11 @@ DMED_COMPLEX *converte_medidas_para_complexo(DMED *medidas, long int numeroMedid
             medidas_complexas[aux_contador].sigma = medidas[contador].sigma;
             medidas_complexas[aux_contador].prec = medidas[contador].prec;
 
+            medidas_complexas[aux_contador].k = medidas[contador].k;
+            medidas_complexas[aux_contador].m = medidas[contador].m;
+            medidas_complexas[aux_contador].ramo = medidas[contador].ramo;
+
+
             double parte_real = medidas[contador].zmed;
 
             medidas_complexas[aux_contador].zmed = parte_real + 0 * I;
@@ -320,16 +325,28 @@ void monta_regua_medidas(long int nmed_BC, double *regua_med, double *regua_med_
     }
 }
 
-double **monta_matriz_H(long int numeroRamos, long int nmed_BC, double *regua_x, double *regua_med, double *regua_med_inv)
+double **monta_matriz_H(DMED_COMPLEX *medidas_equivalentes,long int numeroRamos, long int nmed_BC, double *regua_x, double *regua_med, double *regua_med_inv)
 {
     double **H_BC = NULL;
     int ctnz = 0;
+    int nmed_real;
+    double sigma = 1.0;
     H_BC = aloca_matriz(3 * nmed_BC, 3 * numeroRamos);
 
     for (int nm = 0; nm < 3 * nmed_BC; nm++)
     {
+        nmed_real = (int)nm/3;
+        //sigma = medidas_equivalentes[nmed_real].sigma*medidas_equivalentes[nmed_real].sigma;
+        sigma = 1.0;
+
         for (int nv = 0; nv < 3 * numeroRamos; nv++)
         {
+            if (nm == nv){
+                sigma = medidas_equivalentes[nmed_real].sigma*medidas_equivalentes[nmed_real].sigma;
+            }
+            else {
+                sigma = 1.0;
+            }
 
             if (regua_med[nm] != 0.0 && regua_x[nv] != 0.0)
             {
@@ -339,25 +356,25 @@ double **monta_matriz_H(long int numeroRamos, long int nmed_BC, double *regua_x,
                 if (fabs(regua_med[nm] - regua_x[nv]) < EPS)
                 {
                     // printf("1");
-                    H_BC[nm][nv] = 1.0;
+                    H_BC[nm][nv] = 1.0/sigma;
                     // printf("x: %f ---- med: %f ---- H: %f\n", regua_x[nv], regua_med[nm], H_BC[nm][nv]);
                 }
                 if (fabs(regua_med_inv[nm] + regua_x[nv]) < EPS)
                 {
 
-                    H_BC[nm][nv] = -1.0;
+                    H_BC[nm][nv] = -1.0/sigma;
                     // printf("x: %f ---- med: %f ---- H: %f\n", regua_x[nv], regua_med[nm], H_BC[nm][nv]);
                 }
                 if (regua_x[nv] - regua_med[nm] > 0 && regua_x[nv] - regua_med[nm] < 1.0)
                 {
 
-                    H_BC[nm][nv] = 1.0;
+                    H_BC[nm][nv] = 1.0/sigma;
                     // printf("x: %f ---- med: %f ---- H: %f\n", regua_x[nv], regua_med[nm], H_BC[nm][nv]);
                 }
                 if (fabs(((regua_x[nv] - (int)regua_x[nv]) * 10000.0) - regua_med[nm]) < EPS)
                 {
 
-                    H_BC[nm][nv] = -1.0;
+                    H_BC[nm][nv] = -1.0/sigma;
                     // printf("x: %f ---- med: %f ---- H: %f\n", regua_x[nv], regua_med[nm], H_BC[nm][nv]);
                 }
             }
@@ -1257,7 +1274,7 @@ void estimadorBC_RECT(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     printf("4\n");
     monta_regua_medidas(nmed_BC, regua_med, regua_med_inv, medidas_equivalentes);
     printf("5\n");
-    H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
+    H_BC = monta_matriz_H(medidas_equivalentes, numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
     printf("6\n");
     int it = 0;
     int conv = 0;
@@ -1745,7 +1762,7 @@ void estimadorBC_RECT_Malhado(GRAFO *grafo, long int numeroRamos, long int numer
     regua_caminho = aloca_vetor(numeroBarras);
     monta_regua_caminho(numeroRamos, numeroBarras, regua_caminho, caminho, grafo);
     // printf("5\n");
-    H_BC = monta_matriz_H(numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
+    H_BC = monta_matriz_H(medidas_equivalentes, numeroRamos, nmed_BC, regua_x, regua_med, regua_med_inv);
     // vetor h(x) das medidas de corrente
     double *hx_I = NULL;
     hx_I = (double *)malloc(6 * nmed_BC * sizeof(double));
