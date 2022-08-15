@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
     //constroi o caminho do no raiz ate cada barra
     
-
+    
     
     
     //estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
