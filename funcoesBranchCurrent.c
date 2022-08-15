@@ -336,17 +336,12 @@ double **monta_matriz_H(DMED_COMPLEX *medidas_equivalentes,long int numeroRamos,
     for (int nm = 0; nm < 3 * nmed_BC; nm++)
     {
         nmed_real = (int)nm/3;
-        //sigma = medidas_equivalentes[nmed_real].sigma*medidas_equivalentes[nmed_real].sigma;
-        sigma = 1.0;
+        sigma = medidas_equivalentes[nmed_real].sigma;
+        
 
         for (int nv = 0; nv < 3 * numeroRamos; nv++)
         {
-            if (nm == nv){
-                sigma = medidas_equivalentes[nmed_real].sigma*medidas_equivalentes[nmed_real].sigma;
-            }
-            else {
-                sigma = 1.0;
-            }
+            
 
             if (regua_med[nm] != 0.0 && regua_x[nv] != 0.0)
             {
@@ -476,10 +471,12 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
     int i_grafo, i_fase;
     double theta;
     double *valor_hx_v = NULL;
+    double sigma;
     valor_hx_v = (double *)malloc(sizeof(double));
 
     for (i = 0; i < nmed_T; i++)
     {
+        sigma = medidas_tensao[i].sigma;
         for (j = 0; j < numeroRamos; j++)
         {
             long int DE = medidas_tensao[i].DE;
@@ -512,8 +509,8 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
 
                     dVdIr = _dVdIr(R, X, theta);
                     dVdIx = _dVdIx(R, X, theta);
-                    H_T[i][3 * j] = dVdIr;
-                    H_T[i][(3 * j) + 3 * numeroRamos] = dVdIx;
+                    H_T[i][3 * j] = dVdIr/sigma;
+                    H_T[i][(3 * j) + 3 * numeroRamos] = dVdIx/sigma;
                     break;
                 case 2:
                     i_fase = 1;
@@ -534,8 +531,8 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
 
                     dVdIr = _dVdIr(R, X, theta);
                     dVdIx = _dVdIx(R, X, theta);
-                    H_T[i][3 * j + 1] = dVdIr;
-                    H_T[i][(3 * j + 1) + 3 * numeroRamos] = dVdIx;
+                    H_T[i][3 * j + 1] = dVdIr/sigma;
+                    H_T[i][(3 * j + 1) + 3 * numeroRamos] = dVdIx/sigma;
                     break;
                 case 3:
                     i_fase = 2;
@@ -556,8 +553,8 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
 
                     dVdIr = _dVdIr(R, X, theta);
                     dVdIx = _dVdIx(R, X, theta);
-                    H_T[i][3 * j + 2] = dVdIr;
-                    H_T[i][(3 * j + 2) + 3 * numeroRamos] = dVdIx;
+                    H_T[i][3 * j + 2] = dVdIr/sigma;
+                    H_T[i][(3 * j + 2) + 3 * numeroRamos] = dVdIx/sigma;
                     break;
                 }
             }
