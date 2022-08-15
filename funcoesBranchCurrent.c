@@ -336,7 +336,7 @@ double **monta_matriz_H(DMED_COMPLEX *medidas_equivalentes,long int numeroRamos,
     for (int nm = 0; nm < 3 * nmed_BC; nm++)
     {
         nmed_real = (int)nm/3;
-        sigma = medidas_equivalentes[nmed_real].sigma;
+        //sigma = medidas_equivalentes[nmed_real].sigma;
         
 
         for (int nv = 0; nv < 3 * numeroRamos; nv++)
@@ -471,12 +471,12 @@ double **monta_matriz_H_tensao(long int numeroBarras, long int numeroRamos, int 
     int i_grafo, i_fase;
     double theta;
     double *valor_hx_v = NULL;
-    double sigma;
+    double sigma = 1.0;
     valor_hx_v = (double *)malloc(sizeof(double));
 
     for (i = 0; i < nmed_T; i++)
     {
-        sigma = medidas_tensao[i].sigma;
+        //sigma = medidas_tensao[i].sigma;
         for (j = 0; j < numeroRamos; j++)
         {
             long int DE = medidas_tensao[i].DE;
@@ -680,7 +680,7 @@ double *resolve_linear_QR_Tensao(double **H_BC, double **H_T, double *z, long in
     double one[2] = {1, 0};
     double m1[2] = {0, 0};
     cholmod_l_sdmult(A, 1, one, m1, b, bH, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, A, b, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, G, bH, c);
     // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroRamos);
