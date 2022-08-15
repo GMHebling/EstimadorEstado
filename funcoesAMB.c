@@ -487,17 +487,17 @@ double **monta_matriz_H_AMB_Tensao(DMED_COMPLEX *medidas_tensao, GRAFO *grafo, l
                 {
                 case 1:
                     /* code */
-                    H_Tensao[i][3*j] = 1;
+                    H_Tensao[i][3*j] = 1.0;
                     //H_Tensao[i][3*j + 3*numeroBarras] = 1;
                     break;
                 case 2:
                     /* code */
-                    H_Tensao[i][3*j+1] = 1;
+                    H_Tensao[i][3*j+1] = 1.0;
                     //H_Tensao[i][3*j+1 + 3*numeroBarras] = 1;
                     break;
                 case 3:
                     /* code */
-                    H_Tensao[i][3*j+2] = 1;
+                    H_Tensao[i][3*j+2] = 1.0;
                     //H_Tensao[i][3*j+2 + 3*numeroBarras] = 1;
                     break;
                 }
@@ -986,7 +986,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
         //calcula_hx_corrente(H_BC, x_bc, hx_I, nmed_BC, numeroRamos);
         //H_AMB = monta_matriz_H_AMB(numeroBarras,numeroRamos, nmed_AMB, medidas_equivalentes, regua_x, ramos, grafo);
         //Medidas de tensão
-        H_T = monta_matriz_H_AMB_Tensao(medidas_tensao, grafo, numeroBarras, nmed_T);
+        //H_T = monta_matriz_H_AMB_Tensao(medidas_tensao, grafo, numeroBarras, nmed_T);
         double nfx;
         nfx = norma_inf(delta_x_bc, 6 * numeroRamos);
         printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t  \n", it, nfx);
