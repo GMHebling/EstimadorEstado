@@ -594,17 +594,19 @@ void backward(GRAFO *noP, GRAFO *grafo){
     Iacc[1] = 0;
     Iacc[2] = 0;
     
+    int radial = 0;
     for (i = 0; i < noP->numeroAdjacentes;i ++){
         noAdj = noP->adjacentes[i].idNo;
         
-        if (noP->profundidade < grafo[noAdj].profundidade){
+        if ((noP->profundidade < grafo[noAdj].profundidade)&& (grafo[noAdj].idAlim == noP->idAlim)){
             Iacc[0] += noP->adjacentes[i].Cur[0];
             Iacc[1] += noP->adjacentes[i].Cur[1];
             Iacc[2] += noP->adjacentes[i].Cur[2];
         }
-        else{
+        else if ((noP->profundidade > grafo[noAdj].profundidade) && (grafo[noAdj].idAlim == noP->idAlim)){
             noMont = noAdj;
             auxNoMont = i;
+            radial++;
         }
     }
     if (noMont == -1){ //Nó raiz - corrente é a soma dos jusantes somente
@@ -641,8 +643,16 @@ void backward(GRAFO *noP, GRAFO *grafo){
 
                 for (i=0;i<3;i++){
                     Iaux[i] = 0;
+                    
                     for (j=0;j<3;j++){
-                        Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j];
+                        if (noP->adjacentes[auxNoMont].ramo->Z != NULL){
+                            Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j] + (grafo[noMont].V[j] - noP->V[j])/(noP->adjacentes[auxNoMont].ramo->Z[i][j]);
+                        }
+                        else {
+                            Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j];
+                        }
+                        
+                        
                     }
                 }
                 
@@ -702,7 +712,6 @@ void backward(GRAFO *noP, GRAFO *grafo){
                 Iacc[0] = noP->adjacentes[auxNoMont].ramo->tap_pri[0]*Iacc[0];
                 Iacc[1] = noP->adjacentes[auxNoMont].ramo->tap_pri[1]*Iacc[1];
                 Iacc[2] = noP->adjacentes[auxNoMont].ramo->tap_pri[2]*Iacc[2]; 
-                
                 break;
             //------------------------------------------------------------------
             case 3: //Chave
@@ -717,6 +726,9 @@ void backward(GRAFO *noP, GRAFO *grafo){
                 grafo[noMont].adjacentes[i].Cur[0] = Iacc[0];
                 grafo[noMont].adjacentes[i].Cur[1] = Iacc[1];
                 grafo[noMont].adjacentes[i].Cur[2] = Iacc[2];
+//                if (grafo[noMont].idAlim == 254){
+//                    printf("%d    %lf\n",noMont,creal(grafo[noMont].adjacentes[i].Cur[0]));
+//                }
             }
             // imprimeCorrentes(&grafo[noMont].adjacentes[i]);
         }

@@ -767,6 +767,7 @@ void monta_z_real_e_imag(DMED_COMPLEX *medidas_eq, double *z, long int nmed_BC, 
     for (int j = 0; j < nmed_T; j++)
     {
         z[j + (6 * nmed_BC)] = creal(medidas_tensao[j].zmed);
+        z[j + (6 * nmed_BC) + nmed_T] = cimag(medidas_tensao[j].zmed);
     }
 }
 
