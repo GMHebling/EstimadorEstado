@@ -645,14 +645,7 @@ void backward(GRAFO *noP, GRAFO *grafo){
                     Iaux[i] = 0;
                     
                     for (j=0;j<3;j++){
-                        if (noP->adjacentes[auxNoMont].ramo->Z != NULL){
-                            Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j] + (grafo[noMont].V[j] - noP->V[j])/(noP->adjacentes[auxNoMont].ramo->Z[i][j]);
-                        }
-                        else {
-                            Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j];
-                        }
-                        
-                        
+                        Iaux[i] += noP->adjacentes[auxNoMont].ramo->B[i][j] * noP->V[j] + noP->adjacentes[auxNoMont].ramo->B[i][j] * grafo[noMont].V[j];
                     }
                 }
                 

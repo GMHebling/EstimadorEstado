@@ -89,16 +89,20 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
 
             int f_idx = 0;
 
+            double phi_k;
             switch (medida_tensao[aux_contador].fases)
             {
             case 1:
                 f_idx = 0;
+                phi_k = 0.0;
                 break;
             case 2:
                 f_idx = 1;
+                phi_k = 2*PI/3;
                 break;
             case 3:
                 f_idx = 2;
+                phi_k = -2*PI/3;
                 break;
             }
             __complex__ double tensao_de = grafo[idx_barra_DE].V[f_idx];
@@ -107,7 +111,8 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
             double parte_real = creal(tensao_de)/abs_tensao_de;
             double parte_imag = cimag(tensao_de)/abs_tensao_de;
 
-            medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
+            //medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
+            medida_tensao[aux_contador].zmed = ((magnitude_tensao*parte_real)*cos(phi_k) + (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
 
             aux_contador += 1;
         }
@@ -966,7 +971,9 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     //vetor h(x) das medidas de tensão
     double *hx_V = NULL;
     hx_V = (double*)malloc(nmed_T*sizeof(double));
-
+    for(int k = numeroBarras-1; k >= 0; k--){
+            backward(&grafo[RNP[k]], grafo);
+        }
 
     hx_V = monta_hx_V(nmed_T, medidas_tensao, grafo, numeroBarras);
     // montar H das medidas de tensão
@@ -979,9 +986,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     //vetor h(x) para medidas de potencia
     hx_I = monta_hx_I(nmed_AMB, medidas_equivalentes, grafo);
 
-    for(int k = numeroBarras-1; k >= 0; k--){
-            backward(&grafo[RNP[k]], grafo);
-        }
+    
 
     int it = 0;
     int conv = 0;
