@@ -450,14 +450,17 @@ void monta_z(double *z, long int nmed, DMED *medidas){
     }    
 }
 
-void monta_z_comVirtuais(double *z, long int nmed, long int nvir, DMED *medidas, DMED *virtuais){
+double *monta_z_comVirtuais(long int nmed, long int nvir, DMED *medidas, DMED *virtuais){
     int i;
+    double *z;
+    z = malloc((nmed+nvir)*sizeof(double));
     for (i=0; i<nmed; i++){
         z[i] = medidas[i].zmed;
     }
     for (i=0; i<nvir; i++){
         z[i+nmed] = virtuais[i].zmed;
     }
+    return z;
 }
 
 //Função monta matriz W
@@ -2171,7 +2174,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
         }
     }
     
-    monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
+    z = monta_z_comVirtuais(nmed, nvir, medidas, virtuais);
     //monta W -> H'WH
     //monta_W_Ident(NULL, nmed, medidas);
     monta_W(NULL, nmed, medidas);
