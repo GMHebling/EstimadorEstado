@@ -3020,7 +3020,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         //    }
         //}
         clock_t tIni = clock();
-        X_hatchel = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A_hatchel, b_hatchel, c);
+        X_hatchel = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, A_hatchel, b_hatchel, c);
         clock_t t1 = clock();
         double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
         printf("\nResolucao sistema linear: %lf",tempoWLS);

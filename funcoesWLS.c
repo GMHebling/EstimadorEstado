@@ -450,14 +450,17 @@ void monta_z(double *z, long int nmed, DMED *medidas){
     }    
 }
 
-void monta_z_comVirtuais(double *z, long int nmed, long int nvir, DMED *medidas, DMED *virtuais){
-    int i;
-    for (i=0; i<nmed; i++){
+double *monta_z_comVirtuais(long int nmed, long int nvir, DMED *medidas, DMED *virtuais){
+    //int i;
+    double *z = NULL;
+    z = malloc((nmed+nvir)*sizeof(double));
+    for (int i=0; i<nmed; i++){
         z[i] = medidas[i].zmed;
     }
-    for (i=0; i<nvir; i++){
+    for (int i=0; i<nvir; i++){
         z[i+nmed] = virtuais[i].zmed;
     }
+    return z;
 }
 
 //Função monta matriz W
@@ -2171,7 +2174,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
         }
     }
     
-    monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
+    z = monta_z_comVirtuais(nmed, nvir, medidas, virtuais);
     //monta W -> H'WH
     //monta_W_Ident(NULL, nmed, medidas);
     monta_W(NULL, nmed, medidas);
@@ -2224,7 +2227,7 @@ void estimadorNEC(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virt
 void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *virtuais, long int **numeroMedidas, long int **numeroVirtuais, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos,double Sbase){
    long int nmed,nvar, nvir;
    int i,j,k, r;
-   double *z = NULL,**h = NULL,***H = NULL, ***C = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
+   double *z = NULL,**h = NULL,***Hh = NULL, ***C = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
     
     printf("Estimador de Estado via Matriz Aumentada de Hatchel...\n");
     //--------------------------------------------------------------------------
@@ -2290,15 +2293,15 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
         exit(1); 
     }
     
-    H = (double ***)malloc((nmed) * sizeof(double **)); 
+    Hh = (double ***)malloc((nmed) * sizeof(double **)); 
     // if (H = (double ***)malloc((nmed) * sizeof(double **)) ==NULL){
     //     printf("Erro -- Nao foi possivel alocar espaco para a matriz H");
     //     exit(1);
     // }
     for (i = 0; i < nmed; i++){ 
-         H[i] = (double**) malloc(nvar * sizeof(double*));
+         Hh[i] = (double**) malloc(nvar * sizeof(double*));
          for (j = 0; j < nvar; j++){
-              H[i][j] = &aux;
+              Hh[i][j] = &aux;
          }
     }
     
@@ -2386,11 +2389,11 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
     }
     
     //Matriz H aponta para a estrutura de dados das medidas
-    for(i=0;i<nmed;i++){
+    for(int i=0;i<nmed;i++){
         for(j=0;j<medidas[i].nvar;j++){
             for(r = 0;r<nvar;r++){
                 if (cabs(medidas[i].reguaH[j]-regua[r]) <= EPS){
-                    H[i][r] = &medidas[i].H[j];
+                    Hh[i][r] = &medidas[i].H[j];
                     break;
                 }
             }
@@ -2398,7 +2401,7 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
     }
     
 
-    for(i=0;i<nvir;i++){
+    for(int i=0;i<nvir;i++){
         for(j=0;j<virtuais[i].nvar;j++){
             for(r = 0;r<nvar;r++){
                 if (cabs(virtuais[i].reguaH[j]-regua[r]) <= EPS){
@@ -2408,8 +2411,9 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
             }
         }
     }
-    
-    monta_z_comVirtuais(z, nmed, nvir, medidas, virtuais);
+    double ****Hc;
+    Hc = &Hh;
+    z = monta_z_comVirtuais(nmed, nvir, medidas, virtuais);
     //monta W -> H'WH
     //monta_W_Ident(NULL, nmed, medidas);
     monta_W(NULL, nmed, medidas);
@@ -2423,7 +2427,7 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
     incializa_vetor_x(grafo, numeroBarras, alimentadores, numeroAlimentadores,x,regua,nvar);
     double tol = 0.000001;
     clock_t tIni = clock();
-    int conv = otimizaHatchel(z, h, H, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
+    int conv = otimizaHatchel(z, h, Hh, C, grafo, numeroBarras, ramos, medidas, virtuais, nvir, nvar, nmed, regua, x, tol, ref_1, ref_2);
     clock_t t1 = clock();
     double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
     printf("\nEstimação Hatchel: %lf",tempoWLS);
@@ -2449,8 +2453,8 @@ void estimadorHatchel(GRAFO *grafo, long int numeroBarras, DMED *medidas, DMED *
     fclose(residuo);
     
     free(z);free(h);free(x);free(regua);
-    for (i=0;i<nmed;i++ )free(H[i]);
-    free(H);
+    for (i=0;i<nmed;i++ )free(Hh[i]);
+    free(Hh);
     
     
     

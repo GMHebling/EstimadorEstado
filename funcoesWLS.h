@@ -11,7 +11,7 @@
 void exportaPrioriQR(GRAFO *grafo,double *regua, DMED *medidas, long int nvar, long int nmed, long int polar);
 
 void monta_z(double *z, long int nmed, DMED *medida);
-void monta_z_comVirtuais(double *z, long int nmed, long int nvir, DMED *medida, DMED *virtuais);
+double *monta_z_comVirtuais(long int nmed, long int nvir, DMED *medida, DMED *virtuais);
 void monta_W(double **W, long int nmed, DMED *medidas);
 void monta_W_Ident(double **W, long int nmed, DMED *medidas);
 void incializa_vetor_x(GRAFO *grafo, long int numeroBarras, ALIMENTADOR *alimentadores, long int numeroAlimentadores, double *x, double *regua, long int nVariaveis);
