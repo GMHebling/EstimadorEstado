@@ -1000,13 +1000,16 @@ void mat_ig(double ***A, int m, int n, double **B)
 double norma_inf(double *a, int n)
 {
     int i;
-    double c;
+    int i_max = 0;
+    double c = 0.0;
 
     c = cabs(a[0]);
     for (i = 0; i < n; i++)
     {
-        if (cabs(a[i]) > c)
+        if (cabs(a[i]) > c){
             c = cabs(a[i]);
+            i_max = i;
+        }
     }
 
     return (c);

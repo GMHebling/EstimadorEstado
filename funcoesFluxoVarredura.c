@@ -723,7 +723,7 @@ void backward(GRAFO *noP, GRAFO *grafo){
 //                    printf("%d    %lf\n",noMont,creal(grafo[noMont].adjacentes[i].Cur[0]));
 //                }
             }
-            // imprimeCorrentes(&grafo[noMont].adjacentes[i]);
+            //imprimeCorrentes(&grafo[noMont].adjacentes[i]);
         }
     }
 
