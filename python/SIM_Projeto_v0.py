@@ -300,7 +300,7 @@ precision = {'PSEUDO': 0.30,
              'VIRTUAL': 0.000}
 
 # Parâmetros das simulações
-Namostras = 100
+Namostras = 2
 Dt = 1
 tem_pmu = 0
 
@@ -479,7 +479,7 @@ for amostra in range(1,Namostras+1):
         # Exporta medidas
         SampleMeasurementsMC(md, sd, "/DMED.csv", 'w', sim_ref[t-1].df_DREF, locMed_Pseudo, precision['PSEUDO'])
         SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_SM, precision['SMeter'])
-        SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_Virtual, precision['VIRTUAL'])
+        #SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_Virtual, precision['VIRTUAL'])
         SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_SCADA, precision['SCADA'])        
         # SampleMeasurementsMC(md, sd, "/DMED.csv", 'a', sim_ref[t-1].df_DREF, locMed_PMU, precision['PMU'])
         

@@ -478,7 +478,11 @@ locMed_SM = {'IPQ': [],
 # Injecoes virtuais - barras sem carga que não estao no vetor de medidas SCADA, Pseudo e SMeter
 injecoes = locMed_Pseudo['IPQ'] + locMed_SCADA['IPQ'] + locMed_SM['IPQ']
 aux_inj = network_model.df_DBAR['ID'].values
-locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
+# locMed_Virtual = {'IPQ': list(set(aux_inj)-set(injecoes)),
+#                   'FPQ': [],
+#                   'V': []}
+
+locMed_Virtual = {'IPQ': [],
                   'FPQ': [],
                   'V': []}
 
