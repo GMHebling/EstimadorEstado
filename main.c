@@ -60,6 +60,8 @@ int main(int argc, char **argv)
     
     //estimadorBC_RECT(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
     
+    
+
     estimadorAMB(grafo, numeroRamos, numeroBarras, medida, numeroMedidas, alimentador, numeroAlimentadores, ramo, Sbase / 1000, barra);
     clock_t t1 = clock();
     double tempoWLS = (double)(t1 - tIni) / CLOCKS_PER_SEC;

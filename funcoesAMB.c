@@ -121,8 +121,8 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
             double parte_real = creal(tensao_de)/abs_tensao_de;
             double parte_imag = cimag(tensao_de)/abs_tensao_de;
 
-            medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
-            // medida_tensao[aux_contador].zmed = ((magnitude_tensao*parte_real)*cos(phi_k) + (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
+            //medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
+            medida_tensao[aux_contador].zmed = ((magnitude_tensao*parte_real)*cos(phi_k) + (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
 
             aux_contador += 1;
         }
@@ -266,7 +266,7 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         sg = 1;
                     }
                     else {
-                        sg = -1;
+                        sg = 1;
                     }
                     
                     switch (medidas_equivalentes[i].fases)
@@ -633,38 +633,38 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                                     soma4 += H_T[3*i+2 +(3*nmed_AMB)][3*j+2 + (3*numeroBarras)];
                                 break;
                             }
-            }
+        }
             int k;
             k = medidas_equivalentes[i].k;
             switch (medidas_equivalentes[i].fases){
                 
                 
                 case 1:
-                    H_T[3*i][3*k] = soma1;
+                    H_T[3*i][3*k] = -soma1;
                      //IR/
-                    H_T[3*i][3*k + (3*numeroBarras)] = soma2;
+                    H_T[3*i][3*k + (3*numeroBarras)] = -soma2;
                      //IX/
-                    H_T[3*i +(3*nmed_AMB)][3*k]= soma3;
+                    H_T[3*i +(3*nmed_AMB)][3*k]= -soma3;
                      //IX/
-                    H_T[3*i +(3*nmed_AMB)][3*k + (3*numeroBarras)] = soma4;
+                    H_T[3*i +(3*nmed_AMB)][3*k + (3*numeroBarras)] = -soma4;
                 break;
                 case 2:
-                    H_T[3*i+1][3*k+1] = soma1;
+                    H_T[3*i+1][3*k+1] = -soma1;
                      //IR/
-                    H_T[3*i+1][3*k+1 + (3*numeroBarras)] = soma2;
+                    H_T[3*i+1][3*k+1 + (3*numeroBarras)] = -soma2;
                      //IX/
-                    H_T[3*i+1 +(3*nmed_AMB)][3*k+1] = soma3;
+                    H_T[3*i+1 +(3*nmed_AMB)][3*k+1] = -soma3;
                      //IX/
-                    H_T[3*i+1 +(3*nmed_AMB)][3*k+1 + (3*numeroBarras)] = soma4;
+                    H_T[3*i+1 +(3*nmed_AMB)][3*k+1 + (3*numeroBarras)] = -soma4;
                 break;
                 case 3:
-                    H_T[3*i+2][3*k+2] = soma1;
+                    H_T[3*i+2][3*k+2] = -soma1;
                      //IR/
-                    H_T[3*i+2][3*k+2 + (3*numeroBarras)] = soma2;
+                    H_T[3*i+2][3*k+2 + (3*numeroBarras)] = -soma2;
                      //IX/
-                    H_T[3*i+2 +(3*nmed_AMB)][3*k+2] = soma3;
+                    H_T[3*i+2 +(3*nmed_AMB)][3*k+2] = -soma3;
                      //IX/
-                    H_T[3*i+2 +(3*nmed_AMB)][3*k+2 + (3*numeroBarras)] = soma4;
+                    H_T[3*i+2 +(3*nmed_AMB)][3*k+2 + (3*numeroBarras)] = -soma4;
                 break;
             }
         }
@@ -840,11 +840,16 @@ double *monta_hx_I(int nmed_AMB, DMED_COMPLEX *medidas_equivalentes, GRAFO *graf
 
 
 
-double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z, long int numeroBarras, long int nmed_AMB, int nmed_T, double *hx_I, double *hx_V)
+double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z, long int numeroBarras, long int nmed_AMB, int nmed_T, double *hx_I, double *hx_V, double **W)
 {
     cholmod_sparse *A = NULL;
     cholmod_sparse *AT = NULL;
     cholmod_sparse *G = NULL;
+    cholmod_sparse *WH = NULL;
+
+    cholmod_sparse *W_sparse = NULL;
+    cholmod_triplet *W_triplet = NULL;
+
     cholmod_triplet *T = NULL;
     cholmod_dense *b = NULL;
     cholmod_dense *bH = NULL;
@@ -853,9 +858,11 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z, long int 
     c = &Common;
     cholmod_l_start(c);
     T = cholmod_l_allocate_triplet(6 * nmed_AMB + 2*nmed_T, 6 * numeroBarras, (6 * nmed_AMB + 2*nmed_T) * 6 * numeroBarras, 0, CHOLMOD_REAL, c);
+    W_triplet = cholmod_l_allocate_triplet(6 * nmed_AMB + 2*nmed_T, 6 * nmed_AMB + 2*nmed_T, (6 * nmed_AMB + 2*nmed_T) * 6 * numeroBarras, 0, CHOLMOD_REAL, c);
 
     // G = cholmod_l_allocate_sparse(6 * numeroRamos,6 * numeroRamos, (6 * numeroRamos* 6*numeroRamos), 0, 0, 1, CHOLMOD_REAL, c);
     A = cholmod_l_allocate_sparse(6 * nmed_AMB + 2*nmed_T, 6 * numeroBarras, (6 * nmed_AMB + 2*nmed_T) * 6 * numeroBarras, 0, 0, 0, CHOLMOD_REAL, c);
+    W_sparse = cholmod_l_allocate_sparse(6 * nmed_AMB + 2*nmed_T, 6 * nmed_AMB + 2*nmed_T, (6 * nmed_AMB + 2*nmed_T) * 6 * numeroBarras, 0, 0, 0, CHOLMOD_REAL, c);
     // AT = cholmod_l_allocate_sparse( 6 * numeroRamos,6 * nmed_BC + nmed_T, (6 * nmed_BC + nmed_T) * 3 * numeroRamos, 0, 0, 0, CHOLMOD_REAL, c);
     b = cholmod_l_allocate_dense(6 * nmed_AMB + 2*nmed_T, 1, 6 * nmed_AMB + 2*nmed_T, CHOLMOD_REAL, c);
     bH = cholmod_l_allocate_dense(6 * numeroBarras, 1, 6 * numeroBarras, CHOLMOD_REAL, c);
@@ -904,22 +911,38 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z, long int 
         }
     }
 
+    int i_w = 0;
+    for (int q = 0; q < (6*nmed_AMB) + nmed_T; q++){
+        for (int t = 0; t < (6*nmed_AMB) + nmed_T; t++){
+            if (W[q][t] != 0){
+                ((long int *)W_triplet->i)[i_w] = q;
+                ((long int *)W_triplet->j)[i_w] = t;
+                ((long int *)W_triplet->x)[i_w] = W[q][t];
+                W_triplet->nnz += 1;
+                i_w += 1;
+            }
+        }
+    }
+
     for (int i = 0; i < 6 * nmed_AMB; i++)
     {
         ((double *)b->x)[(i)] = (z[i] - hx_I[i]);
     }
 
-    for (int i = 0; i < 2*nmed_T; i++)
+    for (int i = 0; i < nmed_T; i++)
     {
         ((double *)b->x)[(i + 6*nmed_AMB)] = (z[i + 6*nmed_AMB] - hx_V[i]);
     }
     A = cholmod_l_triplet_to_sparse(T, (6 * nmed_AMB + 2*nmed_T) * 3 * numeroBarras, c);
+    W_sparse = cholmod_l_triplet_to_sparse(W_triplet, (6 * nmed_AMB + 2*nmed_T)*(6 * nmed_AMB + 2*nmed_T) , c);
+    
     AT = cholmod_l_transpose(A, 1, c);
-    G = cholmod_l_ssmult(AT, A, 0, 1, 0, c);
+    WH = cholmod_l_ssmult(W_sparse, A, 0, 1, 0, c);
+    G = cholmod_l_ssmult(AT, WH, 0, 1, 0, c);
     double one[2] = {1, 0};
     double m1[2] = {0, 0};
-    cholmod_l_sdmult(A, 1, one, m1, b, bH, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
+    cholmod_l_sdmult(AT, 0, one, m1, b, bH, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, G, bH, c);
     // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroBarras);
@@ -1027,11 +1050,139 @@ double *monta_hx_I_v2(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int
     return hx_I;
 }
 
+double calcula_c_covariancia(int i_medida, int fase, GRAFO *grafo){
+    double parte_real, parte_imag;
+    parte_real = creal(grafo[i_medida].V[fase]);
+    parte_imag = cimag(grafo[i_medida].V[fase]);
+
+    return parte_real / ((parte_real * parte_real) + (parte_imag * parte_imag));
+}
+
+double calcula_d_covariancia(int i_medida, int fase, GRAFO *grafo){
+    double parte_real, parte_imag;
+    parte_real = creal(grafo[i_medida].V[fase]);
+    parte_imag = cimag(grafo[i_medida].V[fase]);
+
+    return parte_imag / ((parte_real * parte_real) + (parte_imag * parte_imag));
+}
+
+double calcula_A(double sigmaP, double sigmaQ, double c, double d){
+    double result;
+    result = (c*c)*(sigmaP*sigmaP) + (d*d)*(sigmaQ*sigmaQ);
+    return result;
+}
+
+double calcula_B(double sigmaP, double sigmaQ, double c, double d){
+    return (c*d)*((sigmaP*sigmaP) - (sigmaQ*sigmaQ));
+}
+
+double calcula_C(double sigmaP, double sigmaQ, double c, double d){
+    return (c*d)*((sigmaP*sigmaP) - (sigmaQ*sigmaQ));
+}
+
+double calcula_D(double sigmaP, double sigmaQ, double c, double d){
+    return (d*d)*(sigmaP*sigmaP) + (c*c)*(sigmaQ*sigmaQ);
+}
+
+double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int nmed_AMB, DMED_COMPLEX *medidas_tensao, long int nmed_T){
+    double **W = NULL;
+    W = aloca_matriz(6*nmed_AMB + 2*nmed_T, 6*nmed_AMB + 2*nmed_T);
+    double val = 0.01;
+    int fase;
+    double c, d;
+    double A, B, C, D;
+    double sigmaP = 0.01;
+    double sigmaQ = 0.05;
+    double det;
+    int i;
+    int id_barra; 
+    for (i = 0; i < nmed_AMB; i++){
+        id_barra = medidas_equivalentes[i].k;
+        switch (medidas_equivalentes[i].fases){
+            case 1:
+                fase = 0;
+                c = calcula_c_covariancia(id_barra, fase, grafo);
+                d = calcula_d_covariancia(id_barra, fase, grafo);
+
+                A = calcula_A(sigmaP, sigmaQ, c, d);
+                B = calcula_B(sigmaP, sigmaQ, c, d);
+                C = calcula_C(sigmaP, sigmaQ, c, d);
+                D = calcula_D(sigmaP, sigmaQ, c, d);
+
+                det = 1/(A*D - B*C);
+
+
+                W[3*i][3*i] = D*det;
+                W[3*i][3*i + (3*nmed_AMB)] = -B*det;
+                W[3*i + (3*nmed_AMB)][3*i] = -C*det;
+                W[3*i + (3*nmed_AMB)][3*i + (3*nmed_AMB)] = A*det;
+            break;
+            case 2:
+                fase = 1;
+                c = calcula_c_covariancia(id_barra, fase, grafo);
+                d = calcula_d_covariancia(id_barra, fase, grafo);
+
+                A = calcula_A(sigmaP, sigmaQ, c, d);
+                B = calcula_B(sigmaP, sigmaQ, c, d);
+                C = calcula_C(sigmaP, sigmaQ, c, d);
+                D = calcula_D(sigmaP, sigmaQ, c, d);
+
+                det = 1/(A*D - B*C);
+
+                W[3*i+1][3*i+1] = D*det;
+                W[3*i+1][3*i+1 + (3*nmed_AMB)] = -B*det;
+                W[3*i+1 + (3*nmed_AMB)][3*i+1] = -C*det;
+                W[3*i+1 + (3*nmed_AMB)][3*i+1 + (3*nmed_AMB)] = A*det;
+            break;
+            case 3:
+                fase = 2;
+                c = calcula_c_covariancia(id_barra, fase, grafo);
+                d = calcula_d_covariancia(id_barra, fase, grafo);
+
+                A = calcula_A(sigmaP, sigmaQ, c, d);
+                B = calcula_B(sigmaP, sigmaQ, c, d);
+                C = calcula_C(sigmaP, sigmaQ, c, d);
+                D = calcula_D(sigmaP, sigmaQ, c, d);
+
+                det = 1/(A*D - B*C);
+
+                W[3*i+2][3*i+2] = D*det;
+                W[3*i+2][3*i+2 + (3*nmed_AMB)] = -B*det;
+                W[3*i+2 + (3*nmed_AMB)][3*i+2] = -C*det;
+                W[3*i+2 + (3*nmed_AMB)][3*i+2 + (3*nmed_AMB)] = A*det;
+            break;
+        }
+        
+
+    }
+    int j;
+    for (j = 0; j < nmed_T; j++){
+        switch (medidas_tensao[j].fases)
+        {
+        case 1:
+            W[6*nmed_AMB + j][6*nmed_AMB + j] = val;
+        break;
+        case 2:
+            W[6*nmed_AMB + j+1][6*nmed_AMB + j+1] = val;
+        break;
+        case 3:
+            W[6*nmed_AMB + j+2][6*nmed_AMB + j+2] = val;
+        break;
+        
+        }
+        //W[6*nmed_AMB + j][6*nmed_AMB + j] = 1.0;
+    }
+
+
+    return W;
+}
+
 void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DMED *medidas, long int **numeroMedidas, ALIMENTADOR *alimentadores, long int numeroAlimentadores, DRAM *ramos, double Sbase, DBAR *barra)
 {
     long int nmed, nvar;
     int i, j, k, r;
     double *z = NULL, **h = NULL, ***H = NULL, **W = NULL, *x = NULL, *regua = NULL, aux = 0;
+
     double tol = 0.000001;
     //__complex__ double *x_bc = NULL;
 
@@ -1273,14 +1424,31 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     
     //Medidas de tensão
     H_T = monta_matriz_H_AMB_Tensao(medidas_tensao, grafo, numeroBarras, nmed_T);
+    //int i,j;
+
+    for(i = 0;i<6*nmed_AMB;i++){
+        for (j = 0; j < 6*numeroBarras; j++){
+            if (H_AMB[i][j]!=0.0){
+                printf("%d, %d\n", nmed_AMB, numeroBarras);
+            }
+            
+        }
+    }
 
     //vetor h(x) para medidas de potencia
     // hx_I = monta_hx_I(nmed_AMB, medidas_equivalentes, grafo);
 
     hx_I = monta_hx_I_v2(grafo, medidas_equivalentes, numeroBarras, nmed_AMB, ramos);
 
-    
+    //monta matriz de covariancia 
+    W = monta_W_AMB(grafo, medidas_equivalentes, nmed_AMB, medidas_tensao, nmed_T);
 
+    
+    // int i;
+    for (i = 0; i < numeroRamos; i++){
+        // printf("medida barra %d | fase %d | zmed: %f + i*%f\n", medidas_tensao[i].k, medidas_tensao[i].fases, creal(medidas_tensao[i].zmed), cimag(medidas_tensao[i].zmed));
+        printf("|ramo| de: %d | para: %d | fase: %d | Ypp: %f + j*%f |\n", ramos[i].k, ramos[i].m, ramos[i].fases, creal(ramos[i].Ypp[0][0]), cimag(ramos[i].Ypp[0][0]));
+    }
     int it = 0;
     int conv = 0;
     while (conv < 1)
@@ -1288,7 +1456,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
         // monta_z_complexa(medidas_equivalentes, z_eq, nmed_BC);
         monta_z_real_e_imag(medidas_equivalentes, z_AMB, nmed_AMB, medidas_tensao, nmed_T);
         int st = 0;
-        delta_x_bc = resolve_linear_QR_AMB(H_AMB, H_T, z_AMB, numeroBarras, nmed_AMB, nmed_T, hx_I, hx_V);
+        delta_x_bc = resolve_linear_QR_AMB(H_AMB, H_T, z_AMB, numeroBarras, nmed_AMB, nmed_T, hx_I, hx_V, W);
         atualiza_vetor_x(x_bc, delta_x_bc, numeroBarras);
         
         //calcula_hx_corrente(H_BC, x_bc, hx_I, nmed_BC, numeroRamos);

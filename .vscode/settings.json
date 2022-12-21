@@ -2,6 +2,7 @@
     "files.associations": {
         "*.ejs": "html",
         "cstdlib": "c",
-        "funcoesfluxovarredura.h": "c"
+        "funcoesfluxovarredura.h": "c",
+        "random": "c"
     }
 }
