@@ -153,25 +153,25 @@ DMED_COMPLEX *divide_medidas_por_tensao(DMED_COMPLEX *medidas_complexas, long in
                 switch (medidas_div[cont].fases)
                 {
                 case 1:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 2:
-                    medidas_div[cont].zmed = aux / grafo[i].V[1];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[1]);
                     break;
                 case 3:
-                    medidas_div[cont].zmed = aux / grafo[i].V[2];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[2]);
                     break;
                 case 4:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 5:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 6:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 case 7:
-                    medidas_div[cont].zmed = aux / grafo[i].V[0];
+                    medidas_div[cont].zmed = conj(aux / grafo[i].V[0]);
                     break;
                 }
             }
