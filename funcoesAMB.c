@@ -121,8 +121,8 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas, long int numeroM
             double parte_real = creal(tensao_de)/abs_tensao_de;
             double parte_imag = cimag(tensao_de)/abs_tensao_de;
 
-            //medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
-            medida_tensao[aux_contador].zmed = ((magnitude_tensao*parte_real)*cos(phi_k) + (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
+            medida_tensao[aux_contador].zmed = (magnitude_tensao*parte_real) + (magnitude_tensao*parte_imag) * I;
+            //medida_tensao[aux_contador].zmed = ((magnitude_tensao*parte_real)*cos(phi_k) + (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
 
             aux_contador += 1;
         }
@@ -263,10 +263,10 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                 {
                     double sg = 1.0;
                     if ((medidas_equivalentes[i].k == j)){
-                        sg = -1;
+                        sg = 1;
                     }
                     else {
-                        sg = 1;
+                        sg = -1;
                     }
                     
                     switch (medidas_equivalentes[i].fases)
@@ -350,8 +350,9 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                             {
                                 case 1:
                                     if ((grafo[barra_atual].adjacentes[k].ramo->Ypp) == NULL){
-                                        G = 0.1;
-                                        B = 0.1;
+                                        G = 1;
+                                        B = 1;
+                                        printf("NULL\n");
                                     }else{
                                         // G = creal(1/(grafo[j].adjacentes[k].ramo->Z[0][0]));
                                         // B = -cimag(1/(grafo[j].adjacentes[k].ramo->Z[0][0]));
@@ -371,8 +372,9 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
 
                                 case 2:
                                     if ((grafo[barra_atual].adjacentes[k].ramo->Ypp) == NULL){
-                                        G = 0.1;
-                                        B = 0.1;
+                                        G = 1;
+                                        B = 1;
+                                        printf("NULL\n");
                                     }else{
                                         // G = creal(1/(grafo[j].adjacentes[k].ramo->Z[1][1]));
                                         // B = -cimag(1/(grafo[j].adjacentes[k].ramo->Z[1][1]));
@@ -388,10 +390,11 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                                     //IX/VX
                                     H_T[i + (nmed_AMB)][3*j+1 + (3*numeroBarras)] = G;
                                 break;
+                                case 3:
 
                                     if ((grafo[barra_atual].adjacentes[k].ramo->Ypp) == NULL){
-                                        G = 0.1;
-                                        B = 0.1;
+                                        G = 1;
+                                        B = 1;
                                     }else{
                                         // G = creal(1/(grafo[j].adjacentes[k].ramo->Z[2][2]));
                                         // B = cimag(1/(grafo[j].adjacentes[k].ramo->Z[2][2]));
@@ -413,82 +416,6 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos, int nme
                         }
                 }
             }
-
-                
-                // int adjacentes_barra_atual = grafo[j].numeroAdjacentes;
-                // for (int k = 0; k < adjacentes_barra_atual; k ++){
-                //     int idx_grafo_ajd = grafo[j].adjacentes[k].idNo;
-                //     int para_ajd = grafo[idx_grafo_ajd].barra->ID;
-
-                //     if (DE == para_ajd){
-                //         switch (medidas_equivalentes[i].fases)
-                //         {
-                //             case 1:
-                //                 if ((grafo[j].adjacentes[k].ramo->Ypp) == NULL){
-                //                     G = 0.1;
-                //                     B = 0.1;
-                //                 }else{
-                //                     //G = creal(grafo[j].adjacentes[k].ramo->Z[0][0]);
-                //                     //B = cimag(grafo[j].adjacentes[k].ramo->Z[0][0]);
-
-                //                     G = creal(grafo[j].adjacentes[k].ramo->Ypp[0][0]);
-                //                     B = cimag(grafo[j].adjacentes[k].ramo->Ypp[0][0]);
-
-                //                 }
-                //                 H_T[3*i][3*j] = G;
-                //                 //IR/VX
-                //                 H_T[3*i][3*j + (3*numeroBarras)] = -B;
-                //                 //IX/VR
-                //                 H_T[3*i +(3*nmed_AMB)][3*j] = B;
-                //                 //IX/VX
-                //                 H_T[3*i +(3*nmed_AMB)][3*j + (3*numeroBarras)] = G;
-                //             break;
-
-                //             case 2:
-                //                 if ((grafo[j].adjacentes[k].ramo->Ypp) == NULL){
-                //                     G = 0.1;
-                //                     B = 0.1;
-                //                 }else{
-                //                     //G = creal(grafo[j].adjacentes[k].ramo->Z[1][1]);
-                //                     //B = cimag(grafo[j].adjacentes[k].ramo->Z[1][1]);
-
-                //                     G = creal(grafo[j].adjacentes[k].ramo->Ypp[1][1]);
-                //                     B = cimag(grafo[j].adjacentes[k].ramo->Ypp[1][1]);
-                //                 }
-                //                 H_T[3*i+1][3*j+1] = G;
-                //                 //IR/VX
-                //                 H_T[3*i+1][3*j+1 + (3*numeroBarras)] = -B;
-                //                 //IX/VR
-                //                 H_T[3*i+1 +(3*nmed_AMB)][3*j+1] = B;
-                //                 //IX/VX
-                //                 H_T[3*i+1 +(3*nmed_AMB)][3*j+1 + (3*numeroBarras)] = G;
-                //             break;
-
-                //             case 3:
-                //                 if ((grafo[j].adjacentes[k].ramo->Ypp) == NULL){
-                //                     G = 0.0;
-                //                     B = 0.0;
-                //                 }else{
-                //                     //G = creal(grafo[j].adjacentes[k].ramo->Z[2][2]);
-                //                     //B = cimag(grafo[j].adjacentes[k].ramo->Z[2][2]);
-
-                //                     G = creal(grafo[j].adjacentes[k].ramo->Ypp[2][2]);
-                //                     B = cimag(grafo[j].adjacentes[k].ramo->Ypp[2][2]);
-                                
-                //                 //IR/VR
-                //                 H_T[3*i+2][3*j+2] = G;
-                //                 //IR/VX
-                //                 H_T[3*i+2][3*j+2 + (3*numeroBarras)] = -B;
-                //                 //IX/VR
-                //                 H_T[3*i+2 +(3*nmed_AMB)][3*j+2] = B;
-                //                 //IX/VX
-                //                 H_T[3*i+2 +(3*nmed_AMB)][3*j+2 + (3*numeroBarras)] = G;
-                //                 }
-                //             break;
-                //         }
-                //     }
-                // }
-            // }
         }
     }
 
@@ -844,7 +771,7 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z, long int 
     double one[2] = {1, 0};
     double m1[2] = {0, 0};
     cholmod_l_sdmult(AT, 0, one, m1, b, bH, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, G, bH, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, G, bH, c);
     // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroBarras);
@@ -994,7 +921,7 @@ double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int 
     double c, d;
     double A, B, C, D;
     double sigmaP = 0.01;
-    double sigmaQ = 0.05;
+    double sigmaQ = 0.01;
     double det;
     int i;
     int id_barra; 
@@ -1005,6 +932,9 @@ double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int 
                 fase = 0;
                 c = calcula_c_covariancia(id_barra, fase, grafo);
                 d = calcula_d_covariancia(id_barra, fase, grafo);
+
+                sigmaP = medidas_equivalentes[i].sigma;
+                sigmaQ = medidas_equivalentes[i].sigma;
 
                 A = calcula_A(sigmaP, sigmaQ, c, d);
                 B = calcula_B(sigmaP, sigmaQ, c, d);
@@ -1024,6 +954,9 @@ double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int 
                 c = calcula_c_covariancia(id_barra, fase, grafo);
                 d = calcula_d_covariancia(id_barra, fase, grafo);
 
+                sigmaP = medidas_equivalentes[i].sigma;
+                sigmaQ = medidas_equivalentes[i].sigma;
+
                 A = calcula_A(sigmaP, sigmaQ, c, d);
                 B = calcula_B(sigmaP, sigmaQ, c, d);
                 C = calcula_C(sigmaP, sigmaQ, c, d);
@@ -1040,6 +973,9 @@ double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int 
                 fase = 2;
                 c = calcula_c_covariancia(id_barra, fase, grafo);
                 d = calcula_d_covariancia(id_barra, fase, grafo);
+
+                sigmaP = medidas_equivalentes[i].sigma;
+                sigmaQ = medidas_equivalentes[i].sigma;
 
                 A = calcula_A(sigmaP, sigmaQ, c, d);
                 B = calcula_B(sigmaP, sigmaQ, c, d);
@@ -1064,12 +1000,17 @@ double **monta_W_AMB(GRAFO *grafo, DMED_COMPLEX *medidas_equivalentes, long int 
         {
         case 1:
             W[2*nmed_AMB + j][2*nmed_AMB + j] = val;
+            W[2*nmed_AMB + j + nmed_T][2*nmed_AMB + j+nmed_T] = val;
         break;
         case 2:
             W[2*nmed_AMB + j][2*nmed_AMB + j] = val;
+            W[2*nmed_AMB + j+nmed_T][2*nmed_AMB + j+nmed_T] = val;
+
         break;
         case 3:
             W[2*nmed_AMB + j][2*nmed_AMB + j] = val;
+            W[2*nmed_AMB + j+nmed_T][2*nmed_AMB + j+nmed_T] = val;
+
         break;
         
         }
@@ -1176,72 +1117,8 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
         exit(1);
     }
 
-    // j=0;
-    // for(i=0;i<numeroBarras;i++){
-    //     aux = (double) grafo[i].idNo;
-    //     aux += 0.01;
-    //     switch (grafo[i].fases){
-    //         case 1:
-    //             regua[j] = aux;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 2:
-    //             regua[j] = aux + 0.1;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 3:
-    //             regua[j] = aux + 0.2;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 4:
-    //             regua[j] = aux;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             regua[j] = aux + 0.1;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 5:
-    //             regua[j] = aux;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             regua[j] = aux + 0.2;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 6:
-    //             regua[j] = aux+0.1;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             regua[j] = aux + 0.2;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;
-    //         case 7:
-    //             regua[j] = aux;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             regua[j] = aux + 0.1;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             regua[j] = aux + 0.2;
-    //             regua[j + (int) nvar/2] = -regua[j];
-    //             j++;
-    //             break;    
-    //     }
-    // }
     aux = 0;
-    //printf("nmed: %d\n", nmed);
-    //printf("nvar: %d\n", nvar);
-    //Tratamento da referência
-    // long int ref_1, ref_2;
-    // tratamento_referencia(&ref_1, &ref_2, &alimentadores[0], regua, nvar);
-    // printf("ref 1: %d, ref 2: %d\n", ref_1, ref_2);
-    // tira_refs_regua(nvar, ref_1, ref_2, regua); 
-    // nvar = nvar - (ref_2 - ref_1 +1);  
+    
 
     int *RNP;
     // RNP = aloca_vetor(numeroBarras);
@@ -1278,21 +1155,12 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     nmed_T = conta_medidas_Tensao(medidas, nmed);
     medidas_tensao = (DMED_COMPLEX *)malloc((nmed_T) * sizeof(DMED_COMPLEX));
 
-    // converte medidas tensao (magnitude) em complexas
-
-    // z_eq = (__complex__ double *)malloc(3*nmed_BC * sizeof(__complex__ double));
-
     double *regua_x = NULL;
     double *regua_med = NULL;
     double *regua_med_inv = NULL;
     double **H_AMB = NULL;
     double **H_T = NULL;
 
-    // double *x_anterior = NULL;
-    // x_anterior = aloca_vetor(6 * numeroBarras);
-    // double *dif_x = NULL;
-    // dif_x = aloca_vetor(6 * numeroBarras);
-    // vetor de estados: 1 para cada ramo e fase;
     regua_med = aloca_vetor(3 * nmed_AMB);
     regua_med_inv = aloca_vetor(3 * nmed_AMB);
     regua_x = aloca_vetor(3 * numeroBarras);
@@ -1306,22 +1174,11 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     //
     medidas_tensao = calcula_medida_tensao_complexa_AMB(medidas, nmed, grafo, numeroBarras);
 
-    // double *regua_V = NULL;
-    // regua_V = (double *)malloc(nmed_T * sizeof(double));
-    // // regua das medidas de tensao
-    // monta_regua_medidas_tensao(medidas_tensao, nmed_T, regua_V);
-
-    // printf("2\n");
     medidas_equivalentes = divide_medidas_por_tensao(medidas_complexas, nmed_AMB, numeroBarras, grafo);
     // regua vetor x
     //monta_regua_x(numeroRamos, regua_x, ramos);
     regua_x = monta_regua_x_AMB(grafo, numeroBarras);
     // printf("4\n");
-    // monta_regua_medidas(nmed_AMB, regua_med, regua_med_inv, medidas_equivalentes);
-
-    //double *regua_caminho = NULL;
-    //regua_caminho = aloca_vetor(numeroBarras);
-    //monta_regua_caminho(numeroRamos, numeroBarras, regua_caminho, caminho, grafo);
     
     double *hx_I = NULL;
     hx_I = (double*)malloc(2*nmed_AMB*sizeof(double));
@@ -1353,7 +1210,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
     // }
 
     //vetor h(x) para medidas de potencia
-    // hx_I = monta_hx_I(nmed_AMB, medidas_equivalentes, grafo);
+    //hx_I = monta_hx_I(nmed_AMB, medidas_equivalentes, grafo);
 
     hx_I = monta_hx_I_v2(grafo, medidas_equivalentes, numeroBarras, nmed_AMB, ramos);
 
@@ -1362,10 +1219,7 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
 
     
     // int i;
-   for (i = 0; i < numeroRamos; i++){
-        // printf("medida barra %d | fase %d | zmed: %f + i*%f\n", medidas_tensao[i].k, medidas_tensao[i].fases, creal(medidas_tensao[i].zmed), cimag(medidas_tensao[i].zmed));
-       // printf("|ramo| de: %d | para: %d | fase: %d | Ypp: %f + j*%f |\n", ramos[i].k, ramos[i].m, ramos[i].fases, creal(ramos[i].Ypp[0][0]), cimag(ramos[i].Ypp[0][0]));
-    }
+   
     int it = 0;
     int conv = 0;
     while (conv < 1)
@@ -1377,10 +1231,6 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras, DME
         delta_x_bc = resolve_linear_QR_AMB(H_AMB, H_T, z_AMB, numeroBarras, nmed_AMB, nmed_T, hx_I, hx_V, W);
         atualiza_vetor_x(x_bc, delta_x_bc, numeroBarras);
         
-        //calcula_hx_corrente(H_BC, x_bc, hx_I, nmed_BC, numeroRamos);
-        //H_AMB = monta_matriz_H_AMB(numeroBarras,numeroRamos, nmed_AMB, medidas_equivalentes, regua_x, ramos, grafo);
-        //Medidas de tensão
-        //H_T = monta_matriz_H_AMB_Tensao(medidas_tensao, grafo, numeroBarras, nmed_T);
         double nfx;
         nfx = norma_inf(delta_x_bc, 6*numeroBarras);
         printf("\n\nIteracao:  %d \t|Dx|_inf =  %.17lf \t  \n", it, nfx);
