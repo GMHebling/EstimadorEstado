@@ -105,11 +105,11 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas,
         break;
       case 2:
         f_idx = 1;
-        phi_k = 2 * PI / 3;
+        phi_k = -2 * PI / 3;
         break;
       case 3:
         f_idx = 2;
-        phi_k = -2 * PI / 3;
+        phi_k = 2 * PI / 3;
         break;
       }
       __complex__ double tensao_de = grafo[idx_barra_DE].V[f_idx];
@@ -119,11 +119,16 @@ DMED_COMPLEX *calcula_medida_tensao_complexa_AMB(DMED *medidas,
       double parte_real = creal(tensao_de) / abs_tensao_de;
       double parte_imag = cimag(tensao_de) / abs_tensao_de;
 
+      double ang = atan(parte_imag / parte_real);
+      //       medida_tensao[aux_contador].zmed =
+      //           (magnitude_tensao * parte_real) + (magnitude_tensao *
+      //           parte_imag) * I;
+
+      // medida_tensao[aux_contador].zmed = abs_tensao_de + I*0;
       medida_tensao[aux_contador].zmed =
-          (magnitude_tensao * parte_real) + (magnitude_tensao * parte_imag) * I;
-      // medida_tensao[aux_contador].zmed =
-      // ((magnitude_tensao*parte_real)*cos(phi_k) +
-      // (magnitude_tensao*parte_imag)*sin(phi_k)) + I*0;
+          ((magnitude_tensao * parte_real) * cos(phi_k) +
+           (magnitude_tensao * parte_imag) * -sin(phi_k)) +
+          I * 0;
 
       aux_contador += 1;
     }
@@ -291,13 +296,13 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos,
             G = creal(ramos[i_ramo].Ypp[1][1]);
             B = cimag(ramos[i_ramo].Ypp[1][1]);
 
-            H_T[i][3 * j] = sg * G;
+            H_T[i][(3 * j) + 1] = sg * G;
             // IR/VX
-            H_T[i][3 * j + (3 * numeroBarras)] = -sg * B;
+            H_T[i][(3 * j) + 1 + (3 * numeroBarras)] = -sg * B;
             // IX/VR
-            H_T[i + nmed_AMB][3 * j] = sg * B;
+            H_T[i + nmed_AMB][(3 * j) + 1] = sg * B;
             // IX/VX
-            H_T[i + nmed_AMB][(3 * j) + (3 * numeroBarras)] = sg * G;
+            H_T[i + nmed_AMB][(3 * j) + 1 + (3 * numeroBarras)] = sg * G;
 
             break;
           case 3:
@@ -309,13 +314,13 @@ double **monta_matriz_H_AMB(long int numeroBarras, long int numeroRamos,
             G = creal(ramos[i_ramo].Ypp[2][2]);
             B = cimag(ramos[i_ramo].Ypp[2][2]);
 
-            H_T[i][3 * j] = sg * G;
+            H_T[i][(3 * j) + 2] = sg * G;
             // IR/VX
-            H_T[i][3 * j + (3 * numeroBarras)] = -sg * B;
+            H_T[i][(3 * j) + 2 + (3 * numeroBarras)] = -sg * B;
             // IX/VR
-            H_T[i + nmed_AMB][3 * j] = sg * B;
+            H_T[i + nmed_AMB][(3 * j) + 2] = sg * B;
             // IX/VX
-            H_T[i + nmed_AMB][(3 * j) + (3 * numeroBarras)] = sg * G;
+            H_T[i + nmed_AMB][(3 * j) + 2 + (3 * numeroBarras)] = sg * G;
 
             break;
           case 4:
@@ -497,30 +502,65 @@ double **monta_matriz_H_AMB_Tensao(DMED_COMPLEX *medidas_tensao, GRAFO *grafo,
   H_Tensao = aloca_matriz(2 * nmed_T, 6 * numeroBarras);
 
   int i, j;
+  double phi_k, ang_tensao, abs_tensao;
   for (i = 0; i < nmed_T; i++) {
     int DE_med = medidas_tensao[i].k;
     for (j = 1; j < numeroBarras; j++) {
       // TODO
       // int DE_barra = grafo[j].barra->ID;
-      if (DE_med == j) {
+      if (DE_med == j && j != 0) {
         switch (medidas_tensao[i].fases) {
         case 1:
           /* code */
-          H_Tensao[i][3 * j] = 1.0;
-          H_Tensao[i + nmed_T][3 * j + 3 * numeroBarras] = 1.0;
+          abs_tensao =
+              sqrt(creal(grafo[DE_med].V[0]) * creal(grafo[DE_med].V[0]) +
+                   cimag(grafo[DE_med].V[0]) * cimag(grafo[DE_med].V[0]));
+          phi_k = 0.0;
+          H_Tensao[i][3 * j] =
+              cos(phi_k); // creal(grafo[DE_med].V[0])/abs_tensao;
+          H_Tensao[i][3 * j + 3 * numeroBarras] =
+              -sin(phi_k); // creal(grafo[DE_med].V[0])/abs_tensao;
           break;
         case 2:
           /* code */
-          H_Tensao[i][3 * j + 1] = 1.0;
-          H_Tensao[i + nmed_T][3 * j + 1 + 3 * numeroBarras] = 1.0;
+          abs_tensao =
+              sqrt(creal(grafo[DE_med].V[1]) * creal(grafo[DE_med].V[1]) +
+                   cimag(grafo[DE_med].V[1]) * cimag(grafo[DE_med].V[1]));
+          phi_k = -2 * PI / 3;
+          H_Tensao[i][3 * j + 1] =
+              cos(phi_k); // creal(grafo[DE_med].V[1])/abs_tensao;
+          H_Tensao[i][3 * j + 1 + 3 * numeroBarras] =
+              -sin(phi_k); // creal(grafo[DE_med].V[1])/abs_tensao;
           break;
         case 3:
           /* code */
-          H_Tensao[i][3 * j + 2] = 1.0;
-          H_Tensao[i + nmed_T][3 * j + 2 + 3 * numeroBarras] = 1.0;
+          abs_tensao =
+              sqrt(creal(grafo[DE_med].V[2]) * creal(grafo[DE_med].V[2]) +
+                   cimag(grafo[DE_med].V[2]) * cimag(grafo[DE_med].V[2]));
+          phi_k = 2 * PI / 3;
+          H_Tensao[i][3 * j + 2] =
+              cos(phi_k); // creal(grafo[DE_med].V[2])/abs_tensao;
+          H_Tensao[i][3 * j + 2 + 3 * numeroBarras] =
+              -sin(phi_k); // creal(grafo[DE_med].V[2])/abs_tensao;
           break;
         }
       }
+      //      if (DE_med == j && j == 0){
+      //        switch (medidas_tensao[i].fases){
+      //            case 1:
+      //              H_Tensao[i][3 * j] = 1;
+      //              H_Tensao[i][(3 * j) + (3 * numeroBarras)] = 1;
+      //              break;
+      //            case 2:
+      //              H_Tensao[i][3 * j] = 1;
+      //              H_Tensao[i][(3 * j) + 1 + (3 * numeroBarras)] = 1;
+      //              break;
+      //            case 3:
+      //              H_Tensao[i][3 * j] = 1;
+      //              H_Tensao[i][(3 * j) + 2 + (3 * numeroBarras)] = 1;
+      //              break;
+      //        }
+      //      }
     }
   }
 
@@ -535,6 +575,8 @@ double *monta_hx_V(long int nmed_T, DMED_COMPLEX *medidas_tensao, GRAFO *grafo,
   int i;
   double tensao_barra;
   double tensao_imag;
+  double phi_k;
+  double abs_tensao;
   for (i = 0; i < nmed_T; i++) {
     int barra_de = medidas_tensao[i].DE;
     int i_grafo = medidas_tensao[i].k;
@@ -545,26 +587,38 @@ double *monta_hx_V(long int nmed_T, DMED_COMPLEX *medidas_tensao, GRAFO *grafo,
       // tensao_barra =
       // sqrt(creal(grafo[i_grafo].V[0])*creal(grafo[i_grafo].V[0]) +
       // cimag(grafo[i_grafo].V[0])*cimag(grafo[i_grafo].V[0]));
+      phi_k = 0;
       tensao_barra = creal(grafo[i_grafo].V[0]);
       tensao_imag = cimag(grafo[i_grafo].V[0]);
+      abs_tensao =
+          sqrt(tensao_barra * tensao_barra + tensao_imag * tensao_imag);
+      hx_v[i] = tensao_barra * cos(phi_k) + tensao_imag * -sin(phi_k);
       break;
     case 2:
       // tensao_barra =
       // sqrt(creal(grafo[i_grafo].V[1])*creal(grafo[i_grafo].V[1]) +
       // cimag(grafo[i_grafo].V[1])*cimag(grafo[i_grafo].V[1]));
+      phi_k = -2 * PI / 3;
       tensao_barra = creal(grafo[i_grafo].V[1]);
       tensao_imag = cimag(grafo[i_grafo].V[1]);
+      abs_tensao =
+          sqrt(tensao_barra * tensao_barra + tensao_imag * tensao_imag);
+      hx_v[i] = tensao_barra * cos(phi_k) + tensao_imag * -sin(phi_k);
       break;
     case 3:
       // tensao_barra =
       // sqrt(creal(grafo[i_grafo].V[2])*creal(grafo[i_grafo].V[2]) +
       // cimag(grafo[i_grafo].V[2])*cimag(grafo[i_grafo].V[2]));
+      phi_k = 2 * PI / 3;
       tensao_barra = creal(grafo[i_grafo].V[2]);
       tensao_imag = cimag(grafo[i_grafo].V[2]);
+      abs_tensao =
+          sqrt(tensao_barra * tensao_barra + tensao_imag * tensao_imag);
+      hx_v[i] = tensao_barra * cos(phi_k) + tensao_imag * -sin(phi_k);
       break;
     }
-    hx_v[i] = tensao_barra;
-    hx_v[i + nmed_T] = tensao_imag;
+    //    hx_v[i] = abs_tensao;
+    //    hx_v[i + nmed_T] = tensao_imag;
   }
   return hx_v;
 }
@@ -721,7 +775,7 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z,
     }
   }
 
-  for (int t = 0; t < 2 * nmed_T; t++) {
+  for (int t = 0; t < nmed_T; t++) {
     for (int cv = 0; cv < 6 * numeroBarras; cv++) {
       if ((H_T[t][cv] != 0)) {
         ((long int *)T->i)[index] = t + 2 * nmed_AMB;
@@ -753,6 +807,7 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z,
   for (int i = 0; i < nmed_T; i++) {
     ((double *)b->x)[(i + 2 * nmed_AMB)] = (z[i + 2 * nmed_AMB] - hx_V[i]);
   }
+
   A = cholmod_l_triplet_to_sparse(
       T, (2 * nmed_AMB + 2 * nmed_T) * 3 * numeroBarras, c);
   W_sparse = cholmod_l_triplet_to_sparse(
@@ -764,8 +819,7 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z,
   double one[2] = {1, 0};
   double m1[2] = {0, 0};
   cholmod_l_sdmult(AT, 0, one, m1, b, bH, c);
-  X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH,
-                                c);
+  X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, A, b, c);
   // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH,
   // c);
   double *ponto;
@@ -787,11 +841,11 @@ void atualiza_estado_AMB(GRAFO *grafo, long int numeroBarras, double *x_amb) {
     grafo[i].V[0] = real + I * imag;
 
     real = x_amb[3 * i + 1];
-    imag = x_amb[3 * i + 1 + 3 * numeroBarras];
+    imag = x_amb[(3 * i) + 1 + (3 * numeroBarras)];
     grafo[i].V[1] = real + I * imag;
 
     real = x_amb[3 * i + 2];
-    imag = x_amb[3 * i + 2 + 3 * numeroBarras];
+    imag = x_amb[(3 * i) + 2 + (3 * numeroBarras)];
     grafo[i].V[2] = real + I * imag;
   }
 }
@@ -1031,7 +1085,7 @@ void monta_z_real_imag_AMB(DMED_COMPLEX *medidas_eq, double *z_AMB,
   }
   for (int j = 0; j < nmed_T; j++) {
     z_AMB[j + 2 * nmed_AMB] = creal(medidas_tensao[j].zmed);
-    z_AMB[j + 2 * nmed_AMB + nmed_T] = cimag(medidas_tensao[j].zmed);
+    // z_AMB[j + 2 * nmed_AMB + nmed_T] = cimag(medidas_tensao[j].zmed);
   }
 };
 
@@ -1249,6 +1303,12 @@ void estimadorAMB(GRAFO *grafo, long int numeroRamos, long int numeroBarras,
     if (nfx<tol | it> 20) {
       conv = 10;
     }
+    medidas_tensao =
+        calcula_medida_tensao_complexa_AMB(medidas, nmed, grafo, numeroBarras);
+
+//    H_T =
+//        monta_matriz_H_AMB_Tensao(medidas_tensao, grafo, numeroBarras, nmed_T);
+
     medidas_equivalentes = divide_medidas_por_tensao(
         medidas_complexas, nmed_AMB, numeroBarras, grafo);
     hx_V = monta_hx_V(nmed_T, medidas_tensao, grafo, numeroBarras);
