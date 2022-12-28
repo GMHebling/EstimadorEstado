@@ -8,7 +8,7 @@ TARGET = estimator powerflow
 all: $(TARGET)
 
 estimator: $(OBJFILES)
-		$(CC) $(CFLAGS) -o estimator $(OBJFILES) $(LDFLAGS)
+		$(CC) $(CFLAGS) -o estimatorFIXED $(OBJFILES) $(LDFLAGS)
 
 powerflow: $(OBJFILESFP)
 		$(CC) $(CFLAGS) -o powerflow $(OBJFILESFP) $(LDFLAGS)
