@@ -1,0 +1,38 @@
+
+------- Caso de Referência com Fluxo de Potência ----------
+t: [1] / [1]
+       Estado  Tipo   De  Para  Fases        Zmed  Sigma
+0           1     0    0     1      1   21.235359  0.020
+1           1     0    0     1      2   17.841232  0.020
+2           1     0    0     1      3  346.734598  0.020
+3           1     0    1     2      1   22.478977  0.020
+4           1     0    1     2      2   20.332170  0.020
+...       ...   ...  ...   ...    ...         ...    ...
+21751       1     5  905    -1      2 -150.164338  0.001
+21752       1     5  905    -1      3   89.962869  0.001
+21753       1     5  906    -1      1  -29.867068  0.001
+21754       1     5  906    -1      2 -150.164419  0.001
+21755       1     5  906    -1      3   89.962924  0.001
+
+[21756 rows x 7 columns]
+------- Simulação de Monte Carlo ----------
+Amostra: [1] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [2] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [3] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [4] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [5] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [6] / [100]
+t: [1] / [1]
+state estimation 5442
+Amostra: [7] / [100]
+t: [1] / [1]
