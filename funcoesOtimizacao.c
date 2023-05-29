@@ -846,7 +846,7 @@ int otimiza_Gauss_NewtonQR(double *z, double **h, double ***H, GRAFO *grafo, lon
 
         clock_t tHouse = clock();
 
-        X_SS = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, A_SS, b_SS, c);
+        X_SS = SuiteSparseQR_C_backslash(SPQR_ORDERING_METIS, SPQR_DEFAULT_TOL, A_SS, b_SS, c);
 
         clock_t tSolve = clock();
         Dx = (double *)X_SS->x;
