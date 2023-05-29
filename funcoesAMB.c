@@ -820,7 +820,7 @@ double *resolve_linear_QR_AMB(double **H_AMB, double **H_T, double *z,
   double m1[2] = {0, 0};
   cholmod_l_sdmult(AT, 0, one, m1, b, bH, c);
 //  X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A, b, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_METIS, SPQR_DEFAULT_TOL, G, bH, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, G, bH, c);
   // c);
   double *ponto;
   ponto = aloca_vetor(6 * numeroBarras);
