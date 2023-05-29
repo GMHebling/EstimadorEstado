@@ -2713,7 +2713,7 @@ int otimizaNEC(double *z, double **h, double ***H, double ***C, GRAFO *grafo, lo
         //printf("nmed: %d, nvir: %d, nvar: %d\n", nmed, nvir, nvar);
         //printf("(A) nrow: %ld, ncol: %ld.\n", (long int)A_nec->nrow, (long int)A_nec->ncol);
         //printf("(B) nrow: %ld\n", (long int)b_nec->nrow);
-        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_METIS, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
+        X_nec = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A_nec, b_nec, c);
 
         Dx = (double *)X_nec->x;
 
@@ -3020,7 +3020,7 @@ int otimizaHatchel(double *z, double **h, double ***H, double ***C, GRAFO *grafo
         //    }
         //}
         clock_t tIni = clock();
-        X_hatchel = SuiteSparseQR_C_backslash(SPQR_ORDERING_METIS, SPQR_DEFAULT_TOL, A_hatchel, b_hatchel, c);
+        X_hatchel = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, A_hatchel, b_hatchel, c);
         clock_t t1 = clock();
         double tempoWLS = (double)(t1-tIni)/CLOCKS_PER_SEC;
         printf("\nResolucao sistema linear: %lf",tempoWLS);
