@@ -1,7 +1,7 @@
 |Dx|_inf =  0.0000007 	 |Grad|_inf =  1.5342425 
 
 
- Convergência em 3 iteracoes e tempo: 5.1620
+ Convergência em 3 iteracoes e tempo: 7.1371
 Tensoes Nodais: Fase-Terra
 Vbase:79674.337	ABC	0	Va: 1.00000 | 0.000 	Vb: 1.00000 | -120.000	Vc: 1.00000 | 120.000
 Vbase:7967.434	ABC	1	Va: 0.98801 | -1.045 	Vb: 0.98823 | -121.033	Vc: 0.98903 | 119.040
