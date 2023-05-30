@@ -680,7 +680,7 @@ double *resolve_linear_QR_Tensao(double **H_BC, double **H_T, double *z, long in
     double one[2] = {1, 0};
     double m1[2] = {0, 0};
     cholmod_l_sdmult(A, 1, one, m1, b, bH, c);
-    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_FIXED, SPQR_DEFAULT_TOL, G, bH, c);
+    X = SuiteSparseQR_C_backslash(SPQR_ORDERING_AMD, SPQR_DEFAULT_TOL, G, bH, c);
     // X = SuiteSparseQR_C_backslash(SPQR_ORDERING_BEST, SPQR_DEFAULT_TOL, G, bH, c);
     double *ponto;
     ponto = aloca_vetor(6 * numeroRamos);
