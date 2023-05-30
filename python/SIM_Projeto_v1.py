@@ -553,12 +553,14 @@ for amostra in range(0,Namostras):
 MAE_t = abs(np.nanmean(erro_x,0))
 MAE_x = abs(np.nanmean(erro_x,1))
 
-print('MAE: ', max(MAE_x))
+print('Max MAE: ', max(MAE_x))
+print('average MAE', mean(MAE_x))
+print('variance MAE', var(MAE_x))
 
 # RMSE
 aux = [i ** 2 for i in erro_x]
 RMSE_t = np.sqrt(np.nanmean(aux,0))
-print('MAE: ', max(RMSE_t))
+# print('MAE: ', max(RMSE_t))
 
 # KEMA
 
