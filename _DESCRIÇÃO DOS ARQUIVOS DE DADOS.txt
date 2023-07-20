@@ -1,0 +1,166 @@
+-------------------------------------------------------------------------------------------------------------------------------
+DBAR - Dados de barras e cargas:
+
+ID,LIGACAO,FASES,TENSAO_NOM,PNOM_A,PNOM_B,PNOM_C,QNOM_A,QNOM_B,QNOM_C,ZIP,VNOM_A,VNOM_B,VNOM_C,ANG_VNOM_A,ANG_VNOM_B,ANG_VNOM_C
+
+ID - Identifica��o num�rica da barra;
+LIGACAO - Tipo de liga��o da carga (1 = YN / 2 = Delta / 3 = Y);
+FASES - N�mero de fases (1=A; 2=B; 3=C; 4=AB; 5=CA; 6=BC; 7=ABC);
+TENSAO_NOM - Tens�o nominal da barra em V;
+PNOM_A,PNOM_B,PNOM_C - Pot�ncia ativa da carga trif�sica em kW;
+QNOM_A,QNOM_B,QNOM_C - Pot�ncia reativa da carga trif�sica em kVAr;
+ZIP - Modelo ZIP (0 = Pot�ncia Constante / 1 = Corrente Constante / 2 = Imped�ncia Constante);
+VNOM_A,VNOM_B,VNOM_C - Magnitude de tens�o da barra de refer�ncia;
+ANG_VNOM_A,ANG_VNOM_B,ANG_VNOM_C - �ngulo de tens�o da barra de refer�ncia;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+DSHNT - Dados de bancos shunts (modelados como imped�ncia constante):
+
+ID,LIGACAO,FASES,TENSAO_NOM,QNOM_A,QNOM_B,QNOM_C,TipoCont,nshunts,Dv,VA,VB,VC
+
+ID - Identifica��o num�rica da barra;
+LIGACAO - Tipo de liga��o do banco shunt (1 = YN / 2 = Delta / 3 = Y);
+FASES - N�mero de fases;
+TENSAO_NOM - Tens�o nominal do banco shunt V;
+QNOM_A,QNOM_B,QNOM_C - Pot�ncia reativa do shunt trif�sico em kVAr (Negativo para capacitor);
+TipoCont - Tipo de controle (0= sem controle / 1=Controle de tens�o da barra)
+nshunts - n�mero de bancos shunt
+Dv - Intevralo de tens�o de controle (em pu)
+VA,VB,VC - setpoint de tens�o (em pu)
+
+-------------------------------------------------------------------------------------------------------------------------------
+DGD - Dados geradores distribu�dos:
+
+ID,LIGACAO,FASES,TENSAO_NOM,S_NOMINAL_MAQUINA,PNOM_A,PNOM_B,PNOM_C,QNOM_A,QNOM_B,QNOM_C,TIPO,LIM_MIN_Q,LIM_MAX_Q,VNOM_A,VNOM_B,VNOM_C
+
+ID - Identifica��o num�rica da barra;
+LIGACAO - Tipo de liga��o do banco shunt (1 = YN / 2 = Delta / 3 = Y);
+FASES - N�mero de fases;
+TENSAO_NOM - Tens�o nominal do banco shunt em V;
+S_NOMINAL_MAQUINA - Pot�ncia nominal da m�quina em kVA;
+PNOM_A,PNOM_B,PNOM_C - Pot�ncia ativa do gerador trif�sico em kW (Negativo para m�quina fornecendo pot�ncia ativa);
+QNOM_A,QNOM_B,QNOM_C - Pot�ncia reativa do reativa trif�sico em kVAr (Negativo para m�quina fornecendo pot�ncia reativa);
+TIPO - Controle da excitatriz do gerador (0 - M�quina como PQ constante / 1 = M�quina como PV constante / 2 = Corrente constante);
+LIM_MIN_Q,LIM_MAX_Q - Limites m�nimo e m�ximo de gera��o de pot�ncia reativa;
+VNOM_A,VNOM_B,VNOM_C - Setpoint de tens�o para m�quina operando como PV constante;
+TIPO DE CONTROLE PV - 0 Sequ�ncia positiva / 2 por fase
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+DLIN - Dados de linhas de transmiss�o:
+
+DE,PARA,FASES,COMPRIMENTO,Zaa,Zab,Zac,Zbb,Zbc,Zcc,Baa,Bab,Bac,Bbb,Bbc,Bcc
+
+DE - Barra de;
+PARA - Barra para;
+FASES - N�mero de fases;
+COMPRIMENTO - Comprimento total;
+Zaa,Zab,Zac,Zbb,Zbc,Zcc - Matriz de imped�ncia em ohms por unidade de comprimento;
+Baa,Bab,Bac,Bbb,Bbc,Bcc - Matriz de suscept�ncia em micro siemens  por unidade de comprimento;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+DREG - Dados de reguladores de tens�o:
+
+DE,PARA,FASES,VNOM,REGULA��O,NTAPS,S_NOMINAL,RESIST�NCIA,REAT�NCIA,LIGA��O,RELA��O_TP,RELA��O_TC,DELTA_V,R1,X1,R2,X2,R3,X3,V1,V2,V3,TIPOCONT,TAP1,TAP2,TAP3,DELTA_V_rev,R1_rev,X1_rev,R2_rev,X2_rev,R3_rev,X3_rev,V1_rev,V2_rev,V3_rev
+
+DE - Barra de;
+PARA - Barra para;
+FASES - N�mero de fases;
+VNOM - Tens�o nominal do regulador em V;
+REGULA��O - Regula��o de tens�o Ex: 10% entrar como 0.1
+NTAPS - N�mero de taps (Ex: 16 para cima e 16 para baixo);
+S_NOMINAL - Pot�ncia nominal do regulador de tens�o;
+RESIST�NCIA - Resist�ncia s�rie do regulador;
+REAT�NCIA - Reat�ncia s�rie do regulador;
+LIGA��O - Tipo de liga��o do regulador (1 = YN / 2 = Delta / 3 = Y / 4 - Estrela aberto / 5 - Delta aberto);
+RELA��O_TP - Rela��o do TP do controlador do regulador;
+RELA��O_TC - Rela��o do TC do controlador do regulador;
+DELTA_V - Intervalo de tens�o para atua��o em V secund�rios (Ex: 2 V significa +1 ou -1V em rela��o ao ajuste V1, V2 e V3 para atua��o);
+R1,X1,R2,X2,R3,X3 - Par�metros do controlador LDC por fase em ohms;
+V1,V2,V3 - Ajuste de tens�o do controlador LDC em V secund�rios;
+TIPOCONT - Tipo de Controle (0 = Somente Forward sem Restri��o / 1 = Locked Forward / 2 = Locked Reverse / 3 = Bidirectional / 4 = Idle / 5 = Neutral Reverse / 6 = Cogenartion / Ver manual Siemens MJ4A)
+TAP1,TAP2,TAP3 - Par�metro de tap inicial (opcional - serve como tap do controle reverse locked)
+DELTA_V_rev,R1_rev,X1_rev,R2_rev,X2_rev,R3_rev,X3_rev,V1_rev,V2_rev,V3_rev - Ajustes reversos (Necess�rio se TIPOCONT > 0)
+
+-------------------------------------------------------------------------------------------------------------------------------
+DTRF - Dados de transformadores de pot�ncia (Transformador abaixador ou elevador):
+
+DE,PARA,FASES,VPRI,VSEC,S_NOMINAL,RESIST�NCIA,REAT�NCIA,LIGA��O_PRI,LIGA��O_SEC,DEFASAMENTO,TAP_PRI,TAP_SEC
+
+DE - Barra de;
+PARA - Barra para;
+FASES - N�mero de fases;
+VPRI - Tens�o nominal do prim�rio transformador em V;
+VSEC - Tens�o nominal do secund�rio transformador em V;
+S_NOMINAL - Pot�ncia nominal do transformador;
+RESIST�NCIA - Resist�ncia s�rie do transformador em ohm;
+REAT�NCIA - Reat�ncia s�rie do transformador em ohm;
+LIGA��O_PRI - Tipo de liga��o do prim�rio (1 = YN / 2 = Delta / 3 = Y / 4 - Estrela aberto / 5 - Delta aberto);
+LIGA��O_SEC - Tipo de liga��o do secund�rio (1 = YN / 2 = Delta / 3 = Y / 4 - Estrela aberto / 5 - Delta aberto);
+DEFASAMENTO - Defasamento angular (Ex: DYn0 ou DYn1);
+TAP_PRI - Tap do prim�rio fora do nominal (Ex: 1.025);
+TAP_SEC - Tap do prim�rio fora do nominal;
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+DSWTC - Dados de chaves:
+
+DE,PARA,FASES,ESTADO
+
+DE - Barra de;
+PARA - Barra para;
+FASES - N�mero de fases;
+ESTADO - 0 = aberto / 1 = fechado
+TIPO - 0 = disjuntor / 1 = Seccionadora
+-------------------------------------------------------------------------------------------------------------------------------
+DMED - Dados de medidas anal�gicas:
+
+LIGADO,TIPO,DE,PARA,FASES,ZMED,SIGMA
+
+LIGADO- 0 = on / 1 = off
+TIPO- Tipo de medidor (
+	0: Fluxo de Pot�ncia Ativa - kW
+	1: Fluxo de Pot�ncia Reativa - kVAr
+	2: Inje��o de Pot�ncia Ativa - kW
+	3: Inje��o de Pot�ncia Reativa - kVAr
+	4: Magnitude de Tens�o - kV
+	5: �ngulo de Tens�o - graus
+	6: Fluxo Magnitude de Corrente - A
+	7: Fluxo �ngulo de Corrente) - graus
+	8: Inje��o Magnitude de Corrente - A
+	9: Inje��o �ngulo de Corrente) - graus
+DE- Barra de
+PARA- Barra para
+FASES- Fases do medidor (N = 0; 1=A; 2=B; 3=C; 4=AB; 5=CA; 6=BC; 7=ABC);
+ZMED- Valor medido na unidade indicada acima
+SIGMA- Desvio padr�o do medidor na unidade indicada acima
+
+-------------------------------------------------------------------------------------------------------------------------------
+DSTATUS - Dados de atualiza��o de estado l�gico dos equipamentos (medidas l�gicas):
+
+LIGADO,TIPO,DE,PARA,FASES,ZMED,SIGMA
+
+LIGADO- 0 = on / 1 = off
+
+-------------------------------------------------------------------------------------------------------------------------------
+Vinicial - Valores de tens�o das barras para inicializar o estimador (opcional):
+
+ID,VNOM_A,VNOM_B,VNOM_C,ANG_VNOM_A,ANG_VNOM_B,ANG_VNOM_C
+
+ID - Identifica��o num�rica da barra;
+VNOM_A,VNOM_B,VNOM_C - Magnitude de tens�o da barra inicial;
+ANG_VNOM_A,ANG_VNOM_B,ANG_VNOM_C - �ngulo de tens�o da barra inicial em graus;
+
+-------------------------------------------------------------------------------------------------------------------------------
+DYPRIM - Dados de matrizes primitivas de elementos série
+
+ID,DE,PARA,FASES, YM, Gaa, Baa, Gab, Bab, Gac, Bac, Gba, Bba, Gbb, Bbb, Gbc, Bbc, Gca, Bca, Gcb, Bcb,Gcc, Bcc
+
+ID - id do equipamento
+DE - Barra de;
+PARA - Barra para;
+FASES - N�mero de fases (1=A; 2=B; 3=C; 4=AB; 5=CA; 6=BC; 7=ABC);
+YM - Qual Matriz primitiva (1=Ypp; 2 = Yps; 3=Yss; 4=Ysp);
+Gaa, Baa, Gab, Bab, Gac, Bac, Gba, Bba, Gbb, Bbb, Gbc, Bbc, Gca, Bca, Gcb, Bcb,Gcc, Bcc - Elementos da matriz admitância
