@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -o -W 
+CFLAGS= -o -W -g
 LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++
 OBJFILES = main.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
 TARGET = ss

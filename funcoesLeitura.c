@@ -189,51 +189,45 @@ char *charMedidor(long int num)
 // Leitura de dados da rede elétrica
 char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *numeroRamos, long int *numeroAlimentadores)
 {
-    FILE *arquivo = NULL;
-    char linha[1000], *pasta, *folder, aux2[1000];
-    //    folder = (char *)malloc(600*sizeof(char));
-    pasta = (char *)malloc(200);
-    folder = (char *)malloc(200);
-    printf("Leitura de dados da rede elétrica...\n");
+
+    // Funcao que lê os dados da rede elétrica, recebe as estruturas DBAR e DRAM (dados barras e dados dos ramos)
+    // Recebe também  o número de barras, o número de ramos e o número de alimentadores
+    // Todas as variáveis são recebidas como ponteiros
+
+    FILE *arquivo = NULL;// Declara arquivo que vai receber os dados de leitura 
+    char linha[1000], *pasta, *folder,aux[200];//declara strings para receber nome do diretório de arquivos
+
+    pasta = (char *)malloc(200);//aloca memória dinâmica para a str pasta
+    folder = (char *)malloc(200); //aloca memória dinamica para o nome do arquivo de entrada 
+    printf("Leitura de dados da rede elétrica...\n"); // printa no console que a leitura de dados da rede começou 
 
     //Recebe o nome da pasta com os dados a serem lidos - arquivo config.txt
-    FILE *config = NULL;
+    FILE *config = NULL; // arquivo config.txt contendo o nome dos diretórios 
     config = fopen("config.txt", "r");
-    if (config == NULL)
+    if (config == NULL) // se não houver arquivo de dados
     {
         printf("Erro ao abrir arquivo config.txt !!!\n");
         exit(1);
     }
-    fgets(linha, 1000, config);
-    folder = getfield(linha, 1);
-    fgets(linha, 1000, config);
-    pasta = getfield(linha, 1);
-    printf("Main directory: \n %s \n", folder);
-    printf("Data sub-folder: \n %s \n", pasta);
-    fclose(config);
+    fgets(linha, 1000, config);//lê a primeira linha contendo o endereço do arquivo principal
+    folder = getfield(linha, 1);//Salva na string folder
+    fgets(linha, 1000, config);//lê a segunda linha do arquivo com a sub pasta dos dados da rede
+    pasta = getfield(linha, 1);//Salva na string pasta
+    printf("Main directory: \n %s \n", folder);// printa o nome dos arquivos no console
+    printf("Data sub-folder: \n %s \n", pasta);// printa o nome dos arquivos no console
+    fclose(config);//fecha o arquivo
 
-    //    //printf("Digite o nome da pasta com os dados da rede elétrica\n");
-    //    //scanf("%s",pasta);
-    //    //strcpy(folder,"C:/Users/Julio Massignan/Dropbox/Doutorado/Codigos/Estimador_Trifasico/");
-    //    strcpy(folder,"C:/Users/Julio/Dropbox/Doutorado/Codigos/Estimador_Trifasico/");
-    //    strcpy(pasta,"IEEE4");
-    //    //strcpy(folder,"C:/Users/Julio Massignan/Dropbox/Doutorado/Codigos/Simulador_SD/IEEE34");
-    //printf("TESTE\n");
-    //strcat(folder,"/");
-    //strcat(folder,pasta);
-    //strcat(folder,"/");
-    //strcpy(aux,folder);
-    //strcpy(aux2,folder);
-    char aux[200] = "IEEE342SIM/";
-    strcpy(aux2, aux);
+
+    strcpy(aux,pasta);// string aux recebe o string em pasta
+    //strcpy(aux2, aux);// utiliza o aux 2 pra concatenar nomes convenientemente no aux 
     // Leitura dos dados de barras
 
-    arquivo = fopen(strcat(aux, "DBAR.csv"), "r");
+    arquivo = fopen(strcat(aux, "DBAR.csv"), "r"); //abre o arquivo /pasta/DBAR.csv
 
     if (arquivo != NULL)
     {
-        leituraDBAR(arquivo, barra, numeroBarras, numeroAlimentadores);
-        fclose(arquivo);
+        leituraDBAR(arquivo, barra, numeroBarras, numeroAlimentadores);//lê o DBAR
+        fclose(arquivo);//
     }
     else
     {
@@ -242,7 +236,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
     }
 
     printf("DBAR ok\n");
-    strcpy(aux, aux2);
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DSHNT.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -250,8 +244,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         //printf("DSHNT ok\n");
         fclose(arquivo);
     }
-
-    strcpy(aux, aux2);
+    
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DGD.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -262,7 +256,7 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
 
     // Leitura dos dados de ramos
 
-    strcpy(aux, aux2);
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DLIN.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -270,8 +264,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         //printf("DLIN ok\n");
         fclose(arquivo);
     }
-
-    strcpy(aux, aux2);
+    //Leitura dos dados dos trafos, que entram nos ramos
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DTRF.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -279,8 +273,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         //printf("DTRF ok\n");
         fclose(arquivo);
     }
-
-    strcpy(aux, aux2);
+    //Leitura dos dados dos reguladores, que entram nos ramos
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DREG.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -288,8 +282,8 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         //printf("DREG ok\n");
         fclose(arquivo);
     }
-
-    strcpy(aux, aux2);
+    // Dados das chaves 
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "DSWTC.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -298,7 +292,16 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         fclose(arquivo);
     }
 
-    strcpy(aux, aux2);
+    // Dados dos transformadore XRMF
+    // arquivo = fopen(strcat(aux, "DXRMF.csv"), "r"); //Le somente se existir o arquivo
+    // {
+        // leituraDSWTC(arquivo, ramo, numeroRamos, barra, numeroBarras);
+        printf("DXRMF ok\n");
+        // fclose(arquivo);
+    // }
+
+    //Leitura do arquivo de tensões iniciais
+    strcpy(aux, pasta);
     arquivo = fopen(strcat(aux, "Vinicial.csv"), "r"); //Le somente se existir o arquivo
     if (arquivo != NULL)
     {
@@ -307,9 +310,10 @@ char *leituraDados(DBAR **barra, DRAM **ramo, long int *numeroBarras, long int *
         fclose(arquivo);
     }
 
-    folder = getfield(aux2, 1);
+    folder = getfield(pasta, 1);
     return (folder);
 }
+
 
 //------------------------------------------------------------------------------
 // Leitura de dados de BARRA

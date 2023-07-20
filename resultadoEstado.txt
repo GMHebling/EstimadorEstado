@@ -1,7 +1,7 @@
-|Dx|_inf =  0.0000001 	 |Grad|_inf =  188207403172451.5000000 
+|Dx|_inf =  0.0000001 	 |Grad|_inf =  188172547155026.9375000 
 
 
- Convergência em 4 iteracoes e tempo: 1.2844
+ Convergência em 4 iteracoes e tempo: 13.7650
 Tensoes Nodais: Fase-Terra
 Vbase:132790.562	ABC	1	Va: 1.05021 | 0.000 	Vb: 1.05022 | -120.000	Vc: 1.04918 | 120.000
 Vbase:132790.562	ABC	2	Va: 1.05019 | -0.001 	Vb: 1.05021 | -120.001	Vc: 1.04917 | 119.999
