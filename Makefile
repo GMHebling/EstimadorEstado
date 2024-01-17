@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS= -g -o -W
-LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++
+LDFLAGS= -lcholmod -lspqr -lsuitesparseconfig -lm -lstdc++ "-Wl,-rpath,/usr/local/lib/"
 OBJFILES = main.o funcoesBranchCurrent.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o funcoesFluxoVarredura.o
 OBJFILESFP = main_fp.o funcoesBadData.o funcoesCalculoEletrico.o funcoesLeitura.o funcoesMatematicas.o funcoesOtimizacao.o funcoesTopologia.o funcoesWLS.o
 TARGET = estimator powerflow
